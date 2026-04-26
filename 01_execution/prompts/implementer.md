@@ -63,4 +63,4 @@ Allowed only when it reduces duplication **without changing behavior**:
 
 ## Stack Awareness
 
-Consulta `sdd.config.json` per conèixer el stack del projecte. Adapta les comandes de test i convencions al llenguatge/framework utilitzat.
+Consult `sdd.config.json` to learn the project stack. Adapt test commands and conventions to the language/framework used.

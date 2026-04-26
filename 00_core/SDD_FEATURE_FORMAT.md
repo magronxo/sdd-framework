@@ -1,38 +1,38 @@
 # SDD Feature Format
 
-Cada funcionalitat es representa amb un document de tipus `SYSTEM_SPEC`. Aquest document és l'única font de veritat per al progrés de la feature.
+Every feature is represented by a document of type `SYSTEM_SPEC`. This document is the single source of truth for feature progress.
 
-## Camps obligatoris
+## Required Fields
 
 ```json
 {
-  "id": "feat-<seq>",                 // ex: feat-001
+  "id": "feat-<seq>",                 // e.g.: feat-001
   "type": "SYSTEM_SPEC",
-  "state": "DESIGN",                  // estats canònics: DESIGN, SPEC, VALIDATION, TASKS, IMPLEMENT, VERIFY, AUDIT, ARCHIVE (DONE = legacy alias)
-  "title": "Breu descripció",
+  "state": "DESIGN",                  // canonical states: DESIGN, SPEC, VALIDATION, TASKS, IMPLEMENT, VERIFY, AUDIT, ARCHIVE (DONE = legacy alias)
+  "title": "Brief description",
   "created_at": "2026-03-28T10:00:00Z",
   "updated_at": "2026-03-28T10:00:00Z"
 }
 ```
 
-## Estats canònics
+## Canonical States
 
-| Estat | Significat |
-|-------|------------|
-| **DESIGN** | Feature definida a nivell de QUÈ, però encara no especificada |
-| **SPEC** | Spec redactada; encara pot tenir feedback de validació pendent |
-| **VALIDATION** | Fase de revisió de completesa i determinisme |
-| **TASKS** | Desglossament de treball mínim i ordenat (derivat d'una spec validada) |
-| **IMPLEMENT** | Implementació en curs o preparada per iniciar |
-| **VERIFY** | Verificació de compliment respecte a spec i SDT |
-| **AUDIT** | Auditoria externa de qualitat, coherència i risc |
-| **ARCHIVE** | Tancament documental i consolidació |
+| State | Meaning |
+|-------|---------|
+| **DESIGN** | Feature defined at WHAT level, but not yet specified |
+| **SPEC** | Spec written; may still have pending validation feedback |
+| **VALIDATION** | Phase of completeness and determinism review |
+| **TASKS** | Minimal, ordered work breakdown (derived from a validated spec) |
+| **IMPLEMENT** | Implementation in progress or ready to start |
+| **VERIFY** | Verification of compliance against spec and SDT |
+| **AUDIT** | External quality, coherence, and risk audit |
+| **ARCHIVE** | Documental closure and consolidation |
 
-**Legacy:** `DONE` existeix en feature records antics. Tractar-lo com a **alias legacy de `ARCHIVE`**. No usar-lo en feina nova.
+**Legacy:** `DONE` exists in old feature records. Treat it as a **legacy alias of `ARCHIVE`**. Do not use for new work.
 
-## Camps opcionals segons l'estat
+## Optional Fields by State
 
-| Estat | Camps addicionals |
+| State | Additional Fields |
 |-------|------------------|
 | **DESIGN** | `design_path` (string), `open_questions` (array) |
 | **SPEC** | `spec_path` (string), `acceptance_criteria` (array Gherkin) |
@@ -43,9 +43,9 @@ Cada funcionalitat es representa amb un document de tipus `SYSTEM_SPEC`. Aquest 
 | **AUDIT** | `audit_result` (PASS/WARN/FAIL), `audit_reasons` (array) |
 | **ARCHIVE** | `archived_at` (ISO8601), `archive_notes` (string) |
 
-## Camps transversals permesos
+## Cross-cutting Fields
 
-Aquests camps poden aparèixer en més d'un estat si aporten traçabilitat:
+These fields may appear in more than one state if they provide traceability:
 
 - `design_path`
 - `spec_path`
@@ -56,53 +56,53 @@ Aquests camps poden aparèixer en més d'un estat si aporten traçabilitat:
 - `audit_result`
 - `validation_result`
 
-## Exemple complet
+## Complete Example
 
 ```json
 {
   "id": "feat-001",
   "type": "SYSTEM_SPEC",
   "state": "ARCHIVE",
-  "title": "Implementar validació de paths",
+  "title": "Implement path validation",
   "created_at": "2026-03-28T10:00:00Z",
   "updated_at": "2026-03-28T14:30:00Z",
   "design_path": "artifacts/design/feat-001-path-validation.md",
   "spec_path": "artifacts/specs/feat-001-path-validation.md",
   "sdt_scenarios": [
     {
-      "scenario": "Path traversal amb ..",
-      "expected_behavior": "Rebutjar amb E_PATH_TRAVERSAL"
+      "scenario": "Path traversal with ..",
+      "expected_behavior": "Reject with E_PATH_TRAVERSAL"
     }
   ],
   "task_path": "artifacts/tasks/feat-001-path-validation.md",
   "task_list": [
-    "Implementar validador de paths",
-    "Afegir test unitari",
-    "Documentar error E_PATH_TRAVERSAL"
+    "Implement path validator",
+    "Add unit test",
+    "Document error E_PATH_TRAVERSAL"
   ],
   "validation_result": "PASS",
   "verification_result": "PASS",
   "audit_result": "PASS",
   "archived_at": "2026-03-28T14:00:00Z",
-  "archive_notes": "Feature completada i consolidada."
+  "archive_notes": "Feature completed and consolidated."
 }
 ```
 
-## Nomenclatura de Fitxers (OBLIGATORI)
+## File Naming (MANDATORY)
 
-Tots els fitxers de feature HAN DE seguir el format:
+All feature files MUST follow this format:
 
 ```
 feat-{NNN}-{short-name}.md
 ```
 
-**Exemples:**
+**Examples:**
 - `feat-001-kernel-core.md`
 - `feat-006-api-server.md`
 - `feat-007-worker-pool.md`
 - `feat-012-kernel-status-api.md`
 
-**Cada fitxer JSON ha d'apuntar als paths actuals mitjançant:**
+**Each JSON file must point to actual paths via:**
 ```json
 {
   "design_path": "artifacts/design/feat-NNN-short-name.md",
@@ -120,7 +120,7 @@ feat-{NNN}-{short-name}.md
 
 ## Notes
 
-- El camp `id` ha de ser únic i seqüencial dins del projecte.
-- El camp `state` només pot contenir valors de l'enumeració definida.
-- Els documents es guarden a `artifacts/features_for_specs/` (o el path configurat a `sdd.config.json`).
-- Si hi ha casos legacy o compostos, s'han de marcar explícitament. No s'han de normalitzar via excepcions silencioses.
+- The `id` field must be unique and sequential within the project.
+- The `state` field can only contain values from the defined enumeration.
+- Documents are saved to `artifacts/features_for_specs/` (or the path configured in `sdd.config.json`).
+- If there are legacy or composite cases, they must be marked explicitly. Do not normalize them via silent exceptions.

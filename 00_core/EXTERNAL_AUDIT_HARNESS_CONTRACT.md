@@ -1,247 +1,246 @@
 # External Audit Harness Contract
 
-> **Estat:** Actiu
-> **Data:** 2026-04-05
-> **Abast:** Contracte mínim per a auditories externes de specs i artefactes SDD
+> **Status:** Active
+> **Date:** 2026-04-05
+> **Scope:** Minimum contract for external audits of SDD specs and artifacts
 
 ---
 
-## 1. Propòsit
+## 1. Purpose
 
-Aquest document defineix el contracte mínim perquè una eina externa d'auditoria
-pugui intervenir en el projecte **sense contaminar la governança pròpia** ni forçar canvis al runtime.
+This document defines the minimum contract so that an external audit tool can intervene in the project **without contaminating its own governance** or forcing changes to the runtime.
 
-La regla és simple:
+The rule is simple:
 
-**L'auditor extern contrasta, pressiona i informa. No governa ni implementa.**
-
----
-
-## 2. Principi Rector
-
-El harness extern és una **eina de contrast** dins de la capa de desenvolupament extern.
-
-Per tant:
-
-- no substitueix el flux SDD propi
-- no és font de veritat
-- no retorna codi com a primera sortida
-- no toca el runtime del sistema
-- no fusiona memòria de desenvolupament amb memòria runtime
+**The external auditor contrasts, pressures, and reports. It does not govern or implement.**
 
 ---
 
-## 3. Punt d'Intervenció Autoritzat
+## 2. Guiding Principle
 
-### 3.1 Intervenció principal
+The external harness is a **contrast tool** within the external development layer.
 
-El harness extern entra a:
+Therefore:
+
+- it does not replace the native SDD flow
+- it is not a source of truth
+- it does not return code as primary output
+- it does not touch the system runtime
+- it does not merge development memory with runtime memory
+
+---
+
+## 3. Authorized Intervention Points
+
+### 3.1 Primary intervention
+
+The external harness enters at:
 
 - **AUDIT**
 - **audit-deep**
-- re-auditories documentals de specs existents
+- documental re-audits of existing specs
 
-### 3.2 Intervenció no autoritzada
+### 3.2 Unauthorized intervention
 
-El harness extern **no** entra a:
+The external harness does **not** enter at:
 
-- DESIGN com a autoritat
-- SPEC com a font base
-- IMPLEMENT com a executor
-- VERIFY com a substitut de tests o verificació pròpia
-- Runtime del sistema
+- DESIGN as an authority
+- SPEC as a base source
+- IMPLEMENT as an executor
+- VERIFY as a substitute for tests or native verification
+- System runtime
 
 ---
 
-## 4. Inputs Obligatoris
+## 4. Mandatory Inputs
 
-Qualsevol auditoria externa ha de rebre només el context mínim necessari.
+Any external audit must receive only the minimum necessary context.
 
-### 4.1 Context fix
+### 4.1 Fixed context
 
-- Manifest o descripció del projecte
-- Mapa d'integració de frameworks externs (si existeix)
-- Política d'adopció d'eines externes (si existeix)
+- Manifest or project description
+- External framework integration map (if it exists)
+- External tool adoption policy (if it exists)
 
-### 4.2 Context de la feature o spec auditada
+### 4.2 Context of the audited feature or spec
 
 - `artifacts/design/feat-XXX*.md`
 - `artifacts/specs/feat-XXX*.md`
 
-### 4.3 Context opcional
+### 4.3 Optional context
 
 - `artifacts/tasks/feat-XXX*.md`
-- report d'auditoria interna prèvia
-- feature record associat
+- prior internal audit report
+- associated feature record
 
-### 4.4 Regla de mínim context
+### 4.4 Minimum context rule
 
-No s'ha d'injectar el repo sencer per defecte.
+The entire repo should not be injected by default.
 
-**Primer contracte. Després corpus.**
+**Contract first. Corpus second.**
 
 ---
 
-## 5. Output Obligatori
+## 5. Mandatory Output
 
-L'auditor extern ha de retornar un **report estructurat** i res més.
+The external auditor must return a **structured report** and nothing else.
 
-### 5.1 Format mínim per finding
+### 5.1 Minimum format per finding
 
-Cada troballa ha d'incloure:
+Each finding must include:
 
 - `finding`
 - `severity`: `COMPLIANT | WARN | FAIL`
 - `scope`: `design | spec | tasks | traceability`
 - `violated_rule`
 - `recommendation`
-- `classification`: `adoptar | adaptar | descartar | aparcar`
+- `classification`: `adopt | adapt | discard | park`
 
-### 5.2 Ubicació
+### 5.2 Location
 
-El resultat s'ha de desar a:
+The result must be saved to:
 
 - `artifacts/audit_reports/`
 
-### 5.3 Nomenclatura recomanada
+### 5.3 Recommended naming
 
 - `audit_external_[feature]_[YYYY-MM-DD].md`
 - `audit_external_batch_[n]_[YYYY-MM-DD].md`
 
 ---
 
-## 6. Límits Durs del Harness
+## 6. Hard Harness Limits
 
-### 6.1 Prohibicions
+### 6.1 Prohibitions
 
-L'auditor extern no pot:
+The external auditor cannot:
 
-- retornar pegats de codi com a output principal
-- reescriure la spec per autoritat pròpia
-- redefinir el pipeline SDD base
-- imposar taxonomia aliena de prompts o skills
-- tocar el runtime o forçar canvis de runtime
-- unir memòria externa i memòria runtime sense contracte explícit
+- return code patches as primary output
+- rewrite the spec by its own authority
+- redefine the base SDD pipeline
+- impose alien taxonomy of prompts or skills
+- touch the runtime or force runtime changes
+- merge external memory and runtime memory without explicit contract
 
-### 6.2 Restriccions semàntiques
+### 6.2 Semantic restrictions
 
-L'auditor extern ha d'acceptar la nomenclatura pròpia del projecte, incloent:
+The external auditor must accept the project's own nomenclature, including:
 
-- fases SDD pròpies
-- convencions de nomenclatura establertes
+- native SDD phases
+- established naming conventions
 
-No ha de "corregir" el sistema perquè s'assembli a un framework extern.
-
----
-
-## 7. Criteris d'Avaluació
-
-El harness extern ha de pressionar especialment:
-
-- buits d'edge cases
-- ambigüitat operativa
-- consistència entre design, spec i tasks
-- compatibilitat amb el manifest del projecte
-- límits hardware i timeouts (si s'han definit)
-- riscos de memòria, context i orquestració
-- absència de traçabilitat documental
-
-No ha de gastar el focus principal en:
-
-- estil de redacció superficial
-- refactors interns no demanats
-- preferències de framework extern
+It must not "correct" the system to resemble an external framework.
 
 ---
 
-## 8. Regla de Triatge
+## 7. Evaluation Criteria
 
-Cap finding extern entra directament al sistema.
+The external harness must especially pressure:
 
-Tot finding s'ha de classificar com:
+- edge case gaps
+- operational ambiguity
+- consistency between design, spec, and tasks
+- compatibility with the project manifest
+- hardware limits and timeouts (if defined)
+- memory, context, and orchestration risks
+- absence of documental traceability
 
-- **adoptar**: encaixa directament
-- **adaptar**: aporta valor però necessita traducció al model propi
-- **descartar**: conflicte amb el manifest, l'SDD o el runtime
-- **aparcar**: té valor potencial però no toca ara
+It must not spend primary focus on:
 
-La classificació final sempre és responsabilitat del flux propi del projecte.
+- superficial writing style
+- unsolicited internal refactors
+- external framework preferences
 
 ---
 
-## 9. Decisió Operativa
+## 8. Triage Rule
+
+No external finding enters the system directly.
+
+Every finding must be classified as:
+
+- **adopt**: fits directly
+- **adapt**: adds value but needs translation to the native model
+- **discard**: conflicts with manifest, SDD, or runtime
+- **park**: has potential value but not actionable now
+
+The final classification is always the responsibility of the project's own flow.
+
+---
+
+## 9. Operational Decision
 
 ### `COMPLIANT`
 
-- no hi ha troballes materials
-- el cas pot tancar-se documentalment
+- no material findings
+- the case can be closed documentally
 
 ### `WARN`
 
-- hi ha millores recomanades
-- no obliga a tocar runtime
-- es pot continuar si el report queda registrat
+- recommended improvements exist
+- does not force touching runtime
+- can continue if the report is recorded
 
 ### `FAIL`
 
-- hi ha conflicte real amb manifest, SDD o límits físics
-- cal correcció documental abans de considerar canvis d'implementació
+- real conflict with manifest, SDD, or physical limits
+- documental correction needed before considering implementation changes
 
 ---
 
-## 10. Relació amb el Flux SDD
+## 10. Relationship with the SDD Flow
 
-Aquest contracte complementa:
+This contract complements:
 
-- `03_operations/AUDIT_STRATEGY.md` (si existeix)
+- `03_operations/AUDIT_STRATEGY.md` (if it exists)
 - `03_operations/SPEC_REAUDIT_WORKFLOW.md`
 
-Ordre correcte:
+Correct order:
 
-1. lectura pròpia
-2. auditoria interna
-3. contrast extern
-4. triatge `adoptar / adaptar / descartar / aparcar`
-5. tancament documental
+1. native reading
+2. internal audit
+3. external contrast
+4. triage `adopt / adapt / discard / park`
+5. documental closure
 
-**Mai al revés.**
-
----
-
-## 11. Política de Models
-
-El contracte del harness ha de ser prou clar perquè el pugui seguir més d'un model.
-
-Però això **no** vol dir assumir que qualsevol model:
-
-- entendrà igual de bé el manifest del projecte
-- mantindrà igual de bé els límits
-- o produirà triatge fiable sense supervisió
-
-Per tant:
-
-- models més forts serveixen per definir i calibrar el contracte
-- models més barats o heterogenis serveixen per provar si el contracte és prou robust
-- cap model extern passa a ser autoritat per si sol
+**Never in reverse.**
 
 ---
 
-## 12. Criteri d'Èxit
+## 11. Model Policy
 
-El harness extern està ben integrat quan:
+The harness contract must be clear enough for more than one model to follow.
 
-- detecta buits reals sense governar el flux
-- produeix reports comparables entre models o eines
-- no obliga a tocar runtime
-- reforça la qualitat del SDD extern
-- permet contrast extern sense pèrdua d'identitat arquitectònica
+But this does **not** mean assuming that any model:
+
+- will understand the project manifest equally well
+- will maintain limits equally well
+- or will produce reliable triage without supervision
+
+Therefore:
+
+- stronger models serve to define and calibrate the contract
+- cheaper or heterogeneous models serve to test if the contract is robust enough
+- no external model becomes authority by itself
 
 ---
 
-## 13. Decisió Operativa Actual
+## 12. Success Criterion
 
-Des de 2026-04-05:
+The external harness is well integrated when:
 
-- el harness extern s'autoritza només com a complement d'auditoria
-- la seva sortida és sempre un report, no un patch
-- qualsevol integració futura s'ha de validar contra aquest document abans d'entrar al flux
+- it detects real gaps without governing the flow
+- it produces comparable reports across models or tools
+- it does not force touching runtime
+- it reinforces external SDD quality
+- it allows external contrast without loss of architectural identity
+
+---
+
+## 13. Current Operational Decision
+
+As of 2026-04-05:
+
+- the external harness is authorized only as an audit complement
+- its output is always a report, not a patch
+- any future integration must be validated against this document before entering the flow

@@ -42,8 +42,8 @@ Each task must be:
 ## Skills
 | Task | Skills |
 |---|---|
-| GLOBAL | <coma-separated canonical skill names o buit> |
-| 1.1 | <coma-separated canonical skill names o buit> |
+| GLOBAL | <comma-separated canonical skill names or empty> |
+| 1.1 | <comma-separated canonical skill names or empty> |
 
 ## T1: [Short name]
 - description: ...

@@ -48,19 +48,19 @@ When generating a verify report, you MUST declare which surfaces apply and valid
 
 ## Skills Gates (Skills Registry / Doctor)
 
-Quan el document `TASKS` inclogui una secció `## Skills`:
+When the `TASKS` document includes a `## Skills` section:
 
-1) **Validació de declaració**
-   - Si la taula `Task | Skills` existeix però conté skills no buides, has de verificar que totes aquestes skills són **canòniques** (existeixen al registry).
-   - Registry canònic: definit a `sdd.config.json` (`skills_registry`).
+1) **Declaration validation**
+   - If the `Task | Skills` table exists but contains non-empty skills, you must verify that all these skills are **canonical** (exist in the registry).
+   - Canonical registry: defined in `sdd.config.json` (`skills_registry`).
 
-2) **Evidència obligatòria (PASS gate)**
-   - Si `TASKS` declara **almenys una** skill (GLOBAL o per-task), has de verificar que existeix mecanisme de validació de skills al projecte (p. ex. un script `skills.ps1 doctor check` o equivalent).
-   - `verification_result` **MUST NOT** be `PASS` si no hi ha evidència de validació de skills.
+2) **Mandatory evidence (PASS gate)**
+   - If `TASKS` declares **at least one** skill (GLOBAL or per-task), you must verify that a skill validation mechanism exists in the project (e.g., a `skills.ps1 doctor check` script or equivalent).
+   - `verification_result` **MUST NOT** be `PASS` if there is no skill validation evidence.
 
-3) **Com s’ha de registrar l’evidència**
-   - Si crees un verify report: inclou la comanda a `## COMMANDS` amb `status: EXECUTED` i l’exit code + excerpt.
-   - Si només escrius `verification_details` al feature record: inclou comanda + exit code + un resum.
+3) **How to record evidence**
+   - If you create a verify report: include the command in `## COMMANDS` with `status: EXECUTED` and the exit code + excerpt.
+   - If you only write `verification_details` in the feature record: include command + exit code + a summary.
 
 ## Output (single decision)
 

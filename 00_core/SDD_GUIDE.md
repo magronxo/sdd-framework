@@ -1,184 +1,184 @@
-# SDD Guide – Spec-Driven Development (Simplificat)
+# SDD Guide – Spec-Driven Development (Simplified)
 
-> **Mode Diátaxis**: Explanation
-> **Spec-Driven Development** per a sistemes d'agents.
-> La **spec** és l'única font de veritat. El codi només implementa specs aprovades.
-
----
-
-## Axiomes (innegociables)
-
-1. **spec_as_source** – No hi ha comportament sense spec.
-2. **no_ambiguity** – Termes vagues = spec invàlida.
-3. **edge_cases_first** – Si no es defineix el fallback, el comportament és indefinit.
-4. **hardware_aware** – Tota decisió ha de passar el filtre de recursos del projecte.
-5. **no_direct_mutation** – Mai es modifica codi directament; sempre a través de documents de feature i specs.
-6. **external_dev_first** – Els problemes de flux, governança, context i integració s'han de resoldre fora del nucli abans d'obrir canvis crítics.
+> **Diátaxis Mode**: Explanation  
+> **Spec-Driven Development** for agent systems.  
+> The **spec** is the single source of truth. Code only implements approved specs.
 
 ---
 
-## Pipeline SDD Simplificat amb Auditoria
+## Axioms (non-negotiable)
 
-Cada funcionalitat es representa amb un **document de tipus `SYSTEM_SPEC`** que avança pels següents estats:
+1. **spec_as_source** – No behavior exists without a spec.
+2. **no_ambiguity** – Vague terms = invalid spec.
+3. **edge_cases_first** – If fallback is not defined, behavior is undefined.
+4. **hardware_aware** – Every decision must pass the project resource filter.
+5. **no_direct_mutation** – Never modify code directly; always through feature documents and specs.
+6. **external_dev_first** – Flow, governance, context, and integration problems must be solved outside the core before opening critical changes.
+
+---
+
+## Simplified SDD Pipeline with Audit
+
+Every functionality is represented by a **`SYSTEM_SPEC` document** that advances through the following states:
 
 ```
 DESIGN → SPEC → VALIDATION → TASKS → IMPLEMENT → VERIFY → AUDIT → ARCHIVE
-                              ↑______________↓ (si cal revisar)
+                              ↑______________↓ (if revision needed)
 ```
 
-### Implementació: SDT vs TDD
+### Implementation: SDT vs TDD
 
-**Per components deterministes (Go, C, Rust, etc.):** Usem **TDD** (Test-Driven Development) durant la fase d'implementació.
-- Escriure test → Implementar codi mínim → Refactoritzar
-- Els tests deriven dels escenaris SDT definits a la spec
+**For deterministic components (Go, C, Rust, etc.):** We use **TDD** (Test-Driven Development) during the implementation phase.
+- Write test → Implement minimal code → Refactor
+- Tests derive from SDT scenarios defined in the spec
 
-**Per components amb LLM (no deterministes):** Usem **SDT** (Spec-Driven Testing) com a validació final.
-- Implementar segons spec → Validar contra escenaris SDT manualment/automàticament
+**For components with LLM (non-deterministic):** We use **SDT** (Spec-Driven Testing) as final validation.
+- Implement according to spec → Validate against SDT scenarios manually/automatically
 
-**Fluxe híbrid:**
+**Hybrid flow:**
 ```
-SDD (Documents) → TDD (Codi) → Validació SDT (Sistema complet) → Auditoria → Archive
+SDD (Documents) → TDD (Code) → SDT Validation (Complete system) → Audit → Archive
 ```
 
-| Estat | Rol | Prompt/Skill | Artifact | Descripció |
-|-------|-----|--------------|----------|------------|
-| **DESIGN** | Designer | `01_execution/prompts/designer.md` | `artifacts/design/<feature_id>.md` | Defineix el QUÈ: arquitectura, components, hardware budget. |
-| **SPEC** | Specifier | `01_execution/prompts/specifier.md` | `artifacts/specs/<feature_id>.md` | Defineix el COM: inputs, outputs, errors, SDT scenarios, Gherkin. |
-| **VALIDATION** | Validator | `01_execution/prompts/validator.md` | `validation_result` | Valida que l'spec és completa, determinista i sense ambigüitats. |
-| **TASKS** | Planner | `01_execution/prompts/planner.md` | `artifacts/tasks/<feature_id>.md` | Genera una llista de tasques mínima i ordenada a partir d'una spec validada. |
-| **IMPLEMENT** | Developer | TDD/SDT | Codi + Tests | Implementa segons spec, tests passen. |
-| **VERIFY** | Verifier | `01_execution/prompts/verifier.md` | `verification_result` | Verifica que implementació compleix spec i SDT scenarios. |
-| **AUDIT** | Auditor | `01_execution/skills/sdd-audit` (si configurat) | `audit_report` | Auditoria lleugera: spec-codi, tests, qualitat. |
-| **ARCHIVE** | Archiver | `N/A (manual)` | `feature_archived` | Consolidació documental i tancament de feature. |
+| State | Role | Prompt/Skill | Artifact | Description |
+|-------|------|--------------|----------|-------------|
+| **DESIGN** | Designer | `01_execution/prompts/designer.md` | `artifacts/design/<feature_id>.md` | Defines the WHAT: architecture, components, hardware budget. |
+| **SPEC** | Specifier | `01_execution/prompts/specifier.md` | `artifacts/specs/<feature_id>.md` | Defines the HOW: inputs, outputs, errors, SDT scenarios, Gherkin. |
+| **VALIDATION** | Validator | `01_execution/prompts/validator.md` | `validation_result` | Validates that the spec is complete, deterministic, and unambiguous. |
+| **TASKS** | Planner | `01_execution/prompts/planner.md` | `artifacts/tasks/<feature_id>.md` | Generates a minimal, ordered task list from a validated spec. |
+| **IMPLEMENT** | Developer | TDD/SDT | Code + Tests | Implements according to spec, tests pass. |
+| **VERIFY** | Verifier | `01_execution/prompts/verifier.md` | `verification_result` | Verifies that implementation complies with spec and SDT scenarios. |
+| **AUDIT** | Auditor | `01_execution/skills/sdd-audit` (if configured) | `audit_report` | Lightweight audit: spec-code coherence, tests, quality. |
+| **ARCHIVE** | Archiver | `N/A (manual)` | `feature_archived` | Documental consolidation and feature closure. |
 
-### Skills d'Auditoria
+### Audit Skills
 
-**sdd-audit (Lleugera):**
-- **Trigger:** Automàtic després de VERIFY
-- **Model:** Ràpid, econòmic (suficient per auditories lleugeres)
-- **Abast:** Spec-codi coherence, tests, qualitat bàsica
-- **Output:** Informe a `artifacts/audit_reports/audit_[feature]_[data].md`
-- **Resultat:** PASS/WARN/FAIL
-- **Acció:** Si FAIL → deep audit; Si WARN/PASS → Archive
+**sdd-audit (Lightweight):**
+- **Trigger:** Automatic after VERIFY
+- **Model:** Fast, economical (sufficient for light audits)
+- **Scope:** Spec-code coherence, tests, basic quality
+- **Output:** Report at `artifacts/audit_reports/audit_[feature]_[date].md`
+- **Result:** PASS/WARN/FAIL
+- **Action:** If FAIL → deep audit; If WARN/PASS → Archive
 
-**sdd-deep-audit (Profunda):**
-- **Trigger:** Manual (`/audit-deep`) o cada N features (configurable)
-- **Model:** Exhaustiu (necessari per anàlisi profund)
-- **Abast:** Seguretat, arquitectura, consistència global
-- **Output:** Informe a `artifacts/audit_reports/audit_batch_[n]_[data].md`
-- **Resultat:** PASS/WARN/FAIL amb tickets generats
-- **Acció:** Pot bloquejar release si FAIL o CRÍTIC
+**sdd-deep-audit (Deep):**
+- **Trigger:** Manual (`/audit-deep`) or every N features (configurable)
+- **Model:** Exhaustive (necessary for deep analysis)
+- **Scope:** Security, architecture, global consistency
+- **Output:** Report at `artifacts/audit_reports/audit_batch_[n]_[date].md`
+- **Result:** PASS/WARN/FAIL with generated tickets
+- **Action:** Can block release if FAIL or CRITICAL
 
-### Auditoria Externa vs Interna
+### External vs Internal Audit
 
-**Externa (recomanada):**
-- El nucli del sistema s'audita via skills externs
-- Impossible auditar-se a si mateix (immutable, conflicte interessos)
-- Més segur, més ràpid, més flexible
+**External (recommended):**
+- System core is audited via external skills
+- Impossible to audit oneself (immutable, conflict of interest)
+- More secure, faster, more flexible
 
-**Interna (opcional):**
-- Equips o departaments poden tenir auditor intern
-- Dashboard IDE permetrà desenvolupar des de dins
-- Sistema autònom per a departaments, NO per al nucli crític
+**Internal (optional):**
+- Teams or departments may have internal auditor
+- IDE dashboard allows developing from within
+- Autonomous system for departments, NOT for critical core
 
-**Regla:** Auditoria del nucli crític sempre EXTERNA. Auditoria de departaments pot ser INTERNA.
+**Rule:** Critical core audit is always EXTERNAL. Department audit may be INTERNAL.
 
-### Re-auditoria SDD d'artefactes existents
+### SDD Re-audit of Existing Artifacts
 
-Quan el que es revisa no és una feature nova sinó una spec ja existent, el flux canvia:
+When what is reviewed is not a new feature but an existing spec, the flow changes:
 
-1. es llegeix la spec, el design, els tasks i el feature record
-2. es fa auditoria interna estructural
-3. opcionalment es contrasta amb frameworks d'auditoria externs
-4. es triïn findings com `adoptar`, `adaptar` o `descartar`
-5. es normalitzen els artefactes afectats
-6. es tanca el cas amb un report inequívoc
+1. Read the spec, design, tasks, and feature record
+2. Perform internal structural audit
+3. Optionally contrast with external audit frameworks
+4. Triage findings as `adopt`, `adapt`, or `discard`
+5. Normalize affected artifacts
+6. Close the case with an unequivocal report
 
-La prioritat de re-auditoria es governa per:
+Re-audit priority is governed by:
 
 - `03_operations/SPEC_REAUDIT_WORKFLOW.md`
 - `90_transitional/SPEC_REAUDIT_PRIORITY_PLAN.md` (non-canonical priority planning, if still used)
 
-**Regla:** una re-auditoria no és una implementació nova. Si detecta desalineació, es corregeix documentació i traçabilitat abans de tocar runtime.
+**Rule:** A re-audit is not a new implementation. If it detects misalignment, documentation and traceability are corrected before touching runtime.
 
-### Frameworks externs
+### External Frameworks
 
-Els frameworks externs no substitueixen l'SDD propi:
+External frameworks do not replace the SDD framework:
 
-- són complements d'auditoria, memòria externa i revisió de specs
-- entorns/harness externs compatibles
-- altres marcs: només després de mapping explícit
+- They are audit complements, external memory, and spec review
+- Compatible external environments/harnesses
+- Other frameworks: only after explicit mapping
 
-**Regla:** primer mapping, després adaptació; mai fusió directa.
+**Rule:** First mapping, then adaptation; never direct fusion.
 
-### Regles de transició
+### Transition Rules
 
-- No es pot saltar cap estat.
-- Si VALIDATION falla → torna a SPEC (mai es patch el codi directament).
-- Si AUDIT falla → deep audit obligatori; NO archive fins PASS/WARN.
-- Cap `[?]` obert pot sortir de DESIGN.
-- **Auditoria no bloqueja però documenta:** Sempre es pot archive, però amb advertències si WARN.
-- Si una re-auditoria obre inconsistències documentals, no s'ha de tocar el runtime fins que el tancament dels artefactes quedi explícit.
+- No state can be skipped.
+- If VALIDATION fails → return to SPEC (never patch code directly).
+- If AUDIT fails → mandatory deep audit; NO archive until PASS/WARN.
+- No open `[?]` may leave DESIGN.
+- **Audit does not block but documents:** You can always archive, but with warnings if WARN.
+- If a re-audit opens documental inconsistencies, runtime must not be touched until artifact closure is explicit.
 
-### Flux Complet amb Exemple
+### Complete Flow with Example
 
 ```
-1. DESIGN:   Crear feat-010-worker-pool-v2.md
+1. DESIGN:   Create feat-010-worker-pool-v2.md
              ↓
-2. SPEC:     Especificar requisits, SDT scenarios
+2. SPEC:     Specify requirements, SDT scenarios
              ↓
-3. VALIDATION: Verificar completesa, determinisme
-             ↓ [APROVAT]
+3. VALIDATION: Verify completeness, determinism
+             ↓ [APPROVED]
 4. IMPLEMENT: TDD → workerpool_v2.go + _test.go
              ↓
 5. VERIFY:   go test ./... (12/12 PASS)
              ↓
-6. AUDIT:    sdd-audit executa automàticament
-             Resultat: WARN (Score: 75, 1 warning)
-             Informe: audit_feat-010_2026-03-29.md
-             Ticket: AUD-007 (millorar documentació)
+6. AUDIT:    sdd-audit runs automatically
+             Result: WARN (Score: 75, 1 warning)
+             Report: audit_feat-010_2026-03-29.md
+             Ticket: AUD-007 (improve documentation)
              ↓
-7. ARCHIVE:  Sync a specs main, update features_for_specs.
+7. ARCHIVE:  Sync to specs main, update features_for_specs.
              ↓
 ```
 
-### Informes d'Auditoria
+### Audit Reports
 
-**Ubicació:** `artifacts/audit_reports/`
+**Location:** `artifacts/audit_reports/`
 
-**Nomenclatura:**
+**Naming:**
 - Soft: `audit_[feature]_[YYYY-MM-DD].md`
 - Deep: `audit_batch_[n]_[YYYY-MM-DD].md`
 
-**Format:** Senzill, sense soroll. Taula d'issues + recomanacions + tickets.
+**Format:** Simple, no noise. Issues table + recommendations + tickets.
 
-### Comandes
+### Commands
 
 ```bash
-/verify [feature]       # Verificar implementació
-/audit [feature]        # Auditoria soft manual
-/audit-deep             # Auditoria profunda batch
-/audit-report           # Mostrar últim informe
+/verify [feature]       # Verify implementation
+/audit [feature]        # Manual soft audit
+/audit-deep             # Deep batch audit
+/audit-report           # Show latest report
 ```
 
 ---
 
-## Formats obligatoris
+## Mandatory Formats
 
-### Nomenclatura de Fitxers (OBLIGATORI)
+### File Naming (MANDATORY)
 
-Tots els documents de feature HAN DE seguir el format:
+All feature documents MUST follow this format:
 
 ```
-feat_<seqüencial>_<nom-descriptiu>.md
+feat_{sequential}_{descriptive-name}.md
 ```
 
-**Regles:**
-1. **seqüencial**: Número de 3 dígits (001, 002, ..., 012, ...)
-2. **nom-descriptiu**: Paraules en minúscules separades per guions (`-`)
-3. **Extensió**: `.md` per a tots els documents
+**Rules:**
+1. **Sequential**: 3-digit number (001, 002, ..., 012, ...)
+2. **Descriptive name**: Lowercase words separated by hyphens (`-`)
+3. **Extension**: `.md` for all documents
 
-**Exemples vàlids:**
+**Valid examples:**
 ```
 feat-001-kernel-core.md
 feat-006-api-server.md
@@ -187,126 +187,126 @@ feat-007-worker-pool.md
 feat-012-kernel-status-api.md
 ```
 
-**Mapeig de carpetes:**
-| Carpeta | Contingut | Format |
-|---------|-----------|--------|
-| `artifacts/design/` | Documents de disseny (QUÈ) | `feat-XXX_nom.md` |
-| `artifacts/specs/` | Especificacions (COM) | `feat-XXX_nom.md` |
-| `artifacts/tasks/` | Desglossament de tasques | `feat-XXX_nom.md` |
-| `artifacts/features_for_specs/` | JSON d'estat | `feat-XXX.json` |
+**Folder mapping:**
+| Folder | Content | Format |
+|--------|---------|--------|
+| `artifacts/design/` | Design documents (WHAT) | `feat-XXX_name.md` |
+| `artifacts/specs/` | Specifications (HOW) | `feat-XXX_name.md` |
+| `artifacts/tasks/` | Task breakdowns | `feat-XXX_name.md` |
+| `artifacts/features_for_specs/` | State JSON | `feat-XXX.json` |
 
-**Renombrat:**
-- `dashboard-backend.md` → `feat-006-api-server.md` (ja fet)
-- **NO renombrar** `feat-006.md` (és el frontend React, diferenciat per `backend_` al JSON)
+**Renaming:**
+- `dashboard-backend.md` → `feat-006-api-server.md` (already done)
+- **DO NOT rename** `feat-006.md` (it is the React frontend, differentiated by `backend_` in JSON)
 
-### Document de disseny (`artifacts/design/<feature_id>.md`)
+### Design Document (`artifacts/design/<feature_id>.md`)
 
-Segueix la plantilla `templates/design.md` i inclou:
+Follow the `templates/design.md` template and include:
 
-- Motivació i components afectats
-- Data models (structs o JSON schemas)
-- Diagrama Mermaid del flux
-- Hardware budget (RAM, CPU, disc) — si aplica al projecte
-- Preguntes obertes `[?]` (han de ser ZERO per passar a SPEC)
+- Motivation and affected components
+- Data models (structs or JSON schemas)
+- Mermaid flow diagram
+- Hardware budget (RAM, CPU, disk) — if applicable to the project
+- Open questions `[?]` (must be ZERO to pass to SPEC)
 
-### Especificació funcional (`artifacts/specs/<feature_id>.md`)
+### Functional Specification (`artifacts/specs/<feature_id>.md`)
 
-Segueix la plantilla `templates/specs.md` i inclou:
+Follow the `templates/specs.md` template and include:
 
-- Requisits funcionals (RF) amb paraules clau RFC 2119 (DEURÀ / PODRÀ / NO DEURÀ)
-- Inputs i outputs tipats
-- Errors (codi, missatge, acció)
+- Functional requirements (FR) with RFC 2119 keywords (MUST / MAY / MUST NOT)
+- Typed inputs and outputs
+- Errors (code, message, action)
 - SDT Scenarios (happy path, edge cases, failure modes)
-- Criteris d'acceptació en Gherkin (Given/When/Then)
+- Acceptance criteria in Gherkin (Given/When/Then)
 - Dependencies
 
-### Format del document de feature
+### Feature Document Format
 
-Segueix el format definit a `00_core/SDD_FEATURE_FORMAT.md`.
+Follow the format defined in `00_core/SDD_FEATURE_FORMAT.md`.
 
 ---
 
-## Procés pas a pas
+## Step-by-Step Process
 
-1. **Crear feature record**: Crea `artifacts/features_for_specs/<feature_id>.json` amb `state: DESIGN`
-2. **Executar Designer**: Llegeix `01_execution/prompts/designer.md`, crea `artifacts/design/<feature_id>.md`, actualitza a `state: SPEC`
-3. **Executar Specifier**: Llegeix `01_execution/prompts/specifier.md`, crea `artifacts/specs/<feature_id>.md`, actualitza a `state: VALIDATION`
-4. **Executar Validator**: Llegeix `01_execution/prompts/validator.md`, valida:
-   - PASS → actualitza a `state: TASKS`
-   - FAIL → retorna a `state: SPEC` (sense modificar la spec)
-5. **Executar Planner**: Llegeix `01_execution/prompts/planner.md`, crea `artifacts/tasks/<feature_id>.md`, actualitza a `state: IMPLEMENT`
-6. **Implementer**: Executa `tasks/` amb TDD i implementa codi + tests
-7. **Executar Verifier**: Llegeix `01_execution/prompts/verifier.md`, corre tests + SDT:
+1. **Create feature record**: Create `artifacts/features_for_specs/<feature_id>.json` with `state: DESIGN`
+2. **Run Designer**: Read `01_execution/prompts/designer.md`, create `artifacts/design/<feature_id>.md`, update to `state: SPEC`
+3. **Run Specifier**: Read `01_execution/prompts/specifier.md`, create `artifacts/specs/<feature_id>.md`, update to `state: VALIDATION`
+4. **Run Validator**: Read `01_execution/prompts/validator.md`, validate:
+   - PASS → update to `state: TASKS`
+   - FAIL → return to `state: SPEC` (without modifying the spec)
+5. **Run Planner**: Read `01_execution/prompts/planner.md`, create `artifacts/tasks/<feature_id>.md`, update to `state: IMPLEMENT`
+6. **Implementer**: Execute `tasks/` with TDD and implement code + tests
+7. **Run Verifier**: Read `01_execution/prompts/verifier.md`, run tests + SDT:
    - PASS → `state: AUDIT`
-   - FAIL → torna a `state: IMPLEMENT`
-8. **Executar Auditor + Archive**: Genera report a `artifacts/audit_reports/` i tanca la feature a `state: ARCHIVE`
+   - FAIL → return to `state: IMPLEMENT`
+8. **Run Auditor + Archive**: Generate report at `artifacts/audit_reports/` and close feature to `state: ARCHIVE`
 
 ---
 
 ## SDT (Spec-Driven Testing)
 
-Integrat a l'estat SPEC. Cada spec ha de definir:
+Integrated into the SPEC state. Every spec must define:
 
-1. **Happy Path**: Comportament normal sota condicions ideals
-2. **Edge Cases**: Límits físics (disc ple, timeout, memòria baixa)
-3. **Failure Modes**: Com es recupera el sistema d'errors
+1. **Happy Path**: Normal behavior under ideal conditions
+2. **Edge Cases**: Physical limits (disk full, timeout, low memory)
+3. **Failure Modes**: How the system recovers from errors
 
-Aquests escenaris es tradueixen en tests d'integració.
-
----
-
-## Relació amb el codi
-
-- **Spec**: Documenta QUÈ i COM (font de veritat)
-- **Implementació**: Codi que compleix la spec
-- **Tests**: Derivats dels criteris Gherkin i escenaris SDT
-
-**Ordre correcte:**
-1. Escriure spec (SDD)
-2. Implementar segons spec
-3. Testejar contra criteris d'acceptació
-4. Si falla → corregir spec (no codi), tornar a 1
-
-### Re-auditoria sobre codi existent
-
-Quan la implementació ja existeix i el problema és de coherència documental:
-
-1. no es reimplementa per defecte
-2. es reconstrueix la cadena de veritat entre spec, design, tasks i feature record
-3. es deixa constància del tancament al report d'auditoria
-4. només després es permet continuar amb la següent spec del lot
+These scenarios translate into integration tests.
 
 ---
 
-## Actualització de Documents de Disseny (Obligatori)
+## Relationship with Code
 
-**Quan:** Quan una feature es marca com a ARCHIVE (implementació completada)
+- **Spec**: Documents WHAT and HOW (source of truth)
+- **Implementation**: Code that complies with the spec
+- **Tests**: Derived from Gherkin criteria and SDT scenarios
 
-**Què cal actualitzar:**
-1. **Document de disseny** (`artifacts/design/*.md`): Afegir secció "Estat d'Implementació" amb:
-   - ✅ Components implementats (amb fitxers i tests)
-   - ⬜ Components pendents (amb notes)
-   - Referències a specs i tests
-   - Canvis respecte al disseny original (si n'hi ha)
+**Correct order:**
+1. Write spec (SDD)
+2. Implement according to spec
+3. Test against acceptance criteria
+4. If it fails → fix spec (not code), return to 1
 
-2. **Project Map** (si existeix): Actualitzar:
-   - Secció de features (ARCHIVE/PENDING)
-   - Components implementats per feature
-   - % de compliment respecte al disseny
+### Re-audit on Existing Code
 
-3. **Altres documents** (si cal):
-   - Manifest (si hi ha canvis filosòfics)
-   - Parking lot (si s'eliminen features pendents)
+When implementation already exists and the problem is documental coherence:
 
-**Per què:**
-- La font de veritat ha de reflectir l'estat real
-- Futures sessions no han de llegir tots els documents
-- Mantenir coherència disseny-implementació
-- Evitar confusió quan es torna al projecte
-
-**Regla:** NO passar una feature a ARCHIVE sense actualitzar documents de disseny.
+1. Do not reimplement by default
+2. Reconstruct the truth chain between spec, design, tasks, and feature record
+3. Record the closure in the audit report
+4. Only then continue with the next spec in the batch
 
 ---
 
-**Històric:** Versió simplificada (3 rols) per facilitar adopció.
-**Actualitzat:** 2026-04-23 — Versió genèrica del framework.
+## Design Document Update (Mandatory)
+
+**When:** When a feature is marked as ARCHIVE (implementation completed)
+
+**What to update:**
+1. **Design document** (`artifacts/design/*.md`): Add "Implementation Status" section with:
+   - ✅ Implemented components (with files and tests)
+   - ⬜ Pending components (with notes)
+   - References to specs and tests
+   - Changes from original design (if any)
+
+2. **Project Map** (if it exists): Update:
+   - Features section (ARCHIVE/PENDING)
+   - Components implemented per feature
+   - % completion against design
+
+3. **Other documents** (if needed):
+   - Manifest (if there are philosophical changes)
+   - Parking lot (if pending features are removed)
+
+**Why:**
+- Source of truth must reflect real state
+- Future sessions should not have to read all documents
+- Maintain design-implementation coherence
+- Avoid confusion when returning to the project
+
+**Rule:** DO NOT move a feature to ARCHIVE without updating design documents.
+
+---
+
+**History:** Simplified version (3 roles) to facilitate adoption.  
+**Updated:** 2026-04-23 — Generic framework version.

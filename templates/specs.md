@@ -1,45 +1,45 @@
 # Spec: {{feature_name}}
 
-**Versió:** 1.0
-**Estat:** Esborrany
-**Design de referència:** `artifacts/design/{{feature}}.md`
+**Version:** 1.0
+**Status:** Draft
+**Reference Design:** `artifacts/design/{{feature}}.md`
 
 ---
 
 ## Context
-<!-- Per què existeix aquesta especificació? Quina necessitat resol? -->
+<!-- Why does this specification exist? What need does it solve? -->
 
 ---
 
 ## Goals
-- [ ] Goal 1: mesurable
-- [ ] Goal 2: mesurable
+- [ ] Goal 1: measurable
+- [ ] Goal 2: measurable
 
 ---
 
 ## Non-Goals
-- ❌ No s’inclou X
-- ❌ No s’integra amb Y
+- ❌ Does not include X
+- ❌ Does not integrate with Y
 
 ---
 
 ## Requirements
 
-### Funcionals
-**RF-01:** El sistema DEURÀ [comportament] quan [condició].
-**RF-02:** El sistema PODRÀ [comportament opcional] si [condició].
-**RF-03:** El sistema NO DEURÀ [comportament prohibit].
+### Functional
+**RF-01:** The system MUST [behavior] when [condition].
+**RF-02:** The system MAY [optional behavior] if [condition].
+**RF-03:** The system MUST NOT [prohibited behavior].
 
-### No Funcionals
-**RNF-01 (Rendiment):** La resposta DEURÀ ser < X ms sota càrrega Y.
-**RNF-02 (Seguretat):** Totes les credencials DEURAN emmagatzemar-se xifrades.
-**RNF-03 (Fiabilitat):** El sistema DEURÀ recuperar-se de fallades transients en X intents.
+### Non-Functional
+**NFR-01 (Performance):** Response MUST be < X ms under load Y.
+**NFR-02 (Security):** All credentials MUST be stored encrypted.
+**NFR-03 (Reliability):** The system MUST recover from transient failures in X attempts.
 
 ---
 
 ## Type Definitions
 
-Defineix els tipus de dades propis d'aquesta feature (structs, enums, unions):
+Define the data types specific to this feature (structs, enums, unions):
 
 ```
 Type: ModelStatus
@@ -57,44 +57,44 @@ Type: DownloadConfig
 
 ## Inputs
 
-| Camp | Tipus | Font | Validació | Exemple |
-|------|-------|------|-----------|---------|
-| `user_id` | `string (UUID)` | Header HTTP | Format UUID, no buit | `"550e8400-..."` |
-| `action` | `enum` | Body JSON | Valors: `[start, stop]` | `"start"` |
+| Field | Type | Source | Validation | Example |
+|-------|------|--------|------------|---------|
+| `user_id` | `string (UUID)` | HTTP Header | UUID format, non-empty | `"550e8400-..."` |
+| `action` | `enum` | JSON Body | Values: `[start, stop]` | `"start"` |
 
 ---
 
 ## Outputs
 
-| Camp | Tipus | Condició d’emissió | Exemple |
-|------|-------|-------------------|---------|
-| `status` | `string` | Èxit | `"ok"` |
-| `error` | `object` | Qualsevol error | `{"code": "E001", "message": "..."}` |
+| Field | Type | Emission Condition | Example |
+|-------|------|-------------------|---------|
+| `status` | `string` | Success | `"ok"` |
+| `error` | `object` | Any error | `{"code": "E001", "message": "..."}` |
 
 ---
 
-## Concurrency Model (Opcional)
+## Concurrency Model (Optional)
 
-Omple aquesta secció si la feature implica més d'un fil d'execució.
+Fill this section if the feature involves more than one execution thread.
 
-| Aspecte | Decisió |
-|---------|---------|
+| Aspect | Decision |
+|--------|----------|
 | **Model** | [sequential / parallel / actor / CSP / async-await / thread-pool] |
 | **Max parallelism** | X workers / goroutines / threads |
-| **Shared state** | [Què es comparteix i com es protegeix: mutex, channel, atomics, etc.] |
+| **Shared state** | [What is shared and how it is protected: mutex, channel, atomics, etc.] |
 | **Ordering guarantees** | [FIFO / LIFO / unordered / priority queue] |
-| **Cancellation** | [Com es cancel·len tasques en curs: context, signals, etc.] |
+| **Cancellation** | [How ongoing tasks are cancelled: context, signals, etc.] |
 
 ---
 
-## Performance Budget (Opcional)
+## Performance Budget (Optional)
 
-Omple aquesta secció si la feature té requisits de rendiment estrictes.
+Fill this section if the feature has strict performance requirements.
 
-| Mètrica | Límit | Com es mesura |
-|---------|-------|---------------|
-| **Latency (p50)** | < X ms | [Benchmark / test unitari / endpoint] |
-| **Latency (p99)** | < X ms | [Benchmark / test unitari / endpoint] |
+| Metric | Limit | How it is measured |
+|--------|-------|-------------------|
+| **Latency (p50)** | < X ms | [Benchmark / unit test / endpoint] |
+| **Latency (p99)** | < X ms | [Benchmark / unit test / endpoint] |
 | **Throughput** | > X req/s | [Load test] |
 | **Memory (steady)** | < X MB | [pprof / runtime metric] |
 | **Memory (peak)** | < X MB | [pprof / runtime metric] |
@@ -102,54 +102,54 @@ Omple aquesta secció si la feature té requisits de rendiment estrictes.
 
 ---
 
-## Invariants (Opcional)
+## Invariants (Optional)
 
-> **Inspirat en TLA+**: propietats que sempre han de ser certes, independentment del camí d'execució.
+> **Inspired by TLA+**: properties that must always be true, regardless of execution path.
 
-Omple aquesta secció si la feature té propietats que mai es poden trencar.
+Fill this section if the feature has properties that must never be broken.
 
-| ID | Invariant | Com es verifica |
-|----|-----------|----------------|
-| **INV-01** | `[Propietat que sempre és certa]` | `[Test / assert / monitor]` |
-| **INV-02** | `[Propietat que sempre és certa]` | `[Test / assert / monitor]` |
+| ID | Invariant | How it is verified |
+|----|-----------|-------------------|
+| **INV-01** | `[Property that is always true]` | `[Test / assert / monitor]` |
+| **INV-02** | `[Property that is always true]` | `[Test / assert / monitor]` |
 
-**Exemples**:
-- "Un usuari mai pot tenir saldo negatiu"
-- "El sistema sempre respon en < 100ms"
-- "No hi pot haver dos processos actius amb el mateix ID"
+**Examples**:
+- "A user can never have negative balance"
+- "The system always responds in < 100ms"
+- "There cannot be two active processes with the same ID"
 
 ---
 
 ## Errors
 
-| Codi | Condició | Missatge al log | Acció del sistema | Notificació? |
-|------|----------|-----------------|-------------------|--------------|
-| `E001` | Input invàlid | `"Invalid action: <valor>"` | Retornar 400, no persistir | ❌ |
-| `E002` | Timeout extern | `"Timeout after Xms"` | Retry 3x, fallback mode degradat | ⚠️ |
+| Code | Condition | Log message | System action | Notify? |
+|------|-----------|-------------|---------------|---------|
+| `E001` | Invalid input | `"Invalid action: <value>"` | Return 400, do not persist | ❌ |
+| `E002` | External timeout | `"Timeout after Xms"` | Retry 3x, degraded fallback mode | ⚠️ |
 
 ---
 
 ## Edge Cases
 
-- **Fallada de xarxa:** El sistema DEURÀ reintentar 3 cops amb backoff exponencial. Després, marcar com a `FAILED` i notificar.
-- **Input inesperat:** Si la resposta no compleix l’esquema, el sistema DEURÀ reintentar 3 cops. Si encara falla, marcar com a `FAILED`.
-- **Reinici inesperat:** El sistema DEURÀ recuperar l’estat anterior a partir de l’estat persistent i reprocessar les tasques actives.
+- **Network failure:** The system MUST retry 3 times with exponential backoff. Then, mark as `FAILED` and notify.
+- **Unexpected input:** If the response does not match the schema, the system MUST retry 3 times. If it still fails, mark as `FAILED`.
+- **Unexpected restart:** The system MUST recover previous state from persistent state and reprocess active tasks.
 
 ---
 
 ## Acceptance Criteria (Gherkin)
 
 ```gherkin
-Scenario: <Nom del cas principal>
-  Given <estat inicial>
-  When  <acció>
-  Then  <resultat observable>
+Scenario: <Main case name>
+  Given <initial state>
+  When  <action>
+  Then  <observable result>
 
-Scenario: Error E001 – Input invàlid
-  Given una sol·licitud amb camp `action` buit
-  When  el sistema valida l’input
-  Then  retorna error 400 amb codi E001
-  And   no persisteix cap canvi
+Scenario: Error E001 – Invalid input
+  Given a request with empty `action` field
+  When  the system validates input
+  Then  returns error 400 with code E001
+  And   does not persist any change
 ```
 
 ---
@@ -162,6 +162,6 @@ Scenario: Error E001 – Input invàlid
 ---
 
 **SDT Scenarios:**
-- Happy Path: [descripció]
-- Edge Case: [descripció]
-- Failure Mode: [descripció]
+- Happy Path: [description]
+- Edge Case: [description]
+- Failure Mode: [description]
