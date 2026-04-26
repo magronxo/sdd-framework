@@ -6,10 +6,10 @@ Define the unified model for prompts, skills, and reusable operational capabilit
 
 ## Core Principle
 
-El sistema usa un model híbrid:
+The system uses a hybrid model:
 
-- **prompts** per a rols vinculats a fases del flux SDD
-- **skills** per a capacitats operatives reutilitzables i auditable
+- **prompts** for roles tied to SDD flow phases
+- **skills** for reusable and auditable operational capabilities
 
 A capability should only be promoted to a skill when it has:
 

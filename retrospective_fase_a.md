@@ -1,4 +1,4 @@
-# Retrospective: Fase A — Project Governance & Pre-SDD
+# Retrospective: Phase A — Project Governance & Pre-SDD
 
 **Date**: 2026-04-23
 **Scope**: 7 new documents + 2 updated files
@@ -8,59 +8,59 @@
 
 ## Summary
 
-Fase A aporta una **capa de projecte operativa i un sistema d'intake pre-SDD** que el framework no tenia. La qualitat general és alta: els documents són coherents, els templates són usables, i les regles de triatge són explícites.
+Phase A brings an **operational project layer and a pre-SDD intake system** that the framework did not have. Overall quality is high: documents are coherent, templates are usable, and triage rules are explicit.
 
-**Veredicte global**: ✅ **PASS with 6 issues to fix** (tots menors o mitjans, cap bloquejador)
+**Overall verdict**: ✅ **PASS with 6 issues to fix** (all minor or medium, no blockers)
 
 ---
 
 ## Findings
 
-### 🔴 Issue 1: Broken Reference — ADR_POLICY.md no existeix
+### 🔴 Issue 1: Broken Reference — ADR_POLICY.md does not exist
 
-**Location**: `04_project_governance/PROJECT_MANIFEST.md`, línia 93
+**Location**: `04_project_governance/PROJECT_MANIFEST.md`, line 93
 
-**Problem**: El Manifest referencia `02_policies/ADR_POLICY.md` dins de "How to modify this Manifest" i a la secció "Related Documents". Aquest fitxer **no existeix** al framework.
+**Problem**: The Manifest references `02_policies/ADR_POLICY.md` within "How to modify this Manifest" and in the "Related Documents" section. This file **does not exist** in the framework.
 
-**Impact**: Un usuari que vulgui modificar el Manifest seguirà un enllaç trencat.
+**Impact**: A user who wants to modify the Manifest will follow a broken link.
 
-**Fix proposat**:
-- Opció A: Crear `02_policies/ADR_POLICY.md` (contingut mínim: quan cal un ADR, qui l'aprova, on es guarden)
-- Opció B: Eliminar la referència i substituir-la per `templates/adr.md` (que sí existeix)
+**Proposed fix**:
+- Option A: Create `02_policies/ADR_POLICY.md` (minimum content: when an ADR is needed, who approves it, where it is stored)
+- Option B: Remove the reference and replace it with `templates/adr.md` (which does exist)
 
-**Recomanació**: Opció A, perquè un framework enterprise necessita una política d'ADRs explícita. A més, PROJECT_MAP.md ja assumeix que existeix (`artifacts/adr/`).
-
----
-
-### 🟡 Issue 2: Path Inconsistency — `artifacts/adr/` no està a `sdd.config.json`
-
-**Location**: `04_project_governance/PROJECT_MAP.md`, línia 77; `sdd.config.json`
-
-**Problem**: PROJECT_MAP.md mostra `artifacts/adr/*.md` com a lloc per a ADRs, però `sdd.config.json` no té aquest path a la secció `artifacts`.
-
-**Impact**: Els agents que consultin `sdd.config.json` per resoldre paths no trobaran la ubicació dels ADRs.
-
-**Fix proposat**: Afegir `"adr": "artifacts/adr"` a `sdd.config.json` → `paths.artifacts`.
+**Recommendation**: Option A, because an enterprise framework needs an explicit ADR policy. Additionally, PROJECT_MAP.md already assumes it exists (`artifacts/adr/`).
 
 ---
 
-### 🟡 Issue 3: PROJECT_MAP.md Tree no mostra `pre_sdd/` subdirectoris
+### 🟡 Issue 2: Path Inconsistency — `artifacts/adr/` is not in `sdd.config.json`
 
-**Location**: `04_project_governance/PROJECT_MAP.md`, secció "Repository Structure"
+**Location**: `04_project_governance/PROJECT_MAP.md`, line 77; `sdd.config.json`
 
-**Problem**: L'arbre de directoris mostra `03_operations/pre_sdd/` però no mostra les subcarpetes operatives (`seeds/`, `seeds/deferred/`, `seeds/rejected/`, `seeds/promoted/`, `seeds/merged/`, `templates/`). Això és crític perquè és una guia de navegació.
+**Problem**: PROJECT_MAP.md shows `artifacts/adr/*.md` as the place for ADRs, but `sdd.config.json` does not have this path in the `artifacts` section.
 
-**Impact**: Un nou usuari no sap on van les seeds ni on trobar-les.
+**Impact**: Agents that consult `sdd.config.json` to resolve paths will not find the ADR location.
 
-**Fix proposat**: Ampliar l'arbre:
+**Proposed fix**: Add `"adr": "artifacts/adr"` to `sdd.config.json` → `paths.artifacts`.
+
+---
+
+### 🟡 Issue 3: PROJECT_MAP.md Tree does not show `pre_sdd/` subdirectories
+
+**Location**: `04_project_governance/PROJECT_MAP.md`, "Repository Structure" section
+
+**Problem**: The directory tree shows `03_operations/pre_sdd/` but does not show the operational subfolders (`seeds/`, `seeds/deferred/`, `seeds/rejected/`, `seeds/promoted/`, `seeds/merged/`, `templates/`). This is critical because it is a navigation guide.
+
+**Impact**: A new user does not know where seeds go or where to find them.
+
+**Proposed fix**: Expand the tree:
 
 ```
 ├── 03_operations/pre_sdd/
-│   ├── seeds/              # Seeds actives (pendents de triatge)
-│   ├── seeds/deferred/     # Seeds ajornades
-│   ├── seeds/rejected/     # Seeds rebutjades
-│   ├── seeds/promoted/     # Seeds promogudes a features
-│   ├── seeds/merged/       # Seeds consolidades
+│   ├── seeds/              # Active seeds (pending triage)
+│   ├── seeds/deferred/     # Deferred seeds
+│   ├── seeds/rejected/     # Rejected seeds
+│   ├── seeds/promoted/     # Seeds promoted to features
+│   ├── seeds/merged/       # Consolidated seeds
 │   ├── templates/
 │   │   ├── seed_dossier.md
 │   │   └── triage_batch.md
@@ -70,81 +70,81 @@ Fase A aporta una **capa de projecte operativa i un sistema d'intake pre-SDD** q
 
 ---
 
-### 🟡 Issue 4: Inconsistència de nomenclatura — IDs de feature
+### 🟡 Issue 4: Nomenclature inconsistency — Feature IDs
 
-**Location**: `03_operations/pre_sdd/PRE_SDD_RUNTIME.md`, línia 133
+**Location**: `03_operations/pre_sdd/PRE_SDD_RUNTIME.md`, line 133
 
-**Problem**: El runtime diu `feat-{NNN}-{short-name}` però `00_core/SDD_FEATURE_FORMAT.md` mostra tant `feat_<seqüencial>_<nom-descriptiu>.md` (amb guions baixos) com `feat-001-kernel-core.md` (amb guionets). Hi ha inconsistència al propi framework.
+**Problem**: The runtime says `feat-{NNN}-{short-name}` but `00_core/SDD_FEATURE_FORMAT.md` shows both `feat_<sequential>_<descriptive-name>.md` (with underscores) and `feat-001-kernel-core.md` (with hyphens). There is inconsistency within the framework itself.
 
-**Impact**: Confusió sobre el format exacte dels IDs.
+**Impact**: Confusion about the exact format of IDs.
 
-**Fix proposat**: Estandaritzar a `feat-{NNN}-{short-name}` (guionets) perquè:
-- És el que usa SDD_RUNTIME.md
-- És més llegible en URLs i paths
-- És el format dels exemples de SDD_FEATURE_FORMAT.md
+**Proposed fix**: Standardize to `feat-{NNN}-{short-name}` (hyphens) because:
+- It is what SDD_RUNTIME.md uses
+- It is more readable in URLs and paths
+- It is the format of the SDD_FEATURE_FORMAT.md examples
 
-A més, afegir una nota a `SDD_FEATURE_FORMAT.md` per corregir la referència amb guions baixos.
+Also, add a note to `SDD_FEATURE_FORMAT.md` to correct the underscore reference.
 
 ---
 
-### 🟡 Issue 5: `AGENT_DECISION_TABLE.md` absent de PROJECT_MAP.md
+### 🟡 Issue 5: `AGENT_DECISION_TABLE.md` missing from PROJECT_MAP.md
 
-**Location**: `04_project_governance/PROJECT_MAP.md`, secció "Where Truth Lives"
+**Location**: `04_project_governance/PROJECT_MAP.md`, "Where Truth Lives" section
 
-**Problem**: `00_core/AGENT_DECISION_TABLE.md` no apareix a la taula de "On viu la veritat". És un document core que defineix com els agents prenen decisions operatives (p. ex., quan una feature és massa petita per ser independent).
+**Problem**: `00_core/AGENT_DECISION_TABLE.md` does not appear in the "Where Truth Lives" table. It is a core document that defines how agents make operational decisions (e.g., when a feature is too small to be independent).
 
-**Impact**: Un agent nou no sap que aquest document existeix.
+**Impact**: A new agent does not know this document exists.
 
-**Fix proposat**: Afegir a la taula:
+**Proposed fix**: Add to the table:
 | **Agent decision rules** | `00_core/AGENT_DECISION_TABLE.md` | `00_core/AGENT_DECISION_TABLE.md` |
 
 ---
 
 ### 🟢 Issue 6: Seed Lifecycle Contract vs Runtime mismatch
 
-**Location**: `03_operations/pre_sdd/PRE_SDD_CONTRACT.md`, línia 120
+**Location**: `03_operations/pre_sdd/PRE_SDD_CONTRACT.md`, line 120
 
-**Problem**: El contracte mostra `CAPTURE → CLASSIFY → TRIAGE → {PROMOTE | DEFER | REJECT | MERGE | SPIKE}` però el runtime té 7 fases (`CAPTURE → CLASSIFY → TRIAGE → PRIORITIZE → REFINE → TRANSITION → ARCHIVE`). El contracte no reflecteix PRIORITIZE, REFINE ni TRANSITION.
+**Problem**: The contract shows `CAPTURE → CLASSIFY → TRIAGE → {PROMOTE | DEFER | REJECT | MERGE | SPIKE}` but the runtime has 7 phases (`CAPTURE → CLASSIFY → TRIAGE → PRIORITIZE → REFINE → TRANSITION → ARCHIVE`). The contract does not reflect PRIORITIZE, REFINE, or TRANSITION.
 
-**Impact**: El contracte (la "norma") no coincideix amb el runtime (el "procediment"). Això viola el principi del framework de que el runtime redueix el contracte a un procediment executable.
+**Impact**: The contract (the "rule") does not match the runtime (the "procedure"). This violates the framework principle that the runtime reduces the contract to an executable procedure.
 
-**Fix proposat**: Actualitzar el lifecycle del contracte per mostrar les 7 fases, o almenys afegir una nota que el runtime defineix el flux complet.
-
----
-
-## Qualitats Positives (Cal Preservar)
-
-1. **GLOSSARY.md té termes pre-omplerts** (SDD Feature, Seed, Validation). Això dóna valor immediat sense esperar que un equip ompli el glossari.
-
-2. **Seed dossier template** té les 6 seccions obligatòries clarament separades i amb explicacions. Un reporter nou sap exactament què omplir.
-
-3. **Triage batch template** inclou "Capacity Check" i "Themes & Patterns". Això evita el patró de "promoure tot per defecte".
-
-4. **PROJECT_MAP.md té navegació per rol**. Això és or pur per a l'onboarding: un developer, un PM, un agent i un auditor tenen camins diferents i explícits.
-
-5. **PRE_SDD_CONTRACT.md prohibeix "solutioneering"** amb claredat: "capture the problem, not the fix". Això ataca una de les causes principals de specs prematures.
-
-6. **Cross-references són exhaustius**. Cada document apunta als relacionats. La xarxa de navegació és densa i útil.
+**Proposed fix**: Update the contract lifecycle to show all 7 phases, or at least add a note that the runtime defines the complete flow.
 
 ---
 
-## Recomanacions per a Fase B
+## Positive Qualities (To Preserve)
 
-1. **Corregir els 6 issues abans de continuar**. Cap és bloquejador, però tots degraden la qualitat.
+1. **GLOSSARY.md has pre-filled terms** (SDD Feature, Seed, Validation). This provides immediate value without waiting for a team to fill the glossary.
 
-2. **Quan creïs `GETTING_STARTED.md`**, usa el camí de navegació del "new developer" de PROJECT_MAP.md com a estructura del tutorial.
+2. **Seed dossier template** has the 6 mandatory sections clearly separated and with explanations. A new reporter knows exactly what to fill.
 
-3. **Per als diagrames Mermaid**, inclou el state machine de PRE_SDD_RUNTIME.md i el pipeline canònic de SDD_RUNTIME.md. Són visuals que expliquen més que 100 paraules.
+3. **Triage batch template** includes "Capacity Check" and "Themes & Patterns". This avoids the pattern of "promote everything by default".
 
-4. **Considera afegir un `seeds/README.md`** dins de `03_operations/pre_sdd/seeds/` que expliqui l'estructura de subcarpetes. PROJECT_MAP.md ho mostra però un README local és més descobrible.
+4. **PROJECT_MAP.md has role-based navigation**. This is pure gold for onboarding: a developer, a PM, an agent, and an auditor have different and explicit paths.
+
+5. **PRE_SDD_CONTRACT.md prohibits "solutioneering"** with clarity: "capture the problem, not the fix". This attacks one of the main causes of premature specs.
+
+6. **Cross-references are exhaustive**. Every document points to related ones. The navigation network is dense and useful.
 
 ---
 
-## Checklist de Correccions
+## Recommendations for Phase B
 
-- [ ] Issue 1: Crear `02_policies/ADR_POLICY.md` o corregir referència
-- [ ] Issue 2: Afegir `adr` path a `sdd.config.json`
-- [ ] Issue 3: Ampliar PROJECT_MAP.md tree amb subcarpetes pre_sdd
-- [ ] Issue 4: Estandaritzar format IDs de feature
-- [ ] Issue 5: Afegir AGENT_DECISION_TABLE.md a PROJECT_MAP.md
-- [ ] Issue 6: Sincronitzar lifecycle del contracte amb el runtime
+1. **Fix the 6 issues before continuing**. None are blockers, but all degrade quality.
+
+2. **When creating `GETTING_STARTED.md`**, use the navigation path of the "new developer" from PROJECT_MAP.md as the tutorial structure.
+
+3. **For Mermaid diagrams**, include the state machine from PRE_SDD_RUNTIME.md and the canonical pipeline from SDD_RUNTIME.md. They are visuals that explain more than 100 words.
+
+4. **Consider adding a `seeds/README.md`** inside `03_operations/pre_sdd/seeds/` that explains the subfolder structure. PROJECT_MAP.md shows it but a local README is more discoverable.
+
+---
+
+## Correction Checklist
+
+- [ ] Issue 1: Create `02_policies/ADR_POLICY.md` or fix reference
+- [ ] Issue 2: Add `adr` path to `sdd.config.json`
+- [ ] Issue 3: Expand PROJECT_MAP.md tree with pre_sdd subfolders
+- [ ] Issue 4: Standardize feature ID format
+- [ ] Issue 5: Add AGENT_DECISION_TABLE.md to PROJECT_MAP.md
+- [ ] Issue 6: Synchronize contract lifecycle with runtime

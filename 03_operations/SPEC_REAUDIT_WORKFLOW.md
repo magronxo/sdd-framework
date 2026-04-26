@@ -1,165 +1,165 @@
 # Spec Re-Audit Workflow
 
-> **Estat:** Actiu
-> **Data:** 2026-04-04
-> **Abast:** Re-auditoria de specs amb flux propi + complement extern
+> **Status:** Active
+> **Date:** 2026-04-04
+> **Scope:** Re-audit of specs with native flow + external complement
 
 ---
 
-## 1. Propòsit
+## 1. Purpose
 
-Aquest workflow defineix com re-auditar specs existents sense:
+This workflow defines how to re-audit existing specs without:
 
-- reescriure-les a cegues
-- deixar que eines externes governin el flux
-- convertir la revisió en soroll
-- deixar la spec en un estat ambigu després del contrast
+- blindly rewriting them
+- letting external tools govern the flow
+- turning review into noise
+- leaving the spec in an ambiguous state after contrast
 
 ---
 
-## 2. Principi Rector
+## 2. Guiding Principle
 
-La re-auditoria és un **contrast**, no una rendició.
+Re-audit is a **contrast**, not a surrender.
 
-Ordre correcte:
+Correct order:
 
-1. llegir spec pròpia
-2. auditar amb criteri propi
-3. opcionalment contrastar amb frameworks d'auditoria externs
-4. incorporar només allò que encaixi
+1. read native spec
+2. audit with native criteria
+3. optionally contrast with external audit frameworks
+4. incorporate only what fits
 
 ---
 
 ## 3. Workflow
 
-### Pas 1. Lectura base
+### Step 1. Base Reading
 
-Llegir:
+Read:
 
 - spec
 - design
-- tasks associades
-- feature record associat
+- associated tasks
+- associated feature record
 
-### Pas 2. Auditoria interna estructural
+### Step 2. Internal Structural Audit
 
-Revisar:
+Review:
 
-- coherència interna
+- internal coherence
 - inputs/outputs/errors
 - edge cases
-- dependències
-- consistència amb el model documental actual
+- dependencies
+- consistency with current documental model
 
-### Pas 3. Contraste extern (opcional)
+### Step 3. External Contrast (optional)
 
-Fer servir eines d'auditoria externa per:
+Use external audit tools to:
 
-- buscar buits no obvis
-- pressionar edge cases
-- desafiar assumpcions implícites
-- millorar claredat semàntica
+- find non-obvious gaps
+- pressure edge cases
+- challenge implicit assumptions
+- improve semantic clarity
 
-No fer-les servir per:
+Do not use them to:
 
-- redefinir el pipeline
-- imposar un nou esquema
-- substituir la font de veritat
+- redefine the pipeline
+- impose a new schema
+- substitute the source of truth
 
-### Pas 4. Triatge de troballes
+### Step 4. Finding Triage
 
-Cada finding extern s'ha de classificar com:
+Each external finding must be classified as:
 
-- **adoptar**
-- **adaptar**
-- **descartar**
+- **adopt**
+- **adapt**
+- **discard**
 
-### Pas 5. Integració controlada
+### Step 5. Controlled Integration
 
-Només integrar millores que:
+Only integrate improvements that:
 
-- respectin el manifest del projecte
-- encaixin amb l'SDD propi
-- no trenquin la governança externa definida
+- respect the project manifest
+- fit with native SDD
+- do not break defined external governance
 
-### Pas 6. Tancament
+### Step 6. Closure
 
-Documentar:
+Document:
 
-- què s'ha trobat
-- què s'ha adoptat
-- què s'ha descartat
-- per què
+- what was found
+- what was adopted
+- what was discarded
+- why
 
-### Pas 7. Normalització de sortida
+### Step 7. Output Normalization
 
-Quan la spec es considera tancada:
+When the spec is considered closed:
 
-- actualitzar l'estat canònic de la spec
-- alinear design, tasks i feature record amb la mateixa realitat
-- marcar el report d'auditoria com a tancat o normalitzat
-- separar clarament findings interns i externs
-- evitar deixar referències antigues com a font de veritat activa
-
----
-
-## 4. Format d'Avaluació Recomanat
-
-Per cada spec re-auditada:
-
-| Camp | Contingut |
-|------|-----------|
-| `spec_id` | feature o spec revisada |
-| `audit_round` | ronda o lot |
-| `internal_findings` | troballes del flux propi |
-| `external_findings` | troballes d'eines externes |
-| `adopted` | millores incorporades |
-| `rejected` | millores descartades |
-| `notes` | tensions o decisions |
+- update the canonical spec state
+- align design, tasks, and feature record with the same reality
+- mark the audit report as closed or normalized
+- clearly separate internal and external findings
+- avoid leaving old references as an active source of truth
 
 ---
 
-## 5. Paper de l'Auditoria Externa
+## 4. Recommended Assessment Format
 
-### Rol correcte
+For each re-audited spec:
 
-- auditor extern
-- comparador
-- pressionador de qualitat
-
-### Rol incorrecte
-
-- coautor sobirà del model
-- substitut de `SDD_GUIDE`
-- font de veritat
-
----
-
-## 6. Anti-Patrons
-
-- passar la spec a una eina externa i acceptar-ho tot
-- fer servir la re-auditoria per redissenyar el projecte cada cop
-- revisar specs superficials abans de primitives centrals
-- barrejar findings interns i externs sense triatge
-- deixar una spec "més o menys bé" però sense tancament documental
+| Field | Content |
+|-------|---------|
+| `spec_id` | reviewed feature or spec |
+| `audit_round` | round or batch |
+| `internal_findings` | native flow findings |
+| `external_findings` | external tool findings |
+| `adopted` | incorporated improvements |
+| `rejected` | discarded improvements |
+| `notes` | tensions or decisions |
 
 ---
 
-## 7. Ordre Operatiu Recomanat
+## 5. Role of External Audit
 
-Fer la re-auditoria per lots segons:
+### Correct role
+
+- external auditor
+- comparator
+- quality pressurer
+
+### Incorrect role
+
+- sovereign co-author of the model
+- substitute for `SDD_GUIDE`
+- source of truth
+
+---
+
+## 6. Anti-Patterns
+
+- passing the spec to an external tool and accepting everything
+- using re-audit to redesign the project every time
+- reviewing superficial specs before central primitives
+- mixing internal and external findings without triage
+- leaving a spec "more or less OK" but without documental closure
+
+---
+
+## 7. Recommended Operational Order
+
+Do re-audit in batches according to:
 
 - `02_policies/SPECS_REAUDIT_PRIORITIZATION_POLICY.md`
 
-No per disponibilitat aleatòria o preferència personal.
+Not by random availability or personal preference.
 
 ---
 
-## 8. Resultat Esperat
+## 8. Expected Result
 
-Una bona re-auditoria:
+A good re-audit:
 
-- no obliga a reimplementar automàticament res
-- sí que millora la qualitat de la font de veritat
-- i prepara millor el sistema per futures integracions i audits
-- deixa un estat final inequívoc: obert, normalitzat o pendent de decisions explícites
+- does not force automatic reimplementation of anything
+- does improve the quality of the source of truth
+- and better prepares the system for future integrations and audits
+- leaves an unequivocal final state: open, normalized, or pending explicit decisions

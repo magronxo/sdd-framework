@@ -1,111 +1,111 @@
 # Policy: Feature Decomposition and Size Limits
 
-> **Mode Diátaxis**: Reference
-> **Estat:** Actiu
-> **Data:** 2026-04-23
-> **Abast:** Totes les features SDD
+> **Diátaxis Mode**: Reference
+> **Status:** Active
+> **Date:** 2026-04-23
+> **Scope:** All SDD features
 
 ---
 
-## 1. Propòsit
+## 1. Purpose
 
-Evitar dues patologies extremes:
+Prevent two extreme pathologies:
 
-1. **Features gegants**: Una sola feature que abraça múltiples capacitats, resultant en specs de 500+ línies, tasks interminables, i audits que no acaben mai.
-2. **Features microscòpiques**: Cada canvi de línia és una feature nova, generant overhead burocràtic que supera el valor del canvi.
+1. **Giant features**: A single feature spanning multiple capabilities, resulting in 500+ line specs, endless tasks, and audits that never finish.
+2. **Microscopic features**: Every line change is a new feature, generating bureaucratic overhead that exceeds the value of the change.
 
-Aquesta política defineix criteris objectius per decidir quan descompondre i quan consolidar.
+This policy defines objective criteria for deciding when to decompose and when to consolidate.
 
 ---
 
-## 2. Límits de Mida
+## 2. Size Limits
 
-### 2.1 Límit Superior (Decomposition Trigger)
+### 2.1 Upper Limit (Decomposition Trigger)
 
-Una feature **HA DE** descompondre's si compleix **qualsevol** d'aquests criteris:
+A feature **MUST** be decomposed if it meets **any** of these criteria:
 
-| Mètrica | Límit | Què comptem |
-|---------|-------|-------------|
-| **Spec lines** | > 300 línies | Tot el fitxer `specs/<feature>.md` |
-| **RF count** | > 15 requisits funcionals | RF-01, RF-02, ... |
-| **Task count** | > 12 tasques | Totes les T1, T2, ... al `tasks/<feature>.md` |
-| **Component count** | > 5 components nous | A la secció "Components" del design |
-| **Surface count** | > 3 surfaces actives | browser + os_fs + wiring + network + env_proxy |
-| **Implementation files** | > 8 fitxers nous/modificats | Estimació al design |
-| **Estimated duration** | > 5 dies de treball continu | Càlcul del Planner |
+| Metric | Limit | What we count |
+|--------|-------|---------------|
+| **Spec lines** | > 300 lines | Entire file `specs/<feature>.md` |
+| **FR count** | > 15 functional requirements | FR-01, FR-02, ... |
+| **Task count** | > 12 tasks | All T1, T2, ... in `tasks/<feature>.md` |
+| **Component count** | > 5 new components | In the "Components" section of the design |
+| **Surface count** | > 3 active surfaces | browser + os_fs + wiring + network + env_proxy |
+| **Implementation files** | > 8 new/modified files | Estimate in the design |
+| **Estimated duration** | > 5 days of continuous work | Planner calculation |
 
-**Acció:** Si un límit se supera, el Planner ha de proposar la descomposició abans de generar tasks.
+**Action:** If a limit is exceeded, the Planner must propose decomposition before generating tasks.
 
-### 2.2 Límit Inferi (Consolidation Trigger)
+### 2.2 Lower Limit (Consolidation Trigger)
 
-Una feature **NO HA DE** ser independent si compleix **TOTS** aquests criteris:
+A feature **MUST NOT** be independent if it meets **ALL** of these criteria:
 
-| Mètrica | Límit | Què comptem |
-|---------|-------|-------------|
-| **Spec lines** | < 50 línies | Tot el fitxer |
-| **RF count** | ≤ 2 requisits | |
-| **Task count** | ≤ 2 tasques | |
+| Metric | Limit | What we count |
+|--------|-------|---------------|
+| **Spec lines** | < 50 lines | Entire file |
+| **FR count** | ≤ 2 requirements | |
+| **Task count** | ≤ 2 tasks | |
 | **Surface count** | 1 surface (wiring) | |
-| **Estimated duration** | < 2 hores | |
+| **Estimated duration** | < 2 hours | |
 
-**Acció:** Consolidar com a sub-tasca d'una feature més gran, o tractar com a "code adjustment" (veure `AGENT_DECISION_TABLE.md`).
+**Action:** Consolidate as a sub-task of a larger feature, or treat as a "code adjustment" (see `AGENT_DECISION_TABLE.md`).
 
 ---
 
-## 3. Criteris de Decomposició
+## 3. Decomposition Criteria
 
-Quan una feature supera el límit superior, aplicar aquests criteris per tallar:
+When a feature exceeds the upper limit, apply these criteria to cut:
 
-### 3.1 Per Capa (Layer)
-Separar per capes independents:
+### 3.1 By Layer
+Separate by independent layers:
 - API / Handler (surface: wiring)
-- Lògica de negoci / Core (surface: os_fs o cap)
-- Persistència / Storage (surface: os_fs)
+- Business logic / Core (surface: os_fs or none)
+- Persistence / Storage (surface: os_fs)
 - Client / UI (surface: browser)
 
-### 3.2 Per Surface
-Separar per superfície d'integració:
+### 3.2 By Surface
+Separate by integration surface:
 - Feature A: backend (wiring + os_fs)
 - Feature B: frontend (browser)
 - Feature C: networking (network)
 
-### 3.3 Per Estat (State Machine)
-Separar per estats independents del lifecycle:
-- Feature A: Creació i validació
-- Feature B: Processament
-- Feature C: Arxivat i neteja
+### 3.3 By State (State Machine)
+Separate by independent lifecycle states:
+- Feature A: Creation and validation
+- Feature B: Processing
+- Feature C: Archival and cleanup
 
-### 3.4 Per Actor
-Separar per rol que interactua:
-- Feature A: Operador humà (HITL)
-- Feature B: Sistema automàtic
-- Feature C: Auditoria externa
-
----
-
-## 4. Regles de Descomposició
-
-1. **Dependencies first**: La feature base (que altres necessiten) es fa primer.
-2. **No circular deps**: Si A depèn de B i B depèn de A, el tall és incorrecte.
-3. **Preserve contract**: Cada sub-feature té la seva pròpia spec completa (no es pot deixar una spec "a mitges").
-4. **Shared design**: Les sub-features poden compartir un design doc pare si es crea un `feat-XXX-parent-design.md`.
-5. **Sequential IDs**: Les sub-features usen suffixos: `feat-007-a`, `feat-007-b`, o seqüència nova `feat-008`, `feat-009`.
+### 3.4 By Actor
+Separate by interacting role:
+- Feature A: Human operator (HITL)
+- Feature B: Automated system
+- Feature C: External audit
 
 ---
 
-## 5. Anti-Patrons
+## 4. Decomposition Rules
 
-- **Decomposició prematura**: Tallar una feature de 200 línies "per si de cas" → overhead innecessari
-- **Decomposició per capes artificials**: Crear "feature API" i "feature core" quan realment són inseparables
-- **Consolidació per mandra**: Ajuntar 3 features independents per "estalviar temps" → specs massa grans
+1. **Dependencies first**: The base feature (that others need) is done first.
+2. **No circular deps**: If A depends on B and B depends on A, the cut is incorrect.
+3. **Preserve contract**: Each sub-feature has its own complete spec (you cannot leave a spec "half-done").
+4. **Shared design**: Sub-features may share a parent design doc if a `feat-XXX-parent-design.md` is created.
+5. **Sequential IDs**: Sub-features use suffixes: `feat-007-a`, `feat-007-b`, or a new sequence `feat-008`, `feat-009`.
 
 ---
 
-## 6. Decisió Operativa
+## 5. Anti-Patterns
 
-Des de 2026-04-23:
+- **Premature decomposition**: Cutting a 200-line feature "just in case" → unnecessary overhead
+- **Artificial layer decomposition**: Creating "feature API" and "feature core" when they are actually inseparable
+- **Lazy consolidation**: Merging 3 independent features to "save time" → oversized specs
 
-- El Planner és responsable de detectar límit de mida i proposar descomposició
-- El Designer pot anticipar la descomposició al design doc (secció "Proposed Sub-features")
-- El Validator verifica que les sub-features no tenen dependencies circulars
-- No es penalitza una feature de 320 línies si té una justificació explícita al design (però requereix aprovació)
+---
+
+## 6. Operational Decision
+
+As of 2026-04-23:
+
+- The Planner is responsible for detecting size limits and proposing decomposition
+- The Designer can anticipate decomposition in the design doc (section "Proposed Sub-features")
+- The Validator verifies that sub-features do not have circular dependencies
+- A 320-line feature is not penalized if it has explicit justification in the design (but requires approval)

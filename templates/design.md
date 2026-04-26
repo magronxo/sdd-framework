@@ -1,124 +1,124 @@
-# Design: [Nom de la Feature]
+# Design: [Feature Name]
 
-## 1. Motivació
+## 1. Motivation
 
-[Explica per què necessitem aquesta feature. Quin problema resol? Per què és important?]
+[Explain why we need this feature. What problem does it solve? Why is it important?]
 
-## 2. Objectiu
+## 2. Objective
 
-[Definició clara i mesurable del que s'ha d'aconseguir. Ha de ser específic i verificable.]
+[Clear and measurable definition of what must be achieved. Must be specific and verifiable.]
 
-**Exemple**:
-> Implementar un sistema de validació que rebutgi paths perillosos abans de processar-los.
+**Example**:
+> Implement a validation system that rejects dangerous paths before processing them.
 
 ## 3. Components
 
-Llista de components que s'han de crear o modificar:
+List of components to create or modify:
 
-| Component | Tipus | Descripció |
-|-----------|-------|------------|
-| [Nom] | [nou/modificat] | [Breu descripció] |
+| Component | Type | Description |
+|-----------|------|-------------|
+| [Name] | [new/modified] | [Brief description] |
 
-## 4. Flux Principal
+## 4. Main Flow
 
-### 4.1 Descripció textual
+### 4.1 Textual description
 
-[Descriu pas a pas el comportament normal del sistema]
+[Describe step by step the normal system behavior]
 
-### 4.2 Diagrama (Mermaid)
+### 4.2 Diagram (Mermaid)
 
 ```mermaid
 flowchart TD
-    A[Inici] --> B{Decisió}
-    B -->|Sí| C[Acció 1]
-    B -->|No| D[Acció 2]
-    C --> E[Fi]
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+    C --> E[End]
     D --> E
 ```
 
-## 5. Casos d'Ús
+## 5. Use Cases
 
-### Cas d'Ús 1: [Nom]
-- **Actor**: [Qui fa l'acció]
-- **Precondició**: [Què cal per començar]
-- **Acció**: [Què fa]
-- **Postcondició**: [Resultat esperat]
+### Use Case 1: [Name]
+- **Actor**: [Who performs the action]
+- **Precondition**: [What is needed to start]
+- **Action**: [What they do]
+- **Postcondition**: [Expected result]
 
-### Cas d'Ús 2: [Nom]
+### Use Case 2: [Name]
 ...
 
-## 6. Hardware Budget (Opcional)
+## 6. Hardware Budget (Optional)
 
-Omple aquesta secció només si el projecte té restriccions hardware definides a `sdd.config.json`.
+Fill this section only if the project has hardware constraints defined in `sdd.config.json`.
 
-| Recurs | Valor | Justificació |
-|--------|-------|--------------|
-| **RAM** | X MB (peak) | [Per què necessita aquesta memòria] |
-| **CPU** | X% en operació | [Què consumeix cicles] |
-| **Disc** | X MB addicionals | [Què es guarda] |
+| Resource | Value | Justification |
+|----------|-------|---------------|
+| **RAM** | X MB (peak) | [Why it needs this memory] |
+| **CPU** | X% in operation | [What consumes cycles] |
+| **Disk** | X MB additional | [What is stored] |
 
-**Target hardware**: [Omplir si aplica, p. ex. "Raspberry Pi 4", "Servidor cloud t3.medium", "Embedded ARM"]
+**Target hardware**: [Fill if applicable, e.g. "Raspberry Pi 4", "Cloud server t3.medium", "Embedded ARM"]
 
-## 7. I/O Budget (Opcional)
+## 7. I/O Budget (Optional)
 
-Omple aquesta secció si la feature té operacions d'entrada/sortida significatives.
+Fill this section if the feature has significant input/output operations.
 
-| Recurs | Valor | Justificació |
-|--------|-------|--------------|
-| **Disk reads** | X MB/s (peak) | [Què es llegeix i per què] |
-| **Disk writes** | X MB/s (peak) | [Què escriu i quant sovint] |
-| **Network inbound** | X MB/s (peak) | [Descàrregues, streaming, etc.] |
-| **Network outbound** | X MB/s (peak) | [Pujades, API responses, etc.] |
-| **File descriptors** | X (peak) | [Sockets, fitxers oberts simultàniament] |
+| Resource | Value | Justification |
+|----------|-------|---------------|
+| **Disk reads** | X MB/s (peak) | [What is read and why] |
+| **Disk writes** | X MB/s (peak) | [What writes and how often] |
+| **Network inbound** | X MB/s (peak) | [Downloads, streaming, etc.] |
+| **Network outbound** | X MB/s (peak) | [Uploads, API responses, etc.] |
+| **File descriptors** | X (peak) | [Sockets, files open simultaneously] |
 
-## 8. Concurrency Model (Opcional)
+## 8. Concurrency Model (Optional)
 
-Omple aquesta secció si la feature implica més d'un fil d'execució o procés.
+Fill this section if the feature involves more than one execution thread or process.
 
-| Aspecte | Decisió | Justificació |
-|---------|---------|--------------|
-| **Model** | [sequential / parallel / actor / CSP / async-await / thread-pool] | [Per què aquest model] |
-| **Max workers** | X | [Límit de paral·lelisme] |
-| **Shared state** | [sí/no] | [Què es comparteix i com es sincronitza] |
-| **Race conditions** | [riscos identificats] | [Com s'eviten] |
-| **Backpressure** | [sí/no] | [Com es gestiona la sobrecàrrega] |
+| Aspect | Decision | Justification |
+|--------|----------|---------------|
+| **Model** | [sequential / parallel / actor / CSP / async-await / thread-pool] | [Why this model] |
+| **Max workers** | X | [Parallelism limit] |
+| **Shared state** | [yes/no] | [What is shared and how it is synchronized] |
+| **Race conditions** | [identified risks] | [How they are avoided] |
+| **Backpressure** | [yes/no] | [How overload is managed] |
 
-## 9. Integration Surface (Obligatori)
+## 9. Integration Surface (Mandatory)
 
-Declara quines surfaces afecta aquesta feature (especifica `true`/`false` per a cada una):
+Declare which surfaces this feature affects (specify `true`/`false` for each):
 
-| Surface | Aplica | Descripció |
-|---------|--------|------------|
-| **browser** | true/false | [UI web, CORS, cookies, storage] |
-| **os_fs** | true/false | [Filesystem, paths, permisos, `ReadDir`, `os.Stat`] |
+| Surface | Applies | Description |
+|---------|---------|-------------|
+| **browser** | true/false | [Web UI, CORS, cookies, storage] |
+| **os_fs** | true/false | [Filesystem, paths, permissions, `ReadDir`, `os.Stat`] |
 | **wiring** | true/false | [Handler → service/core, feature flags, routing, middleware] |
 | **network** | true/false | [Outbound HTTP, retries, timeouts, provider health] |
 | **env_proxy** | true/false | [Proxies, secrets, ports, local dev constraints] |
 
-**Default:** Si no es declara cap surface, s'assumeix `wiring: true`.
+**Default:** If no surface is declared, `wiring: true` is assumed.
 
-## 10. Riscos i Limitacions
+## 10. Risks and Limitations
 
-| Risc | Impacte | Mitigació |
-|------|---------|-----------|
-| [Risc 1] | [Alt/Mig/Baix] | [Com ho evitem] |
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| [Risk 1] | [High/Medium/Low] | [How we avoid it] |
 
-## 11. Preguntes Obertes [?]
+## 11. Open Questions [?]
 
-[Llista aquí qualsevol dubte o decisió pendent. NO pots passar a SPEC si hi ha items aquí.]
+[List any doubt or pending decision here. You CANNOT pass to SPEC if there are items here.]
 
-- [ ] [Pregunta 1]
-- [ ] [Pregunta 2]
+- [ ] [Question 1]
+- [ ] [Question 2]
 
 ## 12. Dependencies
 
-[Altres features o components que cal tenir implementats abans.]
+[Other features or components that must be implemented before.]
 
 - Dependency 1
 - Dependency 2
 
 ---
 
-**Estat**: [DRAFT / REVIEW / COMPLETE]
-**Data**: [YYYY-MM-DD]
-**Autor**: [Nom]
+**Status**: [DRAFT / REVIEW / COMPLETE]
+**Date**: [YYYY-MM-DD]
+**Author**: [Name]

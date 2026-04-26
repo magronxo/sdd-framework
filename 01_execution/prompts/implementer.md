@@ -56,7 +56,7 @@ Allowed only when it reduces duplication **without changing behavior**:
    - tests (unit/integration) covering SDT scenarios when present
 2) Provide:
    - which tasks were completed (T numbers)
-   - exact test commands executed + results summary (adapted al stack del projecte)
+    - exact test commands executed + results summary (adapted to the project stack)
 3) If not all tasks completed, state what is blocked and why.
 
 ---

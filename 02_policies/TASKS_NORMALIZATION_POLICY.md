@@ -1,40 +1,40 @@
 # Tasks Normalization Policy
 
-> **Estat:** Actiu
-> **Data:** 2026-04-04
-> **Abast:** `artifacts/tasks/`
+> **Status:** Active
+> **Date:** 2026-04-04
+> **Scope:** `artifacts/tasks/`
 
 ---
 
-## 1. Propòsit
+## 1. Purpose
 
-El directori `artifacts/tasks/` pot tenir una barreja de convencions:
+The `artifacts/tasks/` directory can have a mix of conventions:
 
-- fitxers curts per `id` (`feat-001.md`, `feat-006.md`)
-- fitxers amb slug (`feat-013-session-tree.md`)
-- fitxers legacy (`dashboard-backend.md`)
+- short files by `id` (`feat-001.md`, `feat-006.md`)
+- files with slug (`feat-013-session-tree.md`)
+- legacy files (`dashboard-backend.md`)
 
-Això dificulta:
+This makes it difficult to:
 
-- la traçabilitat entre `design`, `spec`, `task`
-- l'automatització
-- la lectura externa del flux
+- trace between `design`, `spec`, `task`
+- automate
+- read the flow externally
 
-Aquest document fixa el model cap on s'ha d'anar.
+This document fixes the model to move towards.
 
 ---
 
-## 2. Decisió Canònica
+## 2. Canonical Decision
 
-### Convenció preferida a futur
+### Preferred future convention
 
-Els task files nous han de seguir:
+New task files must follow:
 
 ```text
-feat-XXX-nom-descriptiu.md
+feat-XXX-descriptive-name.md
 ```
 
-Exemples:
+Examples:
 
 - `feat-001-kernel-core.md`
 - `feat-006-dashboard-react.md`
@@ -43,76 +43,76 @@ Exemples:
 
 ---
 
-## 3. Estat Actual Acceptat
+## 3. Currently Accepted State
 
-Mentrestant, el sistema accepta tres categories:
+Meanwhile, the system accepts three categories:
 
-### A. Canònic nou
+### A. New canonical
 
-Format: `feat-XXX-nom-descriptiu.md`
+Format: `feat-XXX-descriptive-name.md`
 
-- ✅ Preferit per a tota feina nova
-- ✅ Automatitzable
-- ✅ Traçable directament des del feature record
+- ✅ Preferred for all new work
+- ✅ Automatable
+- ✅ Directly traceable from the feature record
 
-### B. Canònic antic (id sol)
+### B. Old canonical (id only)
 
 Format: `feat-XXX.md`
 
-- ⚠️ Acceptat per a specs existents
-- ⚠️ Recomanable renombrar quan es re-auditi
+- ⚠️ Accepted for existing specs
+- ⚠️ Recommended to rename when re-audited
 
-### C. Legacy / no normalitzat
+### C. Legacy / not normalized
 
-Format: qualsevol altre (`dashboard-backend.md`, `old-spec-v1.md`, etc.)
+Format: any other (`dashboard-backend.md`, `old-spec-v1.md`, etc.)
 
-- ❌ NO acceptat per a feina nova
-- ✅ Pot quedar com a referència històrica a `90_transitional/`
-
----
-
-## 4. Migració
-
-### Quan renombrar?
-
-- Si un fitxer canvia d'estat (es re-obre per implementació)
-- Si un fitxer es re-audita
-- Si un fitxer es referencia des d'un altre document nou
-
-### Com renombrar?
-
-1. Crear nou fitxer amb nom canònic
-2. Copiar contingut rellevant
-3. Actualitzar `task_path` al feature record
-4. Moure l'antic a `90_transitional/` o eliminar-lo
+- ❌ NOT accepted for new work
+- ✅ May remain as historical reference in `90_transitional/`
 
 ---
 
-## 5. Relació amb altres artefactes
+## 4. Migration
 
-| Artefacte | Convenció | Exemple |
-|-----------|-----------|---------|
-| Design | `feat-XXX-nom.md` | `feat-013-session-tree.md` |
-| Spec | `feat-XXX-nom.md` | `feat-013-session-tree.md` |
-| Tasks | `feat-XXX-nom.md` | `feat-013-session-tree.md` |
+### When to rename?
+
+- When a file changes state (is reopened for implementation)
+- When a file is re-audited
+- When a file is referenced from another new document
+
+### How to rename?
+
+1. Create new file with canonical name
+2. Copy relevant content
+3. Update `task_path` in the feature record
+4. Move the old one to `90_transitional/` or delete it
+
+---
+
+## 5. Relationship with Other Artifacts
+
+| Artifact | Convention | Example |
+|----------|------------|---------|
+| Design | `feat-XXX-name.md` | `feat-013-session-tree.md` |
+| Spec | `feat-XXX-name.md` | `feat-013-session-tree.md` |
+| Tasks | `feat-XXX-name.md` | `feat-013-session-tree.md` |
 | Feature Record | `feat-XXX.json` | `feat-013.json` |
 
-**Nota:** El `feature_id` al JSON ha de coincidir amb el prefix del `.md`.
+**Note:** The `feature_id` in the JSON must match the `.md` prefix.
 
 ---
 
-## 6. Anti-Patrons
+## 6. Anti-Patterns
 
-- crear `feat-013-tasks.md` quan ja existeix `feat-013.md`
-- deixar dos task files per la mateixa feature
-- usar noms genèrics (`fix.md`, `update.md`) sense `feat-XXX`
+- creating `feat-013-tasks.md` when `feat-013.md` already exists
+- leaving two task files for the same feature
+- using generic names (`fix.md`, `update.md`) without `feat-XXX`
 
 ---
 
-## 7. Decisió Operativa
+## 7. Operational Decision
 
-Des de 2026-04-04:
+As of 2026-04-04:
 
-- tota feina nova usa `feat-XXX-nom-descriptiu.md`
-- els fitxers antics es mantenen fins que es re-auditen
-- no es fa neteja massiva sense un pla de re-auditoria
+- all new work uses `feat-XXX-descriptive-name.md`
+- old files are kept until re-audited
+- no massive cleanup is done without a re-audit plan

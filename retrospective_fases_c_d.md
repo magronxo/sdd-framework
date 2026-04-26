@@ -1,4 +1,4 @@
-# Retrospective: Fases C i D — Enterprise Policies i Migration Playbook
+# Retrospective: Phases C and D — Enterprise Policies and Migration Playbook
 
 **Date**: 2026-04-23
 **Scope**: 6 new documents (3 policies + 1 template + 1 playbook + 1 skill)
@@ -8,89 +8,89 @@
 
 ## Summary
 
-Fases C i D aporten **polítiques enterprise**, **planificació estratègica**, i **suport per a migracions**. La qualitat és alta però hi ha **4 issues menor-mitjans** a corregir.
+Phases C and D bring **enterprise policies**, **strategic planning**, and **migration support**. Quality is high but there are **4 minor-medium issues** to fix.
 
-**Veredicte global**: ✅ **PASS with 4 issues to fix** (tots menors o mitjans, cap bloquejador)
+**Overall verdict**: ✅ **PASS with 4 issues to fix** (all minor or medium, no blockers)
 
 ---
 
 ## Findings
 
-### 🟡 Issue 1: VALIDATION_BOUNDARIES — Scope expansion contradictori
+### 🟡 Issue 1: VALIDATION_BOUNDARIES — Contradictory scope expansion
 
-**Location**: `02_policies/VALIDATION_BOUNDARIES_POLICY.md`, línia 79
+**Location**: `02_policies/VALIDATION_BOUNDARIES_POLICY.md`, line 79
 
-**Problem**: "Scope expansion" apareix com a condició de reopening, però entre parèntesis diu "requires new seed → new feature, not reopening". Això és contradictori: o és una condició de reopening o no ho és.
+**Problem**: "Scope expansion" appears as a reopening condition, but in parentheses it says "requires new seed → new feature, not reopening". This is contradictory: either it is a reopening condition or it is not.
 
-**Impact**: Confusió sobre si es pot reobrir una spec per afegir scope.
+**Impact**: Confusion about whether a spec can be reopened to add scope.
 
-**Fix proposat**: Separar en dues llistes clares:
-- "Valid Reopening Conditions" (3 ítems)
-- "What Is NOT Reopening" (scope expansion va aquí)
-
----
-
-### 🟡 Issue 2: MIGRATION_PLAYBOOK — "All new features start as seeds" és imprecís
-
-**Location**: `03_operations/MIGRATION_PLAYBOOK.md`, línia 73
-
-**Problem**: Diu "All new features start as seeds in `03_operations/pre_sdd/`" però el `AGENT_DECISION_TABLE.md` i `DECOMPOSITION_AND_SIZE_POLICY.md` permeten "code adjustments" (< 50 línies, ≤ 2 RF) que NO passen per Pre-SDD.
-
-**Impact**: Un equip podria forzar SDD complet per a canvis trivials.
-
-**Fix proposat**: Canviar a "All new non-trivial features start as seeds. Trivial fixes use the code adjustment path."
+**Proposed fix**: Separate into two clear lists:
+- "Valid Reopening Conditions" (3 items)
+- "What Is NOT Reopening" (scope expansion goes here)
 
 ---
 
-### 🟡 Issue 3: MIGRATION_PLAYBOOK — No avisa sobre init scripts en repos existents
+### 🟡 Issue 2: MIGRATION_PLAYBOOK — "All new features start as seeds" is imprecise
 
-**Location**: `03_operations/MIGRATION_PLAYBOOK.md`, línia 44
+**Location**: `03_operations/MIGRATION_PLAYBOOK.md`, line 73
 
-**Problem**: Diu "Run `init-sdd.ps1` or `init-sdd.sh`" sense avisar que aquests scripts podrien sobreescriure fitxers existents (ex: `README.md`, `sdd.config.json`) si el repo ja existeix.
+**Problem**: It says "All new features start as seeds in `03_operations/pre_sdd/`" but `AGENT_DECISION_TABLE.md` and `DECOMPOSITION_AND_SIZE_POLICY.md` allow "code adjustments" (< 50 lines, ≤ 2 FR) that DO NOT go through Pre-SDD.
 
-**Impact**: Pèrdua accidental de documentació existent.
+**Impact**: A team could force full SDD for trivial changes.
 
-**Fix proposat**: Afegir nota: "Run init scripts with caution on existing repos. Review generated files before committing. Prefer manual creation if the repo already has documentation."
-
----
-
-### 🟢 Issue 4: ROADMAP_TEMPLATE — "SEED" no és un estat de feature vàlid
-
-**Location**: `03_operations/ROADMAP_TEMPLATE.md`, línia 47
-
-**Problem**: La taula "Feature Mapping" mostra `SEED` com a status, però els estats canònics de feature són: DESIGN, SPEC, VALIDATION, TASKS, IMPLEMENT, VERIFY, AUDIT, ARCHIVE. SEED és pre-SDD.
-
-**Impact**: Confusió entre seeds i features.
-
-**Fix proposat**: Canviar l'exemple a `DESIGN` o `PENDING`, o afegir una nota que els seeds no apareixen a la feature mapping fins que són promoguts.
+**Proposed fix**: Change to "All new non-trivial features start as seeds. Trivial fixes use the code adjustment path."
 
 ---
 
-## Qualitats Positives (Cal Preservar)
+### 🟡 Issue 3: MIGRATION_PLAYBOOK — No warning about init scripts in existing repos
 
-1. **EXTERNAL_FRAMEWORK_POLICY.md — "Authority inversion prevention"** és un concepte fort i ben explicat amb exemples concrets (React hooks, ORM, linter).
+**Location**: `03_operations/MIGRATION_PLAYBOOK.md`, line 44
 
-2. **MIGRATION_PLAYBOOK.md — Common Pitfalls** amb "Reality + Fix" és or pur per a l'adopció. Ataqua objeccions reals abans que sorgeixin.
+**Problem**: It says "Run `init-sdd.ps1` or `init-sdd.sh`" without warning that these scripts could overwrite existing files (e.g. `README.md`, `sdd.config.json`) if the repo already exists.
 
-3. **VALIDATION_BOUNDARIES_POLICY.md — Authority by Artifact Type** amb taules per cada tipus de document és extremadament clar. Un implementer sap exactament què pot/canviar i quan.
+**Impact**: Accidental loss of existing documentation.
 
-4. **ROADMAP_TEMPLATE.md — Reality Check** amb 5 preguntes i output estructurat converteix el roadmap en un document viu, no estàtic.
-
-5. **hello-world-skill.md** és exactament el que cal: un exemple mínim que demostra contracte, surfaces, i errors sense complexitat.
+**Proposed fix**: Add note: "Run init scripts with caution on existing repos. Review generated files before committing. Prefer manual creation if the repo already has documentation."
 
 ---
 
-## Recomanacions
+### 🟢 Issue 4: ROADMAP_TEMPLATE — "SEED" is not a valid feature state
 
-1. Corregir els 4 issues abans de considerar les fases C i D tancades.
+**Location**: `03_operations/ROADMAP_TEMPLATE.md`, line 47
 
-2. Considerar afegir un enllaç des de `GETTING_STARTED.md` al `MIGRATION_PLAYBOOK.md` per a usuaris que adopten SDD en un projecte existent (no passem directe de tutorial a migració).
+**Problem**: The "Feature Mapping" table shows `SEED` as a status, but the canonical feature states are: DESIGN, SPEC, VALIDATION, TASKS, IMPLEMENT, VERIFY, AUDIT, ARCHIVE. SEED is pre-SDD.
+
+**Impact**: Confusion between seeds and features.
+
+**Proposed fix**: Change the example to `DESIGN` or `PENDING`, or add a note that seeds do not appear in feature mapping until they are promoted.
 
 ---
 
-## Checklist de Correccions
+## Positive Qualities (To Preserve)
 
-- [ ] Issue 1: Separar "Valid Reopening Conditions" de "What Is NOT Reopening" a VALIDATION_BOUNDARIES
-- [ ] Issue 2: Precisar "All new non-trivial features start as seeds" a MIGRATION_PLAYBOOK
-- [ ] Issue 3: Afegir avís sobre init scripts en repos existents a MIGRATION_PLAYBOOK
-- [ ] Issue 4: Canviar "SEED" a "PENDING" o afegir nota a ROADMAP_TEMPLATE
+1. **EXTERNAL_FRAMEWORK_POLICY.md — "Authority inversion prevention"** is a strong concept well explained with concrete examples (React hooks, ORM, linter).
+
+2. **MIGRATION_PLAYBOOK.md — Common Pitfalls** with "Reality + Fix" is pure gold for adoption. It attacks real objections before they arise.
+
+3. **VALIDATION_BOUNDARIES_POLICY.md — Authority by Artifact Type** with tables per document type is extremely clear. An implementer knows exactly what they can/cannot change and when.
+
+4. **ROADMAP_TEMPLATE.md — Reality Check** with 5 questions and structured output turns the roadmap into a living document, not a static one.
+
+5. **hello-world-skill.md** is exactly what is needed: a minimal example demonstrating contract, surfaces, and errors without complexity.
+
+---
+
+## Recommendations
+
+1. Fix the 4 issues before considering phases C and D closed.
+
+2. Consider adding a link from `GETTING_STARTED.md` to `MIGRATION_PLAYBOOK.md` for users adopting SDD in an existing project (we don't go directly from tutorial to migration).
+
+---
+
+## Correction Checklist
+
+- [ ] Issue 1: Separate "Valid Reopening Conditions" from "What Is NOT Reopening" in VALIDATION_BOUNDARIES
+- [ ] Issue 2: Clarify "All new non-trivial features start as seeds" in MIGRATION_PLAYBOOK
+- [ ] Issue 3: Add warning about init scripts in existing repos to MIGRATION_PLAYBOOK
+- [ ] Issue 4: Change "SEED" to "PENDING" or add note in ROADMAP_TEMPLATE

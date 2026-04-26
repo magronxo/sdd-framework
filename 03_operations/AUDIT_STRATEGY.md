@@ -1,95 +1,95 @@
 # Audit Strategy
 
-> **Aprovat:** 2026-03-29
-> **Estat:** Actiu
-> **Aplicable a:** Totes les fases del projecte
+> **Approved:** 2026-03-29
+> **Status:** Active
+> **Applies to:** All project phases
 
 ---
 
-## 1. Principi Fonamental: Separació de Poders
+## 1. Fundamental Principle: Separation of Powers
 
-**Core Runtime - EXTERN:**
-- El nucli crític del sistema hauria d'auditar-se via mecanismes externs
-- **NO pot auditar-se a si mateix** (conflicte d'interessos)
-- Validació: tests, lint, anàlisi estàtica (segons stack del projecte)
+**Core Runtime - EXTERNAL:**
+- The critical system core should be audited via external mechanisms
+- **Cannot audit itself** (conflict of interest)
+- Validation: tests, lint, static analysis (according to project stack)
 
-**Departaments/Components - INTERN (opcional):**
-- Equips o departaments poden tenir **auditor intern**
-- Només pot auditar **altres components**, mai el nucli crític
+**Departments/Components - INTERNAL (optional):**
+- Teams or departments may have an **internal auditor**
+- Can only audit **other components**, never the critical core
 
 ---
 
-## 2. Tipus d'Auditories
+## 2. Audit Types
 
-### A. Auditoria Externa (recomanada)
+### A. External Audit (recommended)
 
-| Skill | Quan | Model | Abast | Activa |
+| Skill | When | Model | Scope | Active |
 |-------|------|-------|-------|--------|
-| **sdd-audit** | Cada feature (post-verify) | Ràpid, econòmic | Spec ↔ Codi, tests, edge cases | Automàtica |
-| **sdd-deep-audit** | Batch (N features) o manual | Exhaustiu | Seguretat, arquitectura, consistència global | Manual o pre-release |
+| **sdd-audit** | Every feature (post-verify) | Fast, economical | Spec ↔ Code, tests, edge cases | Automatic |
+| **sdd-deep-audit** | Batch (N features) or manual | Exhaustive | Security, architecture, global consistency | Manual or pre-release |
 
-**Regla:** Cap auditoria externa **no bloqueja** el flux. Genera tickets, no fa canvis.
+**Rule:** No external audit **blocks** the flow. It generates tickets, it does not make changes.
 
-### B. Auditoria Interna (opcional)
+### B. Internal Audit (optional)
 
-Quan el projecte té estructura departamental:
-- Departament o rol d'auditor intern
-- Audita **només** codi no-crític
-- Integració amb memòria del projecte per traçabilitat
-- NO audita el nucli crític (això sempre és extern)
+When the project has a departmental structure:
+- Department or internal auditor role
+- Audits **only** non-critical code
+- Integrates with project memory for traceability
+- DOES NOT audit the critical core (this is always external)
 
 ---
 
-## 3. Flux SDD amb Auditoria
+## 3. SDD Flow with Audit
 
 ```
-DESIGN → SPEC → VALIDATION → TASKS → IMPLEMENTAR → VERIFY → [AUDIT] → ARCHIVE
+DESIGN → SPEC → VALIDATION → TASKS → IMPLEMENT → VERIFY → [AUDIT] → ARCHIVE
                                               ↑
-                                       sdd-audit (lleugera)
+                                       sdd-audit (lightweight)
 ```
 
 ---
 
-## 4. Criteris d'Auditoria
+## 4. Audit Criteria
 
-### sdd-audit (Lleugera)
+### sdd-audit (Lightweight)
 
-- **Coherència Spec-Codi:** Cada RF té implementació?
-- **Tests:** Existeixen i passen?
-- **Edge Cases:** Errors, timeouts, fallades coberts?
-- **Qualitat:** Segons stack del projecte (lint, types, conventions)
+- **Spec-Code Coherence:** Does every FR have an implementation?
+- **Tests:** Do they exist and pass?
+- **Edge Cases:** Are errors, timeouts, failures covered?
+- **Quality:** According to project stack (lint, types, conventions)
 
-### sdd-deep-audit (Profunda)
+### sdd-deep-audit (Deep)
 
-- **Seguretat:** SQL injection, XSS, race conditions, secrets
-- **Arquitectura:** Acoblament, escalabilitat, leaks
-- **Consistència Global:** Totes les specs tenen implementació? No-goals respectats?
-
----
-
-## 5. Regles d'Auditoria
-
-1. **Evidència-first:** Si no s'ha executat → `NOT EXECUTED`
-2. **No bloqueig:** L'audit genera tickets, no atura el flux
-3. **Extern > Intern:** El nucli crític sempre audita externament
-4. **Report estructurat:** Seguir `02_policies/REPORT_ENVELOPE_POLICY.md`
+- **Security:** SQL injection, XSS, race conditions, secrets
+- **Architecture:** Coupling, scalability, leaks
+- **Global Consistency:** Do all specs have an implementation? Are no-goals respected?
 
 ---
 
-## 6. Eines d'Auditoria
+## 5. Audit Rules
 
-El projecte configura les seves pròpies eines segons stack:
+1. **Evidence-first:** If not executed → `NOT EXECUTED`
+2. **No blocking:** Audit generates tickets, does not stop the flow
+3. **External > Internal:** The critical core is always audited externally
+4. **Structured report:** Follow `02_policies/REPORT_ENVELOPE_POLICY.md`
+
+---
+
+## 6. Audit Tools
+
+The project configures its own tools according to stack:
 
 - **Go:** `go vet`, `golangci-lint`, `gosec`, `go test`
 - **TypeScript/React:** `tsc`, `eslint`, `jest`, `cypress`
 - **Python:** `pylint`, `mypy`, `pytest`, `bandit`
-- **Altres:** Adaptar al stack declarat a `sdd.config.json`
+- **Others:** Adapt to the stack declared in `sdd.config.json`
 
 ---
 
-## 7. Integració amb SDD
+## 7. Integration with SDD
 
-L'auditoria és una **fase obligatòria** del pipeline:
+Audit is a **mandatory phase** of the pipeline:
 
 ```
 [VERIFY] → [AUDIT] → [ARCHIVE]
@@ -97,11 +97,11 @@ L'auditoria és una **fase obligatòria** del pipeline:
   Tests    Report + Tickets
 ```
 
-Si AUDIT = FAIL:
-- Generar tickets
-- Decidir: deep audit o rework
-- No marcar com a ARCHIVE fins PASS/WARN
+If AUDIT = FAIL:
+- Generate tickets
+- Decide: deep audit or rework
+- Do not mark as ARCHIVE until PASS/WARN
 
 ---
 
-**Històric:** Versió genèrica del framework.
+**History:** Generic framework version.

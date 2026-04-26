@@ -1,24 +1,24 @@
 # Policy: Report Envelope (VERIFY / AUDIT)
 
-> **Mode Diátaxis**: Reference
+> **Diátaxis Mode**: Reference
 
 ## Purpose
 
-Estandarditzar el format mínim dels reports de **VERIFY** i **AUDIT** perquè siguin:
+Standardize the minimum format of **VERIFY** and **AUDIT** reports so they are:
 
-- evidence-first (no inventar execució)
-- reproduïbles (comandes + cwd + output)
-- traçables (quina skill / mode / constraints)
-- deterministes (taxonomia de veredicte i gates)
+- evidence-first (do not invent execution)
+- reproducible (commands + cwd + output)
+- traceable (which skill / mode / constraints)
+- deterministic (verdict taxonomy and gates)
 
 ## Scope
 
-Aplica a:
+Applies to:
 
 - `artifacts/audit_reports/verify_*.md`
 - `artifacts/audit_reports/audit_*.md`
 
-Aquest policy **NO** obliga a reescriure reports antics; és un contracte per reports nous o actualitzats.
+This policy **DOES NOT** force rewriting old reports; it is a contract for new or updated reports.
 
 ## Effective date
 
@@ -26,58 +26,58 @@ Aquest policy **NO** obliga a reescriure reports antics; és un contracte per re
 
 ## Core rule (Evidence-first)
 
-- Si una comanda **no s'ha executat**, cal escriure `NOT EXECUTED` + motiu.
-- Si no hi ha output real (o un verify report que l'inclogui), **NO** es pot afirmar “tests passen”.
-- En entorns **plan-only** (sense execució), un report de VERIFY **no pot** donar `PASS`.
+- If a command was **not executed**, write `NOT EXECUTED` + reason.
+- If there is no real output (or a verify report that includes it), you **CANNOT** claim "tests pass".
+- In **plan-only** environments (without execution), a VERIFY report **cannot** give `PASS`.
 
-## Required sections (mínim)
+## Required sections (minimum)
 
-### 1) Header (mínim)
+### 1) Header (minimum)
 
-Al principi del document (format lliure), ha d'existir com a mínim:
+At the beginning of the document (free format), the following must exist:
 
 - `feature_id: feat-XXX`
-- `date (UTC): YYYY-MM-DDTHH:MM:SSZ` (o equivalent clar)
+- `date (UTC): YYYY-MM-DDTHH:MM:SSZ` (or clear equivalent)
 - `environment_mode: execute | plan-only | unknown`
-- `verification_result: PASS | PARTIAL | FAIL` (verify report) **o** `audit_result: PASS | WARN | FAIL` (audit report)
+- `verification_result: PASS | PARTIAL | FAIL` (verify report) **or** `audit_result: PASS | WARN | FAIL` (audit report)
 
 ### 2) `## INVOCATIONS`
 
-Ha d'incloure:
+Must include:
 
-- `audit_engine` / `verify_engine` (nom del protocol/skill o “inline”)
-- si aplica: `skill: sdd-verify | sdd-audit | ...`
-- notes curtes sobre constraints (p.ex. “PLAN mode → test execution forbidden”)
+- `audit_engine` / `verify_engine` (protocol/skill name or "inline")
+- if applicable: `skill: sdd-verify | sdd-audit | ...`
+- short notes on constraints (e.g. "PLAN mode → test execution forbidden")
 
 ### 3) `## EVIDENCE`
 
-Ha d'incloure:
+Must include:
 
-- Fitxers llegits (paths)
-- Artefactes consultats (feature record, spec, tasks, reports previs)
-- Si es fa compliance matrix: llista d'SDT/requirements considerats
+- Files read (paths)
+- Artifacts consulted (feature record, spec, tasks, previous reports)
+- If a compliance matrix is done: list of SDT/requirements considered
 
 ### 4) `## COMMANDS`
 
-Per cada comanda rellevant:
+For each relevant command:
 
 - `cwd`
 - `command`
 - `status: EXECUTED | NOT EXECUTED`
-- si `NOT EXECUTED`: `reason`
-- si `EXECUTED`: `raw_output` (o excerpt suficient + indicació on trobar el complet)
+- if `NOT EXECUTED`: `reason`
+- if `EXECUTED`: `raw_output` (or sufficient excerpt + indication where to find the full output)
 
 ### 5) `## VERDICT`
 
-Ha d'incloure:
+Must include:
 
-- el veredicte (PASS/PARTIAL/FAIL o PASS/WARN/FAIL)
-- 1–3 raons (curtes)
-- `next_action` (1–3 passos concrets; si cal, incloure comandes)
+- the verdict (PASS/PARTIAL/FAIL or PASS/WARN/FAIL)
+- 1–3 reasons (short)
+- `next_action` (1–3 concrete steps; if needed, include commands)
 
-### 6) `## SURFACES` (obligatori des de 2026-04-10)
+### 6) `## SURFACES` (mandatory since 2026-04-10)
 
-Ha d'incloure la declaració de surfaces aplicables:
+Must include the declaration of applicable surfaces:
 
 ```md
 ## SURFACES
@@ -86,41 +86,41 @@ Ha d'incloure la declaració de surfaces aplicables:
 - wiring: true|false
 - network: true|false
 - env_proxy: true|false
-- notes: (opcional)
+- notes: (optional)
 ```
 
-**Regla per defecte:** si cap surface es declara, `wiring: true` s'aplica.
+**Default rule:** if no surface is declared, `wiring: true` applies.
 
-Per cada surface `true`, cal evidència:
+For each surface set to `true`, evidence is required:
 
-| Surface | Evidència | Estat |
-|---------|-----------|-------|
-| browser | (referència a preflight/network tab) | OK / MISSING |
-| wiring | (referència a test handler→core) | OK / MISSING |
+| Surface | Evidence | State |
+|---------|----------|-------|
+| browser | (reference to preflight/network tab) | OK / MISSING |
+| wiring | (reference to test handler→core) | OK / MISSING |
 
 ## Verdict taxonomy (gates)
 
 ### VERIFY (`verification_result`)
 
 - `PASS`
-  - Comandes crítiques EXECUTED amb evidència, i passen; i
-  - No hi ha cap SDT/requirement crític `UNTESTED` o `UNKNOWN` (si n'hi ha, ha de justificar-se i normalment cau a `PARTIAL`).
+  - Critical commands EXECUTED with evidence, and pass; and
+  - No critical SDT/requirement is `UNTESTED` or `UNKNOWN` (if there is, it must be justified and normally falls to `PARTIAL`).
 - `PARTIAL`
-  - Falta evidència runtime per constraints (plan-only, manca runner, manca entorn), o hi ha verificació manual parcial; i
-  - No hi ha fallades reproduïdes; i
-  - Inclou `next_action` per rerun en execute-capable.
+  - Missing runtime evidence due to constraints (plan-only, missing runner, missing environment), or partial manual verification; and
+  - No reproduced failures; and
+  - Includes `next_action` for rerun in execute-capable environment.
 - `FAIL`
-  - Qualsevol comanda EXECUTED falla, o hi ha mismatch amb spec/SDT amb evidència, o el feature record/spec no quadra.
+  - Any EXECUTED command fails, or there is a mismatch with spec/SDT with evidence, or the feature record/spec does not match.
 
 ### AUDIT (`audit_result`)
 
 - `PASS`
-  - Sense desviacions crítiques; evidència coherent; com a mínim un verify report fiable o execució equivalent.
+  - No critical deviations; coherent evidence; at least one reliable verify report or equivalent execution.
 - `WARN`
-  - Hi ha riscos/forats de verificació no-crítics (p.ex. manca E2E per constraints), o issues menors amb mitigació/ticket.
+  - There are non-critical verification risks/gaps (e.g. missing E2E due to constraints), or minor issues with mitigation/ticket.
 - `FAIL`
-  - Inconsistències greus, evidència insuficient per afirmar “ready”, o desviacions/material mismatch.
+  - Serious inconsistencies, insufficient evidence to claim "ready", or deviations/material mismatch.
 
 ## Notes
 
-- Aquest policy no canvia el pipeline canònic; només estandarditza l’output dels reports.
+- This policy does not change the canonical pipeline; it only standardizes report output.

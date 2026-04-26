@@ -1,73 +1,73 @@
 # Policy: Integration Surface Gates (SPEC / VERIFY)
 
-> **Estat:** Actiu
-> **Data:** 2026-04-10
-> **Abast:** Qualsevol feature que exposi comportament via browser/FS/network/handlers
+> **Status:** Active
+> **Date:** 2026-04-10
+> **Scope:** Any feature that exposes behavior via browser/FS/network/handlers
 
 ## Purpose
 
-Evitar “PASS falsos” quan:
+Prevent "false PASSes" when:
 
-- `curl` funciona però el navegador falla (CORS + preflight).
-- La lògica core és correcta però el handler no la crida (wiring).
-- Windows/ACLs o paths (espais/cometes) trenquen el flux real.
+- `curl` works but the browser fails (CORS + preflight).
+- Core logic is correct but the handler does not call it (wiring).
+- Windows/ACLs or paths (spaces/quotes) break the real flow.
 
 ## Principle
 
 **Surface-aware verification.**
-El veredicte només pot ser `PASS` si existeix evidència per la superfície afectada.
+The verdict can only be `PASS` if evidence exists for the affected surface.
 
 ## 1) Surface classification (SPEC)
 
-Quan escrius una SPEC, declara quines surfaces aplica (boolean):
+When writing a SPEC, declare which surfaces apply (boolean):
 
-- `browser`: UI web / Vite / cross-origin / cookies / storage
-- `os_fs`: filesystem local, paths Windows, permisos, `ReadDir`, `os.Stat`
+- `browser`: web UI / Vite / cross-origin / cookies / storage
+- `os_fs`: local filesystem, Windows paths, permissions, `ReadDir`, `os.Stat`
 - `wiring`: handler → service/core, feature flags, routing, middleware order
 - `network`: outbound HTTP, retries, timeouts, provider health
 - `env_proxy`: proxies, secrets, ports, local dev constraints
 
-**Regla:** si no declares cap surface, s’assumeix `wiring=true` com a mínim (tota feature té alguna forma d’integració).
+**Rule:** if no surface is declared, `wiring=true` is assumed at minimum (every feature has some form of integration).
 
 ## 2) Required evidence (VERIFY)
 
 ### 2.1 `browser`
 
-- Evidència mínima: captura/nota del Network tab (o equivalent) + resultat real.
-- Si hi ha `Authorization` header: cal demostrar que el server accepta `OPTIONS` preflight.
-  - Exemple (curl):
+- Minimum evidence: screenshot/note from Network tab (or equivalent) + real result.
+- If there is an `Authorization` header: must demonstrate that the server accepts `OPTIONS` preflight.
+  - Example (curl):
     - `curl -i -X OPTIONS http://localhost:8080/api/v1/<route> -H "Origin: http://localhost:5173" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: authorization,content-type"`
 
-**Regla:** `curl GET/POST` no valida CORS.
+**Rule:** `curl GET/POST` does not validate CORS.
 
 ### 2.2 `os_fs`
 
-- Evidència mínima: tests (si possible) + una prova manual amb path real.
-- Cases a cobrir si aplica:
-  - path amb espais
-  - path amb cometes (`"K:\Path"` / `'K:\Path'`) → sanitize/trim
-  - directori existent però no accessible (ACL)
+- Minimum evidence: tests (if possible) + one manual test with real path.
+- Cases to cover if applicable:
+  - path with spaces
+  - path with quotes (`"K:\Path"` / `'K:\Path'`) → sanitize/trim
+  - existing directory but not accessible (ACL)
 
 ### 2.3 `wiring`
 
-Evidència mínima: un test (o evidència equivalent) que demostri que el punt d’entrada real crida la lògica core.
+Minimum evidence: a test (or equivalent evidence) demonstrating that the real entry point calls the core logic.
 
-Exemples:
+Examples:
 
-- handler `handleRequest` usa `ServiceLayer` (no només tests de `internal/`).
-- router/middleware: `OPTIONS` no passa per auth, o CORS s’aplica abans de auth.
+- handler `handleRequest` uses `ServiceLayer` (not only `internal/` tests).
+- router/middleware: `OPTIONS` does not go through auth, or CORS is applied before auth.
 
 ### 2.4 `network`
 
-- Evidència mínima: tests amb errors simulats (timeouts/5xx) i asserts de retry/backoff.
-- Si hi ha “fallback determinista”, s’ha de documentar quan s’activa.
+- Minimum evidence: tests with simulated errors (timeouts/5xx) and retry/backoff asserts.
+- If there is a "deterministic fallback", it must be documented when it activates.
 
 ### 2.5 `env_proxy`
 
-- Evidència mínima: nota d’entorn (variables rellevants) o wrapper que estabilitza el cas.
-- Si hi ha proxies trencats (p.ex. `127.0.0.1:9`), cal documentar com reproduir i com evitar-ho.
+- Minimum evidence: environment note (relevant variables) or wrapper that stabilizes the case.
+- If there are broken proxies (e.g. `127.0.0.1:9`), it must be documented how to reproduce and how to avoid it.
 
 ## 3) Verdict guidance
 
-- Si una surface aplica i falta evidència: `WARN` o `PARTIAL` (mai `PASS`).
-- Si l’entorn és plan-only i impedeix evidència: `PARTIAL` + `next_action: rerun in build/execute`.
+- If a surface applies and evidence is missing: `WARN` or `PARTIAL` (never `PASS`).
+- If the environment is plan-only and prevents evidence: `PARTIAL` + `next_action: rerun in build/execute`.

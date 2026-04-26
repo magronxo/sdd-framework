@@ -1,14 +1,14 @@
-# Policy: Priorització de Re-Auditoria de Specs
+# Policy: Spec Re-Audit Prioritization
 
 ## Purpose
 
-Evitar el patró d'alt risc: **re-auditar totes les specs alhora**.
+Avoid the high-risk pattern: **re-auditing all specs at once**.
 
-La re-auditoria s'ha de fer per lots i per ordre de risc/impacte, per reduir:
+Re-audit must be done in batches and by risk/impact order, to reduce:
 
-- contaminació de specs derivades
-- divergència documental
-- soroll d'auditoria (moltes conclusions poc accionables)
+- contamination of derived specs
+- documental divergence
+- audit noise (many conclusions, few actionable)
 
 ## Effective date
 
@@ -16,25 +16,25 @@ La re-auditoria s'ha de fer per lots i per ordre de risc/impacte, per reduir:
 
 ## Core rule
 
-No té sentit re-auditar totes les specs alhora.
+It does not make sense to re-audit all specs at once.
 
-Cal començar per les specs que:
+Start with specs that:
 
-- defineixen primitives centrals del sistema
-- tenen més radi d'impacte
-- poden contaminar altres specs si estan mal definides
-- combinen risc estructural amb alta reutilització
+- define central system primitives
+- have the most impact radius
+- can contaminate other specs if poorly defined
+- combine structural risk with high reuse
 
-## Application (operativa)
+## Application (operational)
 
-Quan s'obri una ronda de re-auditoria:
+When opening a re-audit round:
 
-1) Definir el lot (3–10 specs) amb criteri de priorització.
-2) Aplicar el workflow canònic de re-auditoria:
+1) Define the batch (3–10 specs) with prioritization criteria.
+2) Apply the canonical re-audit workflow:
    - `03_operations/SPEC_REAUDIT_WORKFLOW.md`
-3) Documentar el perquè del lot (1 paràgraf) i el següent lot candidat.
+3) Document why the batch (1 paragraph) and the next candidate batch.
 
 ## Non-goals
 
-- No redefineix el pipeline SDD.
-- No obliga a usar cap eina externa.
+- It does not redefine the SDD pipeline.
+- It does not force the use of any external tool.

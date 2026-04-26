@@ -1,54 +1,54 @@
-# ADR: [Número] — [Títol breu de la decisió]
+# ADR: [Number] — [Short title of the decision]
 
-> **Estat:** [PROPOSED / ACCEPTED / DEPRECATED / SUPERSEDED by ADR-XXX]
-> **Data:** [YYYY-MM-DD]
-> **Context:** [SDD feature_id si aplica]
+> **Status:** [PROPOSED / ACCEPTED / DEPRECATED / SUPERSEDED by ADR-XXX]
+> **Date:** [YYYY-MM-DD]
+> **Context:** [SDD feature_id if applicable]
 
 ---
 
 ## Context
 
-[Quin problema o oportunitat motiva aquesta decisió? Quines forces estan en joc?]
+[What problem or opportunity motivates this decision? What forces are at play?]
 
-## Decisió
+## Decision
 
-[La decisió concreta, en una frase.]
+[The concrete decision, in one sentence.]
 
-## Conseqüències
+## Consequences
 
-### Positives
-- [Conseqüència 1]
-- [Conseqüència 2]
+### Positive
+- [Consequence 1]
+- [Consequence 2]
 
-### Negatives
-- [Conseqüència 1]
-- [Conseqüència 2]
+### Negative
+- [Consequence 1]
+- [Consequence 2]
 
-### Neutres
-- [Conseqüència que no és ni bona ni dolenta, però cal documentar]
+### Neutral
+- [Consequence that is neither good nor bad, but must be documented]
 
-## Alternatives Considerades
+## Alternatives Considered
 
-| Alternativa | Pros | Cons | Decisió |
-|-------------|------|------|---------|
-| [Opció A] | ... | ... | Rebutjada perquè ... |
-| [Opció B] | ... | ... | Rebutjada perquè ... |
-| [Opció C — la triada] | ... | ... | **Acceptada** |
+| Alternative | Pros | Cons | Decision |
+|-------------|------|------|----------|
+| [Option A] | ... | ... | Rejected because ... |
+| [Option B] | ... | ... | Rejected because ... |
+| [Option C — chosen] | ... | ... | **Accepted** |
 
-## Implicacions per a SDD
+## Implications for SDD
 
-- **Features afectades:** [feat-XXX, feat-YYY]
-- **Specs que cal actualitzar:** [Si aquest ADR canvia un contracte existent]
-- **Migració requerida:** [sí/no — si sí, referència a migration_auditor]
+- **Affected features:** [feat-XXX, feat-YYY]
+- **Specs that need updating:** [If this ADR changes an existing contract]
+- **Migration required:** [yes/no — if yes, reference to migration_auditor]
 
-## Validació
+## Validation
 
-- [ ] Aquesta decisió ha estat revisada per almenys un rol diferent al que la proposa
-- [ ] No introdueix ambigüitat a cap spec validada existent
-- [ ] Té data de revisió planificada (si és temporal)
+- [ ] This decision has been reviewed by at least one role different from the one proposing it
+- [ ] It does not introduce ambiguity into any existing validated spec
+- [ ] It has a planned review date (if temporary)
 
 ---
 
-**Proposat per:** [Nom / Rol]
-**Revisat per:** [Nom / Rol]
-**Data de revisió planificada:** [YYYY-MM-DD o "Permanent"]
+**Proposed by:** [Name / Role]
+**Reviewed by:** [Name / Role]
+**Planned review date:** [YYYY-MM-DD or "Permanent"]
