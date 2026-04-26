@@ -298,7 +298,7 @@ Skills are reusable agent capabilities.
 Create:
 
 ```text
-01_execution/skills/<skill-name>.md
+01_execution/skills/SKILL_NAME.md
 ```
 
 A skill should define:
@@ -369,4 +369,3 @@ Licensed under the Apache License, Version 2.0.
 See `LICENSE` for the full text.
 
 Copyright © 2026 Oriol Coll.
-
