@@ -1,0 +1,29 @@
+{
+  "id": "feat-001",
+  "type": "SYSTEM_SPEC",
+  "state": "ARCHIVE",
+  "title": "Add health check endpoint",
+  "created_at": "2026-04-23T10:00:00Z",
+  "updated_at": "2026-04-23T14:00:00Z",
+  "design_path": "examples/hello-world-feature/design.md",
+  "spec_path": "examples/hello-world-feature/spec.md",
+  "task_path": "examples/hello-world-feature/tasks.md",
+  "task_list": [
+    "Create route handler for GET /health",
+    "Add unit test for 200 response",
+    "Add unit test for response body",
+    "Run test suite and verify"
+  ],
+  "validation_result": "PASS",
+  "validated_at": "2026-04-23T11:00:00Z",
+  "verification_result": "PASS",
+  "verification_details": "All tests pass. Response time < 100ms verified.",
+  "audit_result": "PASS",
+  "audit_reasons": [
+    "Spec is complete and deterministic",
+    "Implementation matches spec",
+    "Tests cover all SDT scenarios"
+  ],
+  "archived_at": "2026-04-23T14:00:00Z",
+  "archive_notes": "Feature completed. Health check endpoint is live."
+}
