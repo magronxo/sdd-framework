@@ -275,6 +275,8 @@ It demonstrates:
 - pre-SDD intake and triage batches
 - validation, verification, and audit reports
 
+See `examples/sdd-doctor/` for a medium-scope validation example: a diagnostic CLI built using the framework to validate SDD project structure, governance, and artifact envelopes.
+
 ---
 
 ## Customization
