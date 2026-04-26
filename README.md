@@ -1,231 +1,372 @@
-# sdd-framework — Agent-First Spec-Driven Development
+# sdd-framework
 
-> **No spec = no implementation.**
->
-> **Built for AI agents. Governed by humans.**
+![Status](https://img.shields.io/badge/status-0.1.0--beta-blue)
+![License](https://img.shields.io/badge/license-Apache--2.0-green)
+![Mode](https://img.shields.io/badge/mode-agent--first-purple)
+![Governance](https://img.shields.io/badge/governance-human--approved-lightgrey)
 
-A spec-driven development framework designed for **human-AI collaborative engineering**. The human captures intent; AI agents execute the pipeline.
+**Agent-first Spec-Driven Development for human-governed AI engineering.**
 
----
+> No spec = no implementation.
 
-## What Makes This Different?
-
-Most SDD/BDD frameworks are **human-first**: you write specs, you validate, you implement.
-
-This framework is **agent-first**:
-- You capture a **seed** (intent, bug, idea)
-- **AI agents** advance it through DESIGN → SPEC → VALIDATION → TASKS → IMPLEMENT → VERIFY → AUDIT
-- You **govern** at checkpoints: approve designs, validate specs, review audits
-- You never write a spec manually unless you want to
-
-The framework provides the **contracts, prompts, and gates** so agents operate deterministically and don't drift.
+`sdd-framework` is a contract-based SDD framework for human–AI collaborative engineering. Humans capture intent and approve checkpoints. AI agents execute the development pipeline through explicit roles, artifacts, and validation gates.
 
 ---
 
-## The Core Idea
+## At a glance
 
+| Area | Description |
+|---|---|
+| Core rule | No implementation without a validated spec |
+| Default executor | AI agents |
+| Governance model | Human approval at explicit gates |
+| Pipeline | SEED → DESIGN → SPEC → VALIDATION → TASKS → IMPLEMENT → VERIFY → AUDIT → ARCHIVE |
+| Main artifact | Feature record with phase state, ownership, and validation result |
+| Best for | Human–AI collaborative software engineering |
+
+---
+
+## Why this exists
+
+Most SDD, BDD, and RFC-style workflows are human-first: humans write the specification, humans validate it, and humans decide when implementation is safe.
+
+`sdd-framework` is agent-first:
+
+1. A human captures a seed: an intent, bug, idea, or requested change.
+2. AI agents advance that seed through a governed pipeline.
+3. Humans approve explicit checkpoints.
+4. Implementation is blocked until the spec has passed validation.
+
+The framework provides contracts, prompts, artifact formats, and gates so agents stay scoped, auditable, and aligned with the approved specification.
+
+---
+
+## Pipeline
+
+```mermaid
+flowchart LR
+    A[SEED] --> B[DESIGN]
+    B --> C[SPEC]
+    C --> D[VALIDATION]
+    D -->|validation_result: PASS| E[TASKS]
+    D -->|FAIL / BLOCKED| C
+    E --> F[IMPLEMENT]
+    F --> G[VERIFY]
+    G --> H[AUDIT]
+    H --> I[ARCHIVE]
+
+    U[Human] -. captures intent .-> A
+    U -. approves design .-> B
+    U -. reviews validation .-> D
+    U -. reviews audit .-> H
 ```
-HUMAN: "I need a health check endpoint"
-    ↓
-AGENT (Designer): "What should it do? Constraints?"
-    ↓
-HUMAN: "Lightweight, <100ms, returns JSON status"
-    ↓
-AGENT (Specifier): writes detailed spec with errors, SDT scenarios
-    ↓
-AGENT (Validator): checks completeness, determinism, implementability
-    ↓
-HUMAN: [reviews validation result] ✅
-    ↓
-AGENT (Planner): breaks into tasks
-    ↓
-AGENT (Implementer): writes code + tests
-    ↓
-AGENT (Verifier): runs tests, reports PASS/FAIL
-    ↓
-AGENT (Auditor): reviews spec-code alignment
-    ↓
-HUMAN: [reviews audit] ✅ → ARCHIVE
-```
 
-The human is the **sovereign**. Agents are the **executors**.
+> Hard rule: implementation is blocked unless the active feature record contains `validation_result: PASS`.
 
 ---
 
-## Who Is This For?
+## Core idea
+
+A feature starts as a lightweight human seed and becomes an auditable implementation through bounded agent roles.
+
+```mermaid
+sequenceDiagram
+    participant H as Human
+    participant D as Designer Agent
+    participant S as Specifier Agent
+    participant V as Validator Agent
+    participant P as Planner Agent
+    participant I as Implementer Agent
+    participant Q as Verifier Agent
+    participant A as Auditor Agent
+
+    H->>D: Capture intent
+    D->>H: Ask clarifying questions
+    D->>S: Approved design
+    S->>V: Specification
+    V->>H: Validation result
+    H->>P: Approve if PASS
+    P->>I: Ordered tasks
+    I->>Q: Code + tests
+    Q->>A: Verification evidence
+    A->>H: Audit report
+```
+
+The human remains the governing authority. Agents are bounded executors.
+
+---
+
+## What you get
+
+- **Role contracts** for designer, specifier, validator, planner, implementer, verifier, and auditor agents.
+- **Validation gates** that block implementation until the spec is complete, deterministic, and implementable.
+- **Traceable artifacts** for every phase of the feature lifecycle.
+- **Handoff rules** that prevent role mixing and hidden state.
+- **Prompt contracts** designed for agentic execution rather than manual ceremony.
+
+---
+
+## Who is this for?
 
 | Role | How you use it |
-|------|----------------|
-| **Solo developer** | AI pair programmer that follows discipline: no skipping specs, no drift |
-| **Tech lead** | Governance layer: enforce that features have validated specs before code |
-| **Product manager** | Pre-SDD intake: capture seeds, triage, prioritize, feed the pipeline |
-| **AI engineer** | Structured environment for autonomous agents with explicit contracts |
-| **Non-coder** | Describe what you need; agents spec and build it; you approve checkpoints |
+|---|---|
+| Solo developer | Use AI agents as disciplined pair programmers that cannot skip specs or drift into implementation. |
+| Tech lead | Enforce validated specs before code reaches implementation. |
+| Product manager | Capture seeds, triage ideas, and feed a governed engineering pipeline. |
+| AI engineer | Provide autonomous agents with explicit roles, contracts, and validation gates. |
+| Domain expert | Describe what you need; agents produce specs and implementation artifacts for human approval. |
 
 ---
 
-## Canonical Pipeline
+## Canonical phases
 
-```
-DESIGN → SPEC → VALIDATION → TASKS → IMPLEMENT → VERIFY → AUDIT → ARCHIVE
-```
-
-| Phase | Who | What happens |
-|-------|-----|--------------|
-| **DESIGN** | Agent (Designer) | Define WHAT. Constraints, goals, non-goals. |
-| **SPEC** | Agent (Specifier) | Define HOW. Interfaces, errors, SDT scenarios. |
-| **VALIDATION** | Agent (Validator) | Gate: spec complete? deterministic? implementable? |
-| **TASKS** | Agent (Planner) | Break spec into ordered, minimal tasks. |
-| **IMPLEMENT** | Agent (Implementer) | Execute tasks. TDD when applicable. |
-| **VERIFY** | Agent (Verifier) | Run tests + SDT scenarios. PASS/FAIL. |
-| **AUDIT** | Agent (Auditor) | Review spec-code consistency, risks, quality. |
-| **ARCHIVE** | Human (Archiver) | Close feature. Preserve artifacts for traceability. |
-
-**Hard rule**: No implementation without `validation_result: PASS`.
+| Phase | Owner | Purpose |
+|---|---|---|
+| SEED | Human | Capture intent, bug, idea, or requested change. |
+| DESIGN | Designer Agent | Define goals, constraints, non-goals, and expected outcome. |
+| SPEC | Specifier Agent | Define expected behavior, interfaces, errors, acceptance criteria, and scenario-driven tests (SDT). |
+| VALIDATION | Validator Agent | Gate the spec for completeness, determinism, and implementability. |
+| TASKS | Planner Agent | Break the validated spec into minimal ordered tasks. |
+| IMPLEMENT | Implementer Agent | Execute tasks and write tests where applicable. |
+| VERIFY | Verifier Agent | Run tests and SDT scenarios. Report PASS/FAIL with evidence. |
+| AUDIT | Auditor Agent | Review spec-code alignment, risks, quality, and traceability. |
+| ARCHIVE | Human | Close the feature and preserve artifacts. |
 
 ---
 
-## Quick Start (Human Edition)
+## Quick start
 
-### 1. Bootstrap the framework
+### 1. Clone the framework
 
 ```bash
 git clone https://github.com/magronxo/sdd-framework.git
 cd sdd-framework
-
-# Copy framework into your project
-cp -r 00_core 01_execution 02_policies 03_operations templates sdd.config.json AGENTS.md /your/project/
-
-# Initialize artifact directories
-./init-sdd.sh  # or .\init-sdd.ps1 on Windows
 ```
 
-### 2. Configure
+### 2. Copy the framework into your project
 
-Edit `sdd.config.json` for your project stack and paths.
+```bash
+cp -r 00_core 01_execution 02_policies 03_operations 04_project_governance templates docs sdd.config.json AGENTS.md /your/project/
+```
 
-### 3. Capture a seed
+### 3. Initialize artifact directories
 
-Create `03_operations/pre_sdd/seeds/2026-04-23_idea_health_check.md` using the seed template.
+```bash
+./init-sdd.sh
+```
 
-### 4. Let the agents work
+On Windows:
 
-Point your AI agent to `AGENTS.md` → `00_core/SDD_RUNTIME.md` → `00_core/SDD_HANDOFF_CONTRACT.md`.
+```powershell
+.\init-sdd.ps1
+```
 
-The agent will read the seed, ask clarifying questions, and advance through the pipeline.
+### 4. Configure your project
 
-**You intervene at gates**: approve the design, validate the spec, review the audit.
+Edit:
+
+```text
+sdd.config.json
+```
+
+Set your project paths, stack, test conventions, artifact directories, and skill registry path.
+
+### 5. Capture a seed
+
+Create a seed from the seed template:
+
+```text
+03_operations/pre_sdd/seeds/YYYY-MM-DD_idea_name.md
+```
+
+A seed can describe:
+
+- a feature idea
+- a bug
+- a refactor
+- an integration need
+- a migration
+- an operational change
+
+### 6. Start the agent workflow
+
+Point your AI agent to:
+
+```text
+AGENTS.md
+00_core/SDD_RUNTIME.md
+00_core/SDD_HANDOFF_CONTRACT.md
+00_core/SDD_READING_CONTRACT.md
+sdd.config.json
+```
+
+The agent should read the seed, ask clarifying questions, create or update the active feature record, and advance through the pipeline according to its assigned role.
 
 ---
 
-## Quick Start (Agent Edition)
+## Agent entrypoint
 
-If you are an AI agent reading this:
+If you are an AI agent reading this repository:
 
-1. Read `AGENTS.md` (entrypoint contract)
-2. Read `00_core/SDD_RUNTIME.md` (execution contract)
-3. Read `00_core/SDD_HANDOFF_CONTRACT.md` (role boundaries)
-4. Read `sdd.config.json` (project paths and configuration)
-5. Read the active feature record from `artifacts/features_for_specs/`
-6. Operate in your assigned role only
-7. STOP if ambiguity exists. Report it. Do not guess.
-
-See `00_core/SDD_READING_CONTRACT.md` for the full reading order.
-
----
-
-## Project Structure
-
-| Directory | Purpose |
-|-----------|---------|
-| `00_core/` | **Contracts**: runtime, handoffs, feature format, reading order |
-| `01_execution/prompts/` | **Agent brains**: role prompts for designer, specifier, validator, planner, implementer, verifier, auditor |
-| `01_execution/skills/` | **Capabilities**: reusable agent skills (empty by default — add your own) |
-| `02_policies/` | **Governance**: report envelopes, integration surfaces, legacy specs, validation boundaries |
-| `03_operations/` | **Workflows**: operational flow, re-audit, audit strategy, pre-SDD intake |
-| `04_project_governance/` | **Project identity**: manifest, glossary, project map |
-| `templates/` | **Document templates**: design, spec, ADR, migration plan |
-| `docs/` | **Human guides**: getting started, visual pipeline, project tour |
-| `artifacts/` | **Generated work**: feature records, designs, specs, tasks, audit reports |
-| `sdd.config.json` | **Configuration**: paths, stack, surfaces, migration settings |
+1. Read `AGENTS.md`.
+2. Read `00_core/SDD_RUNTIME.md`.
+3. Read `00_core/SDD_HANDOFF_CONTRACT.md`.
+4. Read `00_core/SDD_READING_CONTRACT.md`.
+5. Read `sdd.config.json`.
+6. Read the active feature record from `artifacts/features_for_specs/`.
+7. Operate only in your assigned role.
+8. Stop if ambiguity exists. Report it. Do not guess.
 
 ---
 
-## Key Principles
+## Project structure
 
-- **Agent-first**: The default executor is an AI agent, not a human
-- **Human-governed**: Humans capture intent, approve gates, and audit outcomes
-- **Specs are authority**: No behavior exists without a validated spec
-- **No role mixing**: Designer ≠ Specifier ≠ Implementer. Agents stay in lane.
-- **Validation gate**: `validation_result: PASS` recorded before any implementation
-- **Evidence-first**: Verification and audit require execution evidence, never assumptions
-- **Minimal context**: Agents operate on the smallest context needed for the current phase
-- **Deterministic handoffs**: Each phase produces exactly one artifact; no hidden state
+| Path | Purpose |
+|---|---|
+| `00_core/` | Runtime contracts, handoff rules, feature format, reading order. |
+| `01_execution/prompts/` | Agent role prompts for designer, specifier, validator, planner, implementer, verifier, and auditor. |
+| `01_execution/skills/` | Reusable agent skills. Empty by default; add your own. |
+| `02_policies/` | Governance rules, report envelopes, validation boundaries, and integration surfaces. |
+| `03_operations/` | Operational workflows, pre-SDD intake, re-audit flow, and audit strategy. |
+| `04_project_governance/` | Project identity, glossary, manifest, and project map. |
+| `templates/` | Templates for design docs, specs, ADRs, migration plans, and related artifacts. |
+| `docs/` | Human-facing guides and project documentation. |
+| `artifacts/` | Generated work: feature records, designs, specs, tasks, reports, and audits. |
+| `sdd.config.json` | Project configuration: paths, stack, surfaces, migration settings, and registry paths. |
+| `AGENTS.md` | Main agent entrypoint and execution contract. |
+
+---
+
+## Key principles
+
+| Principle | Meaning |
+|---|---|
+| Agent-first | The default executor is an AI agent, not a human. |
+| Human-governed | Humans capture intent, approve gates, and review outcomes. |
+| Specs are authority | Behavior must be backed by a validated spec. |
+| No role mixing | Designer ≠ Specifier ≠ Implementer. Agents stay in lane. |
+| Validation gate | `validation_result: PASS` is required before implementation. |
+| Evidence-first | Verification and audit require execution evidence, not assumptions. |
+| Minimal context | Agents use the smallest context needed for the current phase. |
+| Deterministic handoffs | Each phase produces explicit artifacts; no hidden state. |
 
 ---
 
 ## Comparison
 
-| Framework | Human effort | Agent effort | Governance | Best for |
-|-----------|-----------|-------------|------------|----------|
-| **BDD / Cucumber** | High (write Gherkin, implement tests) | Low (run tests) | None | Human teams with test discipline |
-| **MetaGPT / CrewAI** | Low (describe goal) | High (agents decide everything) | Weak | Rapid prototyping |
-| **Rust RFC / PEP** | High (write proposal, discuss, implement) | None | Strong (core team) | Language standards |
-| **This SDD** | Medium (capture intent, approve gates) | High (agents execute pipeline) | Strong (explicit contracts) | **Human-AI collaborative engineering** |
+| Framework | Human effort | Agent effort | Governance model | Best for |
+|---|---:|---:|---|---|
+| BDD / Cucumber | High | Low | Team-defined | Human teams with strong test discipline |
+| MetaGPT / CrewAI | Low | High | Agent-driven | Rapid prototyping and autonomous workflows |
+| Rust RFC / PEP | High | None | Committee / maintainer-governed | Language and platform evolution |
+| `sdd-framework` | Medium | High | Contract-based, human-approved | Human–AI collaborative engineering |
 
 ---
 
-## Example: Real-World Usage
+## Example usage
 
-See `examples/agenticos/` for a **production example** of this framework in use. It contains:
-- 70+ completed features with full artifact chains
-- Historical evolution of the framework
-- Demonstration of all pipeline phases
-- Pre-SDD intake and triage batches
+See `examples/agenticos/` for a production-style example of this framework in use.
+
+It demonstrates:
+
+- completed feature artifact chains
+- historical evolution of the framework
+- all major pipeline phases
+- pre-SDD intake and triage batches
+- validation, verification, and audit reports
 
 ---
 
 ## Customization
 
-### Adapting Prompts
+### Adapting prompts
 
-The prompts in `01_execution/prompts/` are **agent role contracts**. Customize them for:
-- Your stack (languages, frameworks)
-- Your testing conventions
-- Your organizational constraints
+The prompts in `01_execution/prompts/` are agent role contracts. Customize them for:
 
-Keep the core structure and handoff rules intact.
+- your programming language
+- your framework
+- your test conventions
+- your review process
+- your organizational constraints
 
-### Adding Skills
+Keep the core structure, phase boundaries, and handoff rules intact.
 
-Skills are reusable agent capabilities:
+### Adding skills
 
-1. Create `01_execution/skills/<skill-name>.md`
-2. Define: type, trigger, inputs, outputs, scope, failure_mode
-3. Register in `skills_registry.json` (path set in `sdd.config.json`)
+Skills are reusable agent capabilities.
 
-See `01_execution/skills/README.md` for the minimum skill contract.
+Create:
+
+```text
+01_execution/skills/<skill-name>.md
+```
+
+A skill should define:
+
+- type
+- trigger
+- inputs
+- outputs
+- scope
+- failure mode
+
+Register the skill in the configured skill registry path from `sdd.config.json`.
+
+See:
+
+```text
+01_execution/skills/README.md
+```
+
+---
+
+## Non-goals
+
+`sdd-framework` is not:
+
+- a general-purpose agent framework
+- a replacement for human engineering judgment
+- a project management tool
+- a guarantee that LLM output is correct
+- a fully autonomous software factory
+
+It is a governance and execution framework for keeping AI-assisted development scoped, validated, and auditable.
 
 ---
 
 ## Contributing
 
-This is a young framework. All feedback is valuable, especially:
-- **Validation reports**: How does SDD work in your project? What frictions did agents hit?
-- **Stack adaptations**: How did you adapt the prompts for your language/framework?
-- **New domains**: Using SDD outside software? Tell us.
+This is an early framework. Feedback is valuable, especially around:
+
+- validation reports from real projects
+- prompt adaptations for different stacks
+- friction points encountered by agents
+- new skills or role contracts
+- use cases outside software engineering
 
 See `CONTRIBUTING.md` for details.
 
 ---
 
-**Version:** 0.1.0-beta  
-**License:** Apache-2.0  
-**Copyright:** 2026 Oriol Coll
+## Status
+
+Current version: `0.1.0-beta`
+
+The framework is usable, but still early. Expect changes in:
+
+- prompt contracts
+- artifact schemas
+- skill registration
+- examples
+- project initialization flow
 
 ---
 
 ## License
 
-Licensed under the Apache License, Version 2.0.  
-See [LICENSE](LICENSE) for full text.
+Licensed under the Apache License, Version 2.0.
+
+See `LICENSE` for the full text.
+
+Copyright © 2026 Oriol Coll.
+
