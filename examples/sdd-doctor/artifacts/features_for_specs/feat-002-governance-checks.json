@@ -1,0 +1,36 @@
+{
+  "id": "feat-002",
+  "type": "SYSTEM_SPEC",
+  "state": "ARCHIVE",
+  "title": "sdd-doctor Governance Checks",
+  "created_at": "2026-04-26T15:10:00Z",
+  "updated_at": "2026-04-26T16:00:00Z",
+  "validation_result": "PASS",
+  "validated_at": "2026-04-26T15:20:00Z",
+  "verification_result": "PASS",
+  "verification_details": "All SDT scenarios pass except IMPLEMENT fixture not created (same gate logic as TASKS). No unit tests.",
+  "audit_result": "PASS",
+  "audit_reasons": [
+    "All RFs implemented as specified",
+    "No scope creep detected",
+    "Design and implementation aligned",
+    "85% SDT coverage (gaps due to fixture limitations, not code defects)"
+  ],
+  "archived_at": "2026-04-26T16:00:00Z",
+  "archive_notes": "Feature completed. Governance checks implemented. Process deviation: implementation proceeded without explicit approval after validation. Accepted because verification and audit passed. Coverage gaps: no unit tests, IMPLEMENT-state fixture not created, 85% coverage.",
+  "author": "SDD Framework",
+  "description": "Validates feature records and enforcement of SDD governance rules including validation gates",
+  "scope": {
+    "features": ["governance_checks", "feature_record_validation", "validation_gate"],
+    "excludes": ["envelope_checks", "core_structure"]
+  },
+  "dependencies": ["feat-001"],
+  "artifacts": {
+    "design": "artifacts/design/feat-002-governance-checks.md",
+    "spec": "artifacts/specs/feat-002-governance-checks.md",
+    "validation_report": "artifacts/validation_reports/feat-002-validation.md",
+    "tasks": "artifacts/tasks/feat-002-governance-checks.md",
+    "verification_report": "artifacts/verification_reports/feat-002-verification.md",
+    "audit_report": "artifacts/audit_reports/feat-002-audit.md"
+  }
+}

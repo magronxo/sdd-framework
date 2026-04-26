@@ -1,0 +1,9 @@
+{
+  "id": "feat-001",
+  "type": "SYSTEM_SPEC",
+  "state": "TASKS",
+  "title": "Test feature in TASKS state",
+  "created_at": "2026-04-26T10:00:00Z",
+  "updated_at": "2026-04-26T10:00:00Z",
+  "validation_result": "PASS"
+}

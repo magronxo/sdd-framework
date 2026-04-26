@@ -1,0 +1,36 @@
+{
+  "id": "feat-003",
+  "type": "SYSTEM_SPEC",
+  "state": "ARCHIVE",
+  "title": "sdd-doctor Artifact Envelope Checks",
+  "created_at": "2026-04-26T16:30:00Z",
+  "updated_at": "2026-04-26T17:30:00Z",
+  "validation_result": "PASS",
+  "validated_at": "2026-04-26T16:45:00Z",
+  "verification_result": "PASS",
+  "verification_details": "All 8 unit tests pass. All SDT scenarios covered.",
+  "audit_result": "PASS",
+  "audit_reasons": [
+    "All RFs implemented as specified",
+    "No scope creep detected",
+    "Design and implementation aligned",
+    "100% SDT coverage via unit tests"
+  ],
+  "archived_at": "2026-04-26T17:30:00Z",
+  "archive_notes": "Feature completed with full unit test coverage. Unit tests encouraged per local sdd-doctor convention.",
+  "author": "SDD Framework",
+  "description": "Validates SDD artifact envelopes: required sections in specs, validation reports, and audit reports",
+  "scope": {
+    "features": ["artifact_envelope_checks", "spec_validation", "validation_report_validation", "audit_report_validation"],
+    "excludes": ["governance_checks", "core_structure"]
+  },
+  "dependencies": ["feat-001", "feat-002"],
+  "artifacts": {
+    "design": "artifacts/design/feat-003-artifact-envelope-checks.md",
+    "spec": "artifacts/specs/feat-003-artifact-envelope-checks.md",
+    "validation_report": "artifacts/validation_reports/feat-003-validation.md",
+    "tasks": "artifacts/tasks/feat-003-artifact-envelope-checks.md",
+    "verification_report": "artifacts/verification_reports/feat-003-verification.md",
+    "audit_report": "artifacts/audit_reports/feat-003-audit.md"
+  }
+}

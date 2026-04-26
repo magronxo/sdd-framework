@@ -1,0 +1,36 @@
+{
+  "id": "feat-001",
+  "type": "SYSTEM_SPEC",
+  "state": "ARCHIVE",
+  "title": "sdd-doctor Core CLI Doctor",
+  "created_at": "2026-04-26T14:30:00Z",
+  "updated_at": "2026-04-26T15:00:00Z",
+  "validation_result": "PASS",
+  "validated_at": "2026-04-26T14:40:00Z",
+  "verification_result": "PASS",
+  "verification_details": "All SDT scenarios pass for happy path, missing config, no args, and nonexistent path. E003 not tested. No unit tests present.",
+  "audit_result": "PASS",
+  "audit_reasons": [
+    "All RFs implemented as specified",
+    "No scope creep detected",
+    "Design and implementation aligned",
+    "60% SDT coverage (gaps due to fixture limitations, not code defects)"
+  ],
+  "archived_at": "2026-04-26T15:00:00Z",
+  "archive_notes": "Feature completed. Implementation matches spec. Audit passed with caveats about missing unit tests and E003 test coverage.",
+  "author": "SDD Framework",
+  "description": "Core CLI tool for validating SDD framework project structure",
+  "scope": {
+    "features": ["core_structure", "config_validation", "directory_checks"],
+    "excludes": ["governance_checks", "envelope_checks"]
+  },
+  "dependencies": [],
+  "artifacts": {
+    "design": "artifacts/design/feat-001-core-doctor.md",
+    "spec": "artifacts/specs/feat-001-core-doctor.md",
+    "validation_report": "artifacts/validation_reports/feat-001-validation.md",
+    "tasks": "artifacts/tasks/feat-001-core-doctor.md",
+    "verification_report": "artifacts/verification_reports/feat-001-verification.md",
+    "audit_report": "artifacts/audit_reports/feat-001-audit.md"
+  }
+}

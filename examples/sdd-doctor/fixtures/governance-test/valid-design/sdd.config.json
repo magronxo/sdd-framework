@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "name": "governance-test",
+  "framework_version": "0.1.0",
+  "type": "project",
+  "paths": {
+    "root": ".",
+    "core": "./00_core",
+    "artifacts": "./artifacts"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "valid-test-project",
+  "framework_version": "0.1.0",
+  "type": "project",
+  "paths": {
+    "root": ".",
+    "core": "./00_core",
+    "artifacts": "./artifacts",
+    "policies": "./02_policies",
+    "governance": "./04_project_governance"
+  }
+}
