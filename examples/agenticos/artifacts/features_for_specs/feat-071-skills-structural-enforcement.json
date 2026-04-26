@@ -1,0 +1,81 @@
+{
+  "feature_id": "feat-071",
+  "title": "Skills Structural Enforcement v1",
+  "type": "SYSTEM_SPEC",
+  "state": "ARCHIVED",
+  "created_at": "2026-04-12T00:00:00Z",
+  "updated_at": "2026-04-12T19:07:00Z",
+  "validated_at": "2026-04-12T19:06:00Z",
+  "verified_at": "2026-04-12T19:06:30Z",
+  "implemented_at": "2026-04-12T19:05:00Z",
+  "archived_at": "2026-04-12T19:07:00Z",
+  "validation_result": "PASS",
+  "verification_result": "PASS",
+  "audit_result": "PASS",
+  "design_artifacts": [
+    "00_project_documentation/SDD/artifacts/design/feat-071-skills-structural-enforcement.md"
+  ],
+  "spec_artifacts": [
+    "00_project_documentation/SDD/artifacts/specs/feat-071-skills-structural-enforcement.md"
+  ],
+  "task_artifacts": [
+    "00_project_documentation/SDD/artifacts/tasks/feat-071-skills-structural-enforcement.md"
+  ],
+  "verify_artifacts": [
+    "00_project_documentation/SDD/audit_reports/verify_feat-071-skills-structural-enforcement_2026-04-12.md"
+  ],
+  "audit_artifacts": [
+    "00_project_documentation/SDD/audit_reports/audit_feat-071-skills-structural-enforcement_2026-04-12.md"
+  ],
+  "implementation_summary": {
+    "files_created": [
+      "04_tools/skillsStructuralCheck.ps1"
+    ],
+    "files_modified": [],
+    "tests_created": [],
+    "test_results": "Manual validation: 3/3 scenarios PASS (skill declared, skill missing, no patterns)"
+  },
+  "skills_doctor": {
+    "status": "PASS",
+    "timestamp": "2026-04-12T19:05:23Z",
+    "check_type": "structural_enforcement",
+    "triggered_rules": [
+      {
+        "pattern": "**/*_test.go",
+        "skill_required": "golang-testing",
+        "matched_files": ["internal/api/handlers_approvals_test.go"]
+      }
+    ],
+    "declared_skills": ["golang-testing", "golang-patterns"],
+    "justifications": [],
+    "missing_skills": [],
+    "promoted_count": 1
+  },
+  "structural_enforcement_rules": [
+    {
+      "pattern": "**/*_test.go",
+      "skill_required": "golang-testing"
+    },
+    {
+      "pattern": "02_implementation/internal/**/*.go",
+      "skill_required": "golang-patterns"
+    }
+  ],
+  "valid_justifications": [
+    "JUSTIFIED: comentari",
+    "JUSTIFIED: auto-skeleton",
+    "JUSTIFIED: rollback",
+    "JUSTIFIED: refactoring sense patrons nous"
+  ],
+  "out_of_scope": [
+    "Rules for React/TypeScript stacks",
+    "Skill autoinstal·lació",
+    "Changes to skills.ps1 doctor",
+    "Changes to verifier.md or sdd-audit.md",
+    "Expert system for complex pattern detection"
+  ],
+  "dependencies": [
+    "feat-066 (SKILLS-01 Skills Enforcement Canary)",
+    "feat-045/046 (Skills Maturity/Enforcement)"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "feature_id": "feat-076",
+  "title": "Dashboard Null-Safe Lists",
+  "status": "ARCHIVED",
+  "archived_at": "2026-04-18",
+  "spec_version": "1.0",
+  "validation_result": "PASS",
+  "verification_result": "PASS",
+  "audit_result": "PASS",
+  "design_artifacts": [
+    "00_project_documentation/SDD/artifacts/design/feat-076-dashboard-null-safe-lists-design.md"
+  ],
+  "spec_artifacts": [
+    "00_project_documentation/SDD/artifacts/specs/feat-076-dashboard-null-safe-lists-spec.md"
+  ],
+  "task_artifacts": [
+    "00_project_documentation/SDD/artifacts/tasks/feat-076-dashboard-null-safe-lists-tasks.md"
+  ],
+  "verify_artifacts": [
+    "00_project_documentation/SDD/audit_reports/verify_feat-076-dashboard-null-safe-lists_2026-04-18.md"
+  ],
+  "audit_artifacts": [
+    "00_project_documentation/SDD/audit_reports/audit_feat-076-dashboard-null-safe-lists_2026-04-18.md"
+  ],
+  "implementation_summary": {
+    "files_created": [
+      "02_implementation/agentic-ide/src/lib/arrays.ts",
+      "02_implementation/internal/api/handlers_dashboard_test.go"
+    ],
+    "files_modified": [
+      "02_implementation/internal/api/handlers_approvals.go",
+      "02_implementation/internal/api/handlers_dashboard.go",
+      "02_implementation/internal/api/handlers_session.go",
+      "02_implementation/agentic-ide/src/features/approvals/ApprovalPanel.tsx",
+      "02_implementation/agentic-ide/src/features/sessions/SessionTreePanel.tsx",
+      "02_implementation/agentic-ide/src/features/session-tree/SessionSelector.tsx",
+      "02_implementation/agentic-ide/src/features/engram/EngramPanel.tsx",
+      "02_implementation/agentic-ide/src/features/flow/FlowCanvas.tsx"
+    ],
+    "tests_created": [
+      "TestHandleApprovalsList_EmptyReturnsEmptyArray",
+      "TestHandleTicketsList_EmptyReturnsEmptyArray",
+      "TestHandleLogs_NoLogsDirReturnsEmptyArrays"
+    ],
+    "test_results": "13/13 PASS (10 preexisting + 3 new)"
+  },
+  "key_decisions": [
+    "Helper asArray<T> al frontend en lloc de canvis a l'API client",
+    "Normalització nil → [] en tots els handlers afectats",
+    "No introduïm Zod schemas (out of scope per MVP)"
+  ],
+  "surfaces": {
+    "os_fs": "Read-only en handlers afectats",
+    "network": "HTTP endpoints GET",
+    "env_proxy": "AGENTICOS_DATA_DIR per a tests"
+  },
+  "out_of_scope": [
+    "Refactor estat global UI",
+    "Canvis arquitectura Approvals/Tickets",
+    "Nou test harness frontend",
+    "Zod schemas"
+  ],
+  "dependencies": [
+    "feat-067 (Approvals Backend MVP)",
+    "feat-058 (TUI API Baseline)"
+  ]
+}

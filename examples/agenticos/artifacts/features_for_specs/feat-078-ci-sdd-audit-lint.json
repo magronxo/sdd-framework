@@ -1,0 +1,61 @@
+{
+  "feature_id": "feat-078",
+  "title": "CI SDD Audit Lint GitHub Actions",
+  "state": "ARCHIVED",
+  "archived_at": "2026-04-18",
+  "spec_version": "1.0",
+  "validation_result": "PASS",
+  "verification_result": "PARTIAL",
+  "audit_result": "WARN",
+  "spec_artifacts": [
+    "00_project_documentation/SDD/artifacts/specs/feat-078-ci-sdd-audit-lint-spec.md"
+  ],
+  "design_artifacts": [
+    "00_project_documentation/SDD/artifacts/design/feat-078-ci-sdd-audit-lint-design.md"
+  ],
+  "task_artifacts": [
+    "00_project_documentation/SDD/artifacts/tasks/feat-078-ci-sdd-audit-lint-tasks.md"
+  ],
+  "verify_artifacts": [
+    "00_project_documentation/SDD/audit_reports/verify_feat-078-ci-sdd-audit-lint_2026-04-18.md"
+  ],
+  "implementation_summary": {
+    "files_created": [
+      ".github/workflows/sdd-audit-lint.yml"
+    ],
+    "files_modified": [],
+    "tests_created": [
+      "YAML syntax validation: PASS"
+    ],
+    "test_results": "1/1 PASS"
+  },
+  "workflow_contract": {
+    "triggers": [
+      "pull_request (paths filter: features_for_specs/*.json)",
+      "push to main (paths filter: features_for_specs/*.json)"
+    ],
+    "runtime": "ubuntu-latest",
+    "shell": "pwsh",
+    "changed_files_detection": "git diff --name-only base_sha head_sha",
+    "filter_pattern": "00_project_documentation/SDD/artifacts/features_for_specs/*.json",
+    "skip_behavior": "exit 0 with 'No feature records changed; skipping' log",
+    "lint_invocation": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./04_tools/sdd-audit-lint.ps1 -FeatureRecordPath <path> -Mode report -UseGitDiff:$false",
+    "exit_code_propagation": {
+      "0": "PASS (step succeeds)",
+      "1": "FAIL (lint governance failure → step fails)",
+      "2": "FAIL (usage error → step fails)"
+    },
+    "no_secrets": true,
+    "no_external_dependencies": true
+  },
+  "out_of_scope": [
+    "Matrix parallelization",
+    "Artifact uploads",
+    "workflow_dispatch manual trigger",
+    "Non-Ubuntu runners"
+  ],
+  "dependencies": [
+    "feat-075 (sdd-audit-lint baseline)",
+    "feat-077 (E_SEC_CONTROLS_MAP_REQUIRED gate)"
+  ]
+}

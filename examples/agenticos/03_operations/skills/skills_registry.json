@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "name": "golang-testing",
+      "type": "implementation",
+      "trigger": "Quan s’estiguin escrivint o revisant tests Go (_test.go), taules de tests, subtests, coverage o benchmarks.",
+      "inputs": ["Go source", "tests existents", "scenaris SDT de la spec"],
+      "outputs": ["Guia de testing Go", "patrons de tests", "checklist de verificació"],
+      "scope": "Qualitat i patrons de testing en Go (determinisme, cobertura i mantenibilitat).",
+      "context_dependency": "Depèn del layout del repo i de la suite de tests existent; sempre s’ha de validar amb `go test`.",
+      "failure_mode": "Pot proposar patrons no compatibles amb el repo; si hi ha dubte, prioritzar tests mínims i consistència amb el codi existent.",
+      "vendor_path": "02_implementation/skills/vendor/golang-testing",
+      "source": {
+        "kind": "external-skill",
+        "upstream_path": "C:/Users/oriol/.agents/skills/golang-testing",
+        "provenance": "skills.sh (local install)"
+      }
+    },
+    {
+      "name": "golang-patterns",
+      "type": "implementation",
+      "trigger": "Quan s’implementin components Go deterministes (errors, context, concurrència bàsica, disseny d’API).",
+      "inputs": ["Go source", "spec validada", "constraints de determinisme/seguretat"],
+      "outputs": ["Patrons idiomàtics Go", "recomanacions d’estructura i errors", "checklist d’anti-patterns"],
+      "scope": "Patrons i convencions Go aplicables al codi runtime i eines del repo.",
+      "context_dependency": "Depèn de les convencions del repo i de versions de Go; validar amb tests i build.",
+      "failure_mode": "Pot recomanar patrons massa generals; si hi ha conflicte, prioritzar consistència amb el codi existent.",
+      "vendor_path": "02_implementation/skills/vendor/golang-patterns",
+      "source": {
+        "kind": "external-skill",
+        "upstream_path": "C:/Users/oriol/.agents/skills/golang-patterns",
+        "provenance": "skills.sh (local install)"
+      }
+    },
+    {
+      "name": "react-flow",
+      "type": "implementation",
+      "trigger": "Quan s’usi React Flow (@xyflow/react) per visualitzar o editar workflows (nodes/edges, handles, viewport).",
+      "inputs": ["Components React", "nodes/edges", "requisits de UX"],
+      "outputs": ["Patrons bàsics React Flow", "ús correcte d’APIs", "pitfalls comuns"],
+      "scope": "Implementació base amb React Flow.",
+      "context_dependency": "Depèn de la versió d’@xyflow/react i del patró d’estat del projecte.",
+      "failure_mode": "Pot quedar massa genèric; adaptar a l’arquitectura real abans d’implementar.",
+      "vendor_path": "02_implementation/skills/vendor/react-flow",
+      "source": {
+        "kind": "external-skill",
+        "upstream_path": "C:/Users/oriol/.agents/skills/react-flow",
+        "provenance": "skills.sh (local install)"
+      }
+    },
+    {
+      "name": "react-flow-implementation",
+      "type": "implementation",
+      "trigger": "Quan calgui implementar correctament nodes/edges custom, estat i viewport a React Flow.",
+      "inputs": ["Codi React", "nodes/edges state", "requisits d’interacció"],
+      "outputs": ["Patrons d’implementació React Flow", "estructura recomanada", "guia de state management"],
+      "scope": "Implementació pràctica de React Flow amb focus en correcció i mantenibilitat.",
+      "context_dependency": "Depèn del framework (React/Next) i de la forma de persistència/estat triada.",
+      "failure_mode": "Risc de sobredisseny; prioritzar mínim necessari per complir spec.",
+      "vendor_path": "02_implementation/skills/vendor/react-flow-implementation",
+      "source": {
+        "kind": "external-skill",
+        "upstream_path": "C:/Users/oriol/.agents/skills/react-flow-implementation",
+        "provenance": "skills.sh (local install)"
+      }
+    },
+    {
+      "name": "react-flow-code-review",
+      "type": "analysis",
+      "trigger": "Quan s’hagi de revisar codi React Flow per anti-patterns, performance i bones pràctiques.",
+      "inputs": ["Diff/fitxers React Flow", "perf symptoms", "constraints del projecte"],
+      "outputs": ["Findings concrets", "recomanacions de canvi", "checklist de regressions"],
+      "scope": "Revisió de codi amb React Flow (qualitat i performance).",
+      "context_dependency": "Depèn del volum de nodes/edges i del patró de re-render; cal evidència (profiling o reproducció).",
+      "failure_mode": "Pot suggerir optimitzacions prematures; només aplicar si hi ha evidència o risc clar.",
+      "vendor_path": "02_implementation/skills/vendor/react-flow-code-review",
+      "source": {
+        "kind": "external-skill",
+        "upstream_path": "C:/Users/oriol/.agents/skills/react-flow-code-review",
+        "provenance": "skills.sh (local install)"
+      }
+    },
+    {
+      "name": "react-flow-architecture",
+      "type": "analysis",
+      "trigger": "Quan s’hagin de prendre decisions d’arquitectura per apps basades en React Flow (state, integració, escalabilitat).",
+      "inputs": ["Requisits funcionals", "constraints", "arquitectura existent"],
+      "outputs": ["Opcions d’arquitectura", "tradeoffs", "recomanacions"],
+      "scope": "Decisions d’arquitectura per projectes amb React Flow (sense implementació directa).",
+      "context_dependency": "Depèn del producte i del model de dades; s’ha d’alinear amb l’SDD i el codi runtime.",
+      "failure_mode": "Pot introduir abstraccions; si no estan justificades per la spec, descartar.",
+      "vendor_path": "02_implementation/skills/vendor/react-flow-architecture",
+      "source": {
+        "kind": "external-skill",
+        "upstream_path": "C:/Users/oriol/.agents/skills/react-flow-architecture",
+        "provenance": "skills.sh (local install)"
+      }
+    },
+    {
+      "name": "react-flow-advanced",
+      "type": "implementation",
+      "trigger": "Quan s’implementin casos avançats amb React Flow (@xyflow/react): subflows, custom connection lines, DnD, undo/redo, sincronització d’estat complexa.",
+      "inputs": ["Components React", "nodes/edges state", "requisits UI/UX"],
+      "outputs": ["Patrons avançats React Flow", "exemples d’implementació", "pitfalls i mitigacions"],
+      "scope": "Implementació avançada sobre React Flow, enfocada a patrons i edge cases.",
+      "context_dependency": "Depèn de la versió d’@xyflow/react i de l’arquitectura d’estat del projecte (React state/store).",
+      "failure_mode": "Pot generar solucions massa complexes; prioritzar solucions mínimes i verificables.",
+      "vendor_path": "02_implementation/skills/vendor/react-flow-advanced",
+      "source": {
+        "kind": "project-snapshot",
+        "upstream_path": "02_implementation/.agents/skills/react-flow-advanced",
+        "provenance": "existing repo copy"
+      }
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "type": "implementation",
+      "trigger": "Quan s’escrigui o refactoritzi React/Next.js amb focus en performance (data fetching, components, bundling).",
+      "inputs": ["Codi React/Next", "perf symptoms", "requisits de UX"],
+      "outputs": ["Best practices", "patrons recomanats", "anti-patterns a evitar"],
+      "scope": "Bones pràctiques React/Next orientades a performance i mantenibilitat.",
+      "context_dependency": "Depèn del setup (Next App Router/Pages), SSR/CSR, i constraints del projecte.",
+      "failure_mode": "Pot recomanar canvis no compatibles amb l’arquitectura actual; validar incrementalment.",
+      "vendor_path": "02_implementation/skills/vendor/vercel-react-best-practices",
+      "source": {
+        "kind": "external-skill",
+        "upstream_path": "C:/Users/oriol/.agents/skills/vercel-react-best-practices",
+        "provenance": "skills.sh (local install)"
+      }
+    },
+    {
+      "name": "vercel-react-native-skills",
+      "type": "implementation",
+      "trigger": "Quan es treballi amb React Native o Expo: performance de llistes, animacions, UI patterns, i APIs natives.",
+      "inputs": ["Codi RN/Expo", "perf symptoms", "requisits plataforma"],
+      "outputs": ["Best practices", "checklist de performance", "recomanacions de configuració"],
+      "scope": "Guia de bones pràctiques per React Native/Expo.",
+      "context_dependency": "Depèn de la plataforma (iOS/Android) i de l’stack (Expo vs bare).",
+      "failure_mode": "Pot ser massa genèrica; validar sempre amb profiling i constraints del projecte.",
+      "vendor_path": "02_implementation/skills/vendor/vercel-react-native-skills",
+      "source": {
+        "kind": "project-snapshot",
+        "upstream_path": "02_implementation/.agents/skills/vercel-react-native-skills",
+        "provenance": "existing repo copy"
+      }
+    }
+  ]
+}

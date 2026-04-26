@@ -1,0 +1,64 @@
+{
+  "feature_id": "TUI-02",
+  "title": "TUI Connectivity Hardening",
+  "type": "SYSTEM_SPEC",
+  "status": "ARCHIVED",
+  "validation_result": "PASS",
+  "verification_result": "PASS",
+  "audit_result": "PASS",
+  "created_at": "2026-04-12T00:30:00Z",
+  "updated_at": "2026-04-12T00:50:00Z",
+  "validated_at": "2026-04-12T00:35:00Z",
+  "verified_at": "2026-04-12T00:40:00Z",
+  "implemented_at": "2026-04-12T00:38:00Z",
+  "archived_at": "2026-04-12T00:50:00Z",
+  "design_artifacts": [
+    "00_project_documentation/SDD/artifacts/design/tui-02-tui-connectivity-hardening.md"
+  ],
+  "spec_artifacts": [
+    "00_project_documentation/SDD/artifacts/specs/tui-02-tui-connectivity-hardening.md"
+  ],
+  "task_artifacts": [
+    "00_project_documentation/SDD/artifacts/tasks/tui-02-tui-connectivity-hardening.md"
+  ],
+  "verify_artifacts": [
+    "00_project_documentation/SDD/audit_reports/verify_tui-02-tui-connectivity-hardening_2026-04-12.md"
+  ],
+  "audit_artifacts": [
+    "00_project_documentation/SDD/audit_reports/audit_tui-02-tui-connectivity-hardening_2026-04-12.md"
+  ],
+  "implementation_summary": {
+    "files_created": [],
+    "files_modified": [
+      "02_implementation/cmd/dashboard/internal/tui/client.go",
+      "02_implementation/cmd/dashboard/internal/tui/model.go",
+      "02_implementation/cmd/dashboard/internal/tui/view.go",
+      "02_implementation/cmd/dashboard/internal/tui/update.go",
+      "02_implementation/cmd/dashboard/internal/tui/model_test.go"
+    ],
+    "tests_created": [
+      "TestESCNavigation",
+      "TestScreenStackPush"
+    ],
+    "test_results": "17/17 PASS"
+  },
+  "dependencies": [
+    "feat-058 (TUI-01 TUI-API Baseline)",
+    "feat-064 (SEC-02b Step-up Local Fort)",
+    "feat-065 (SEC-05 Security Reports MVP)"
+  ],
+  "out_of_scope": [
+    "No new backend endpoints",
+    "No polling/auto-refresh",
+    "No visual style changes"
+  ],
+  "key_changes": [
+    "Added GetLogs, GetKernelEvents, GetApprovals, GetSecurityReport to client",
+    "Added ScreenStack and ScreenSecurityReport to model",
+    "Replaced demo data with API calls in navigateToScreen",
+    "Added ESC navigation and stack-based back",
+    "Updated CanTransitionTo to suggest step-up for FULL",
+    "Added [U] step-up request from Status screen",
+    "7-option MainMenu with Security Report"
+  ]
+}

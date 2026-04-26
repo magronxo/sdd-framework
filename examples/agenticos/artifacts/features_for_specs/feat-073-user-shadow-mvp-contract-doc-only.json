@@ -1,0 +1,77 @@
+{
+  "feature_id": "feat-073",
+  "title": "User Shadow MVP Contract (Doc-Only)",
+  "type": "SYSTEM_SPEC",
+  "state": "ARCHIVED",
+  "created_at": "2026-04-12T19:18:00Z",
+  "updated_at": "2026-04-12T19:22:00Z",
+  "validated_at": "2026-04-12T19:19:00Z",
+  "verified_at": "2026-04-12T19:20:00Z",
+  "archived_at": "2026-04-12T19:22:00Z",
+  "validation_result": "PASS",
+  "verification_result": "PASS",
+  "audit_result": "PASS",
+  "design_artifacts": [
+    "00_project_documentation/SDD/artifacts/design/feat-073-user-shadow-mvp-contract-doc-only.md"
+  ],
+  "spec_artifacts": [
+    "00_project_documentation/SDD/artifacts/specs/feat-073-user-shadow-mvp-contract-doc-only.md"
+  ],
+  "task_artifacts": [
+    "00_project_documentation/SDD/artifacts/tasks/feat-073-user-shadow-mvp-contract-doc-only.md"
+  ],
+  "verify_artifacts": [
+    "00_project_documentation/SDD/audit_reports/verify_feat-073-user-shadow-mvp-contract-doc-only_2026-04-12.md"
+  ],
+  "audit_artifacts": [
+    "00_project_documentation/SDD/audit_reports/audit_feat-073-user-shadow-mvp-contract-doc-only_2026-04-12.md"
+  ],
+  "implementation_summary": {
+    "files_created": [],
+    "files_modified": [],
+    "tests_created": [],
+    "note": "Doc-only MVP. No implementation. Contract defines WHAT IS (observer + adversarial advisor on-demand) and WHAT IS NOT (security, delegation, automation, ML)."
+  },
+  "seed_handoff": {
+    "seed_id": "SEED-04",
+    "dossier": "00_project_documentation/SDD/artifacts/pre_sdd/seed_dossiers/SEED-04.md",
+    "entry_checklist": "11/11",
+    "batch_addendum": "triage_2026-04-12_addendum_02.md",
+    "adopted": true
+  },
+  "capabilities_coverage": {
+    "CAP-01": "SDT-073-01",
+    "CAP-02": "SDT-073-02",
+    "CAP-03": "SDT-073-03",
+    "CAP-04": "SDT-073-04",
+    "CAP-05": "SDT-073-05",
+    "CAP-06": "SDT-073-06",
+    "CAP-07": "SDT-073-07",
+    "CAP-08": "SDT-073-08",
+    "CAP-09": "SDT-073-09"
+  },
+  "contracts_defined": [
+    "Pattern Capture (input — abstracted dimensions)",
+    "Pattern Query (output on-demand)",
+    "Adversarial Suggestion (output on-demand)"
+  ],
+  "anti_drift_rules": [
+    "Transparency mandatory",
+    "Consent explicit",
+    "No unsolicited recommendations",
+    "Abstracted dimensions only"
+  ],
+  "out_of_scope": [
+    "Runtime/kernel implementation",
+    "UI or TUI changes",
+    "ML training or fine-tuning",
+    "Imitation mode without explicit consent",
+    "Sensitive data capture without anonymization",
+    "Automation based on learned patterns"
+  ],
+  "dependencies": [
+    "feat-055 (Action Log MVP)",
+    "feat-067 (Approvals Backend MVP — HITL reference)",
+    "feat-019 (Ticket Runtime Contract)"
+  ]
+}

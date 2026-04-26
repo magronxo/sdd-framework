@@ -1,0 +1,100 @@
+{
+  "feature_id": "feat-075",
+  "title": "sdd-audit-lint-readonly (Automated Governance Lint)",
+  "type": "SYSTEM_SPEC",
+  "state": "ARCHIVED",
+  "created_at": "2026-04-18T00:00:00Z",
+  "updated_at": "2026-04-18T01:00:00Z",
+  "validated_at": "2026-04-18T00:10:00Z",
+  "verified_at": "2026-04-18T00:20:00Z",
+  "archived_at": "2026-04-18T01:00:00Z",
+  "validation_result": "PASS",
+  "verification_result": "PASS",
+  "audit_result": "PASS",
+  "implementation": {
+    "files_created": [
+      "04_tools/sdd-audit-lint.ps1"
+    ],
+    "files_modified": [],
+    "tests_created": [],
+    "note": "Read-only PowerShell lint script that checks governance compliance. No external dependencies."
+  },
+  "lint_checks": [
+    {
+      "code": "E_TASKS_SKILLS_SECTION",
+      "description": "TASKS contains ## Skills section with valid table"
+    },
+    {
+      "code": "E_SKILLS_REGISTRY_EXISTS",
+      "description": "Skills declared in TASKS exist in skills_registry.json"
+    },
+    {
+      "code": "E_DOCTOR_EVIDENCE",
+      "description": "If TASKS declares skills, verify report contains doctor check evidence with exit 0"
+    },
+    {
+      "code": "E_REPORT_ENVELOPE",
+      "description": "Verify/audit reports contain required sections"
+    },
+    {
+      "code": "E_REPORT_SURFACES",
+      "description": "Reports include ## SURFACES when applicable"
+    },
+    {
+      "code": "E_FEATURE_RECORD_COHERENCE",
+      "description": "JSON has consistent validation_result/verification_result/audit_result/state"
+    },
+    {
+      "code": "E_PATHS_EXIST",
+      "description": "All paths in feature record exist on disk"
+    }
+  ],
+  "output_format": {
+    "json": {
+      "status": "ok|fail",
+      "feature_id": "feat-XXX",
+      "checks": [
+        {
+          "code": "E_XXX",
+          "status": "PASS|FAIL",
+          "details": "string"
+        }
+      ],
+      "errors": [
+        {
+          "code": "E_XXX",
+          "message": "string"
+        }
+      ]
+    },
+    "exit_codes": {
+      "0": "ok - all checks passed",
+      "1": "fail - governance violation",
+      "2": "usage/config error - paths missing, args invalid"
+    }
+  },
+  "surfaces": [
+    "os_fs (read-only file access for lint checks)",
+    "env_proxy (no external dependencies)"
+  ],
+  "verify_artifacts": [
+    "00_project_documentation/SDD/audit_reports/verify_feat-075-sdd-audit-lint-readonly_2026-04-18.md"
+  ],
+  "audit_artifacts": [
+    "00_project_documentation/SDD/audit_reports/audit_feat-075-sdd-audit-lint-readonly_2026-04-18.md"
+  ],
+  "dependencies": [
+    "feat-071 (Skills Structural Enforcement)",
+    "sdd-audit.md skill",
+    "verifier.md prompt",
+    "REPORT_ENVELOPE_POLICY.md",
+    "INTEGRATION_SURFACE_POLICY.md",
+    "skills_registry.json"
+  ],
+  "out_of_scope": [
+    "Changes to sdd-audit.md or verifier.md",
+    "Changes to skills.ps1 doctor contract",
+    "GitHub Actions integration",
+    "Modifying other feature artifacts"
+  ]
+}
