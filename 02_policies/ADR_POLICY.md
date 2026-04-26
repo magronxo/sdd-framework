@@ -1,100 +1,127 @@
-# Policy: Architecture Decision Records (ADR)
+# Policy: Architecture Decision Records (ADRs)
 
-> **Mode Diátaxis**: Reference
-
-## Purpose
-
-Define when, how, and where to record **architecture decisions** that affect the project's structure, stack, or non-negotiable constraints.
-
-An ADR is **not** for every code change. It is for decisions that:
-- Are difficult or expensive to reverse
-- Affect multiple features or teams
-- Change a non-negotiable constraint (see `04_project_governance/PROJECT_MANIFEST.md`)
-- Introduce or remove a significant dependency
+> **Diátaxis Mode**: Reference
+> **Status:** Active
+> **Date:** 2026-04-26
+> **Scope:** All architectural and philosophical decisions affecting the project
 
 ---
 
-## When to Write an ADR
+## 1. Purpose
 
-### Must Write
+Define when, how, and by whom an Architecture Decision Record (ADR) must be written.
 
-| Situation | Example |
-|-----------|---------|
-| Changing the technology stack | "Switch from SQLite to PostgreSQL" |
-| Adding a new integration surface | "Add WebSocket support for real-time updates" |
-| Modifying a non-negotiable constraint | "Relax the 'no external dependencies' rule for auth" |
-| Changing the SDD pipeline itself | "Add a new phase between DESIGN and SPEC" |
-| Introducing a cross-cutting pattern | "Adopt CQRS across all services" |
+An ADR is a document that captures a significant architectural decision along with its context and consequences. It is the single source of truth for why the project is built the way it is.
 
-### Should Write
-
-| Situation | Example |
-|-----------|---------|
-| Significant refactor of core modules | "Split monolithic API into microservices" |
-| Changing deployment strategy | "Move from VMs to Kubernetes" |
-| New security model | "Implement mTLS for internal communication" |
-
-### Do Not Write
-
-| Situation | Example |
-|-----------|---------|
-| Routine library upgrades | "Upgrade React from 18.2 to 18.3" |
-| Bug fixes | "Fix null pointer in login handler" |
-| Small refactors within a single feature | "Extract helper function for validation" |
-| Adding a new endpoint that follows existing patterns | "Add GET /users/{id}" |
+This policy prevents:
+- **Decision amnesia**: Nobody remembers why a critical choice was made
+- **Authority drift**: Decisions are made implicitly without traceability
+- **Repeated debates**: The same architectural questions are rehashed because the rationale was not recorded
 
 ---
 
-## ADR Lifecycle
+## 2. When to Write an ADR
+
+Write an ADR when ANY of the following conditions apply:
+
+| Condition | Example |
+|-----------|---------|
+| **New dependency** | Adding a database, framework, or external service |
+| **Structural pattern change** | Moving from monolith to microservices, changing API style |
+| **Technology replacement** | Switching from Python to Go, from REST to gRPC |
+| **Philosophy change** | Modifying `PROJECT_MANIFEST.md` priorities or non-goals |
+| **Breaking contract** | Changing a validated spec's public interface or behavior |
+| **Cross-cutting concern** | Affecting more than 2 features or the entire pipeline |
+
+Do **NOT** write an ADR for:
+- Routine library updates (patch/minor versions)
+- Code refactoring within an existing pattern
+- Feature-level decisions already covered by the feature's design doc
+- Bug fixes (unless the fix reveals a structural flaw)
+
+---
+
+## 3. Who Can Propose an ADR
+
+| Role | Can Propose | Can Approve |
+|------|-------------|-------------|
+| **Tech Lead** | ✅ Yes | ✅ Yes |
+| **Architect** | ✅ Yes | ✅ Yes |
+| **Senior Engineer** | ✅ Yes | ❌ No (requires Tech Lead or Architect approval) |
+| **Product Owner** | ✅ Yes (philosophy/scope only) | ❌ No (technical ADRs) |
+
+---
+
+## 4. Approval Process
+
+1. **Propose**: Create a draft ADR using `templates/adr.md`
+2. **Review**: At least one reviewer from a different role must approve
+3. **Record**: Save the approved ADR to `artifacts/adr/`
+4. **Link**: Reference the ADR in `PROJECT_MANIFEST.md` changelog and any affected specs
+
+---
+
+## 5. Where ADRs Live
+
+- **Draft**: Any branch or working directory
+- **Approved**: `artifacts/adr/ADR-{NNN}-{short-name}.md`
+- **Superseded**: Keep in place; mark status as `SUPERSEDED by ADR-XXX`
+
+---
+
+## 6. ADR Lifecycle
 
 ```
-PROPOSED → REVIEWED → ACCEPTED | REJECTED | SUPERSEDED
+PROPOSED → REVIEW → ACCEPTED → [SUPERSEDED]
+   ↓          ↓
+REJECTED   CHANGES_REQUESTED
 ```
 
-| State | Meaning |
-|-------|---------|
-| **PROPOSED** | Draft written, awaiting review |
-| **REVIEWED** | Reviewed by Tech Lead + stakeholders |
-| **ACCEPTED** | Decision is active and binding |
-| **REJECTED** | Decision was rejected, rationale recorded |
-| **SUPERSEDED** | Replaced by a newer ADR (link to successor) |
+- **PROPOSED**: Draft exists, under discussion
+- **REVIEW**: Under explicit review by at least one other role
+- **ACCEPTED**: Approved and recorded
+- **SUPERSEDED**: A newer ADR replaces this one (old one remains for traceability)
+- **REJECTED**: Explicitly rejected with rationale recorded
 
 ---
 
-## Where to Store ADRs
+## 7. Relationship with SDD
 
-- **Location**: `artifacts/adr/` (or as configured in `sdd.config.json`)
-- **Naming**: `adr-{NNN}-{short-description}.md`
-- **Index**: `artifacts/adr/INDEX.md` — list of all ADRs with status and links
-
----
-
-## Approval Process
-
-1. **Author** writes ADR from `templates/adr.md`
-2. **Tech Lead** reviews technical feasibility and alignment with `PROJECT_MANIFEST.md`
-3. **Product Owner** reviews if it affects user-facing behavior or timeline
-4. **Decision**: ACCEPTED (merge), REJECTED (close with rationale), or REVIEWED (request changes)
-
-For changes to the Manifest's non-negotiables, add `{DECISION_MAKER_ROLE}` approval.
+| Scenario | Action |
+|----------|--------|
+| ADR affects a feature spec | Update the spec's design doc; re-run VALIDATION if needed |
+| ADR changes project philosophy | Update `PROJECT_MANIFEST.md`; review all active features for compliance |
+| ADR introduces a new pattern | Update `templates/` and notify all active implementers |
+| ADR is superseded | Review all features that reference the old ADR; update or validate |
 
 ---
 
-## Template
+## 8. Minimum Content
 
-Use `templates/adr.md` for all new ADRs.
+Every ADR MUST contain:
 
-Required fields:
-- Title and date
-- Context (what forced the decision)
-- Decision (what we chose)
-- Consequences (positive and negative)
-- Status
+1. **Context** — What forces are at play? What problem does this solve?
+2. **Decision** — The concrete decision in one sentence
+3. **Consequences** — Positive, negative, and neutral outcomes
+4. **Alternatives Considered** — At least one alternative with pros/cons
+5. **Implications for SDD** — Which specs or features are affected?
+
+Use `templates/adr.md` as the starting point.
 
 ---
 
-## Related Documents
+## 9. Anti-Patterns
+
+- **ADR as spec**: An ADR explains WHY, not HOW. The spec explains HOW.
+- **ADR without consequences**: Every decision has tradeoffs. If there are no negatives, the decision was not significant enough for an ADR.
+- **ADR without alternatives**: If there was no alternative, the decision was either trivial or the exploration was insufficient.
+- **Silent ADR updates**: Never modify an ACCEPTED ADR without creating a new one or explicitly superseding it.
+
+---
+
+## 10. Related Documents
 
 - `templates/adr.md` — ADR template
-- `04_project_governance/PROJECT_MANIFEST.md` — non-negotiable constraints and change policy
-- `04_project_governance/PROJECT_MAP.md` — where ADRs live
+- `04_project_governance/PROJECT_MANIFEST.md` — project philosophy and constraints
+- `02_policies/VALIDATION_BOUNDARIES_POLICY.md` — when specs must be revalidated after changes
+- `00_core/AGENT_DECISION_TABLE.md` — when a change requires an ADR vs. a code adjustment

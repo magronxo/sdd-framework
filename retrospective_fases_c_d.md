@@ -90,7 +90,7 @@ Phases C and D bring **enterprise policies**, **strategic planning**, and **migr
 
 ## Correction Checklist
 
-- [ ] Issue 1: Separate "Valid Reopening Conditions" from "What Is NOT Reopening" in VALIDATION_BOUNDARIES
-- [ ] Issue 2: Clarify "All new non-trivial features start as seeds" in MIGRATION_PLAYBOOK
-- [ ] Issue 3: Add warning about init scripts in existing repos to MIGRATION_PLAYBOOK
-- [ ] Issue 4: Change "SEED" to "PENDING" or add note in ROADMAP_TEMPLATE
+- [x] Issue 1: Separate "Valid Reopening Conditions" from "What Is NOT Reopening" in VALIDATION_BOUNDARIES — ✅ Already properly separated (lines 76-91)
+- [x] Issue 2: Clarify "All new non-trivial features start as seeds" in MIGRATION_PLAYBOOK — ✅ Already corrected (line 75)
+- [x] Issue 3: Add warning about init scripts in existing repos to MIGRATION_PLAYBOOK — ✅ Already present (line 46)
+- [x] Issue 4: Change "SEED" to "PENDING" or add note in ROADMAP_TEMPLATE — ✅ Already uses `PENDING` (line 47)

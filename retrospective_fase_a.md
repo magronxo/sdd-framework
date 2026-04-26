@@ -142,9 +142,9 @@ Also, add a note to `SDD_FEATURE_FORMAT.md` to correct the underscore reference.
 
 ## Correction Checklist
 
-- [ ] Issue 1: Create `02_policies/ADR_POLICY.md` or fix reference
-- [ ] Issue 2: Add `adr` path to `sdd.config.json`
-- [ ] Issue 3: Expand PROJECT_MAP.md tree with pre_sdd subfolders
-- [ ] Issue 4: Standardize feature ID format
-- [ ] Issue 5: Add AGENT_DECISION_TABLE.md to PROJECT_MAP.md
-- [ ] Issue 6: Synchronize contract lifecycle with runtime
+- [x] Issue 1: Create `02_policies/ADR_POLICY.md` — ✅ Created on 2026-04-26
+- [x] Issue 2: Add `adr` path to `sdd.config.json` — ✅ Already present (line 19)
+- [x] Issue 3: Expand PROJECT_MAP.md tree with pre_sdd subfolders — ✅ Already present (lines 34-45)
+- [x] Issue 4: Standardize feature ID format — ✅ Already standardized to hyphens in `SDD_FEATURE_FORMAT.md`
+- [x] Issue 5: Add AGENT_DECISION_TABLE.md to PROJECT_MAP.md — ✅ Already present (line 97)
+- [x] Issue 6: Synchronize contract lifecycle with runtime — ✅ Already synchronized (lines 121-130)
