@@ -1,0 +1,38 @@
+{
+  "project_name": "Your Project Name",
+  "project_description": "Short description of the project",
+  "sdd_root": "docs/sdd",
+  "project_root": ".",
+  "paths": {
+    "core": "docs/sdd/00_core",
+    "execution": "docs/sdd/01_execution",
+    "policies": "docs/sdd/02_policies",
+    "operations": "docs/sdd/03_operations",
+    "project_governance": "docs/sdd/04_project_governance",
+    "templates": "docs/sdd/templates",
+    "pre_sdd": "docs/sdd/03_operations/pre_sdd",
+    "artifacts": {
+      "design": "docs/sdd/artifacts/design",
+      "specs": "docs/sdd/artifacts/specs",
+      "tasks": "docs/sdd/artifacts/tasks",
+      "audit_reports": "docs/sdd/artifacts/audit_reports",
+      "features_for_specs": "docs/sdd/artifacts/features_for_specs",
+      "adr": "docs/sdd/artifacts/adr"
+    }
+  },
+  "stack": {
+    "languages": [],
+    "frameworks": [],
+    "hardware": null
+  },
+  "surfaces": ["browser", "os_fs", "wiring", "network", "env_proxy"],
+  "skills_registry": "docs/sdd/03_operations/skills/skills_registry.json",
+  "migration": {
+    "enabled": false,
+    "source_stack": null,
+    "target_stack": null,
+    "legacy_path": null,
+    "parity_required": true,
+    "rollback_strategy": null
+  }
+}
