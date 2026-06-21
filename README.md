@@ -22,6 +22,7 @@
 | Governance model | Human approval at explicit gates |
 | Pipeline | SEED → DESIGN → SPEC → VALIDATION → TASKS → IMPLEMENT → VERIFY → AUDIT → ARCHIVE |
 | Main artifact | Feature record with phase state, ownership, and validation result |
+| Install model | Embedded in product repositories under `docs/sdd/` |
 | Best for | Human–AI collaborative software engineering |
 
 ---
@@ -38,6 +39,38 @@ Most SDD, BDD, and RFC-style workflows are human-first: humans write the specifi
 4. Implementation is blocked until the spec has passed validation.
 
 The framework provides contracts, prompts, artifact formats, and gates so agents stay scoped, auditable, and aligned with the approved specification.
+
+---
+
+## Canonical installation model
+
+SDD is installed as a self-contained governance and documentation system inside a product repository:
+
+```text
+repo/
+  src/
+  tests/
+  README.md
+  docs/
+    sdd/
+      AGENTS.md
+      sdd.config.json
+      00_core/
+      01_execution/
+      02_policies/
+      03_operations/
+      04_project_governance/
+      templates/
+      artifacts/
+```
+
+Rules:
+
+- Product code stays outside `docs/sdd/`.
+- SDD contracts, prompts, templates, configuration, and generated SDD artifacts live under `docs/sdd/`.
+- `docs/sdd/sdd.config.json` is the live project SDD configuration.
+- `templates/sdd.config.json` in this framework repository is a template, not a live product config.
+- Root-level SDD installation is not the canonical model.
 
 ---
 
@@ -88,8 +121,7 @@ sequenceDiagram
     H->>P: Approve if PASS
     P->>I: Ordered tasks
     I->>Q: Code + tests
-    Q->>A: Verification evidence
-    A->>H: Audit report
+    Q->>A: Audit report
 ```
 
 The human remains the governing authority. Agents are bounded executors.
@@ -98,7 +130,7 @@ The human remains the governing authority. Agents are bounded executors.
 
 ## What you get
 
-- **Role contracts** for designer, specifier, validator, planner, implementer, verifier, and auditor agents.
+- **Role contracts** for designer, specifier, validator, planner, implementer, verifier, auditor, and archiver agents.
 - **Validation gates** that block implementation until the spec is complete, deterministic, and implementable.
 - **Traceable artifacts** for every phase of the feature lifecycle.
 - **Handoff rules** that prevent role mixing and hidden state.
@@ -130,7 +162,7 @@ The human remains the governing authority. Agents are bounded executors.
 | IMPLEMENT | Implementer Agent | Execute tasks and write tests where applicable. |
 | VERIFY | Verifier Agent | Run tests and SDT scenarios. Report PASS/FAIL with evidence. |
 | AUDIT | Auditor Agent | Review spec-code alignment, risks, quality, and traceability. |
-| ARCHIVE | Human | Close the feature and preserve artifacts. |
+| ARCHIVE | Human / Archiver | Close the feature and preserve artifacts. |
 
 ---
 
@@ -143,22 +175,34 @@ git clone https://github.com/magronxo/sdd-framework.git
 cd sdd-framework
 ```
 
-### 2. Copy the framework into your project
+### 2. Copy the framework into your product repository
+
+From the framework checkout:
 
 ```bash
-cp -r 00_core 01_execution 02_policies 03_operations 04_project_governance templates docs sdd.config.json AGENTS.md /your/project/
+mkdir -p /your/project/docs/sdd
+cp -r 00_core 01_execution 02_policies 03_operations 04_project_governance templates docs AGENTS.md init-sdd.sh init-sdd.ps1 /your/project/docs/sdd/
+cp templates/sdd.config.json /your/project/docs/sdd/sdd.config.json
+```
+
+The canonical installed location is:
+
+```text
+/your/project/docs/sdd/
 ```
 
 ### 3. Initialize artifact directories
 
+From the product repository root:
+
 ```bash
-./init-sdd.sh
+bash docs/sdd/init-sdd.sh
 ```
 
-On Windows:
+On Windows PowerShell, from the product repository root:
 
 ```powershell
-.\init-sdd.ps1
+.\docs\sdd\init-sdd.ps1
 ```
 
 ### 4. Configure your project
@@ -166,17 +210,17 @@ On Windows:
 Edit:
 
 ```text
-sdd.config.json
+docs/sdd/sdd.config.json
 ```
 
-Set your project paths, stack, test conventions, artifact directories, and skill registry path.
+Set your project name, stack, test conventions, artifact directories, surfaces, and skill registry path.
 
 ### 5. Capture a seed
 
 Create a seed from the seed template:
 
 ```text
-03_operations/pre_sdd/seeds/YYYY-MM-DD_idea_name.md
+docs/sdd/03_operations/pre_sdd/seeds/YYYY-MM-DD_idea_name.md
 ```
 
 A seed can describe:
@@ -193,11 +237,11 @@ A seed can describe:
 Point your AI agent to:
 
 ```text
-AGENTS.md
-00_core/SDD_RUNTIME.md
-00_core/SDD_HANDOFF_CONTRACT.md
-00_core/SDD_READING_CONTRACT.md
-sdd.config.json
+docs/sdd/AGENTS.md
+docs/sdd/00_core/SDD_RUNTIME.md
+docs/sdd/00_core/SDD_HANDOFF_CONTRACT.md
+docs/sdd/00_core/SDD_READING_CONTRACT.md
+docs/sdd/sdd.config.json
 ```
 
 The agent should read the seed, ask clarifying questions, create or update the active feature record, and advance through the pipeline according to its assigned role.
@@ -206,34 +250,34 @@ The agent should read the seed, ask clarifying questions, create or update the a
 
 ## Agent entrypoint
 
-If you are an AI agent reading this repository:
+If you are an AI agent reading an installed SDD instance:
 
-1. Read `AGENTS.md`.
-2. Read `00_core/SDD_RUNTIME.md`.
-3. Read `00_core/SDD_HANDOFF_CONTRACT.md`.
-4. Read `00_core/SDD_READING_CONTRACT.md`.
-5. Read `sdd.config.json`.
-6. Read the active feature record from `artifacts/features_for_specs/`.
+1. Read `docs/sdd/AGENTS.md`.
+2. Read `docs/sdd/00_core/SDD_RUNTIME.md`.
+3. Read `docs/sdd/00_core/SDD_HANDOFF_CONTRACT.md`.
+4. Read `docs/sdd/00_core/SDD_READING_CONTRACT.md`.
+5. Read `docs/sdd/sdd.config.json`.
+6. Read the active feature record from `docs/sdd/artifacts/features_for_specs/`.
 7. Operate only in your assigned role.
 8. Stop if ambiguity exists. Report it. Do not guess.
 
 ---
 
-## Project structure
+## Installed project structure
 
 | Path | Purpose |
 |---|---|
-| `00_core/` | Runtime contracts, handoff rules, feature format, reading order. |
-| `01_execution/prompts/` | Agent role prompts for designer, specifier, validator, planner, implementer, verifier, and auditor. |
-| `01_execution/skills/` | Reusable agent skills. Empty by default; add your own. |
-| `02_policies/` | Governance rules, report envelopes, validation boundaries, and integration surfaces. |
-| `03_operations/` | Operational workflows, pre-SDD intake, re-audit flow, and audit strategy. |
-| `04_project_governance/` | Project identity, glossary, manifest, and project map. |
-| `templates/` | Templates for design docs, specs, ADRs, migration plans, and related artifacts. |
-| `docs/` | Human-facing guides and project documentation. |
-| `artifacts/` | Generated work: feature records, designs, specs, tasks, reports, and audits. |
-| `sdd.config.json` | Project configuration: paths, stack, surfaces, migration settings, and registry paths. |
-| `AGENTS.md` | Main agent entrypoint and execution contract. |
+| `docs/sdd/00_core/` | Runtime contracts, handoff rules, feature format, reading order. |
+| `docs/sdd/01_execution/prompts/` | Agent role prompts for designer, specifier, validator, planner, implementer, verifier, auditor, and archiver. |
+| `docs/sdd/01_execution/skills/` | Reusable agent skills. Empty by default; add your own. |
+| `docs/sdd/02_policies/` | Governance rules, report envelopes, validation boundaries, and integration surfaces. |
+| `docs/sdd/03_operations/` | Operational workflows, pre-SDD intake, re-audit flow, and audit strategy. |
+| `docs/sdd/04_project_governance/` | Project identity, glossary, manifest, and project map. |
+| `docs/sdd/templates/` | Templates for design docs, specs, ADRs, migration plans, and related artifacts. |
+| `docs/sdd/docs/` | Human-facing SDD guides and project documentation. |
+| `docs/sdd/artifacts/` | Generated SDD work: feature records, designs, specs, tasks, reports, ADRs, and audits. |
+| `docs/sdd/sdd.config.json` | Live project SDD configuration. |
+| `docs/sdd/AGENTS.md` | Main agent entrypoint and execution contract. |
 
 ---
 
@@ -252,6 +296,14 @@ If you are an AI agent reading this repository:
 
 ---
 
+## Audit gate rule
+
+`AUDIT FAIL` does not stop corrective work. It blocks archival, final acceptance, and release/merge gates unless explicitly waived by the project owner.
+
+That means agents may continue rework, investigation, or corrective implementation, but they must not mark the feature as complete or archive it while unresolved audit failures remain.
+
+---
+
 ## Comparison
 
 | Framework | Human effort | Agent effort | Governance model | Best for |
@@ -265,17 +317,15 @@ If you are an AI agent reading this repository:
 
 ## Example usage
 
-See `examples/agenticos/` for a production-style example of this framework in use.
+Examples are educational only. They are not framework authority.
 
-It demonstrates:
+Use examples to understand possible artifact chains and project shapes, but resolve contradictions by following:
 
-- completed feature artifact chains
-- historical evolution of the framework
-- all major pipeline phases
-- pre-SDD intake and triage batches
-- validation, verification, and audit reports
-
-See `examples/sdd-doctor/` for a medium-scope validation example: a diagnostic CLI built using the framework to validate SDD project structure, governance, and artifact envelopes.
+1. `docs/sdd/00_core/`
+2. `docs/sdd/01_execution/`
+3. `docs/sdd/02_policies/`
+4. `docs/sdd/templates/`
+5. `docs/sdd/sdd.config.json`
 
 ---
 
@@ -283,7 +333,7 @@ See `examples/sdd-doctor/` for a medium-scope validation example: a diagnostic C
 
 ### Adapting prompts
 
-The prompts in `01_execution/prompts/` are agent role contracts. Customize them for:
+The prompts in `docs/sdd/01_execution/prompts/` are agent role contracts. Customize them for:
 
 - your programming language
 - your framework
@@ -300,7 +350,7 @@ Skills are reusable agent capabilities.
 Create:
 
 ```text
-01_execution/skills/SKILL_NAME.md
+docs/sdd/01_execution/skills/SKILL_NAME.md
 ```
 
 A skill should define:
@@ -312,12 +362,12 @@ A skill should define:
 - scope
 - failure mode
 
-Register the skill in the configured skill registry path from `sdd.config.json`.
+Register the skill in the configured skill registry path from `docs/sdd/sdd.config.json`.
 
 See:
 
 ```text
-01_execution/skills/README.md
+docs/sdd/01_execution/skills/README.md
 ```
 
 ---
