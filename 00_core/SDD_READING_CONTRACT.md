@@ -99,7 +99,7 @@ If `audit_result` is `FAIL`, read the audit report and check for an explicit own
 ## Non-Negotiables
 
 - Specs are the feature behavioral authority.
-- No validated spec → no implementation.
-- No unresolved `AUDIT FAIL` → no archive/final acceptance unless explicit owner waiver exists.
+- No validated spec -> no implementation.
+- No unresolved `AUDIT FAIL` -> no archive/final acceptance unless explicit owner waiver exists.
 - Never rely only on embeddings; always confirm with direct file reads.
 - Do not read the whole repository unless the current phase cannot be completed deterministically without it.
