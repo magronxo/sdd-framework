@@ -2,7 +2,31 @@
 
 > **Diátaxis Mode**: Explanation  
 > **Spec-Driven Development** for agent systems.  
-> The **spec** is the single source of truth. Code only implements approved specs.
+> The **spec** is the feature source of truth. Code only implements approved specs.
+
+---
+
+## Canonical Installation Model
+
+SDD is embedded inside a product repository under:
+
+```text
+docs/sdd/
+```
+
+The product repository owns product code, tests, packaging, and runtime files. SDD owns governance, prompts, templates, configuration, and generated SDD artifacts.
+
+Default generated artifacts live under:
+
+```text
+docs/sdd/artifacts/
+```
+
+The live SDD config is:
+
+```text
+docs/sdd/sdd.config.json
+```
 
 ---
 
@@ -11,155 +35,140 @@
 1. **spec_as_source** – No behavior exists without a spec.
 2. **no_ambiguity** – Vague terms = invalid spec.
 3. **edge_cases_first** – If fallback is not defined, behavior is undefined.
-4. **hardware_aware** – Every decision must pass the project resource filter.
-5. **no_direct_mutation** – Never modify code directly; always through feature documents and specs.
-6. **external_dev_first** – Flow, governance, context, and integration problems must be solved outside the core before opening critical changes.
+4. **hardware_aware** – Every decision must pass the project resource filter when relevant.
+5. **no_direct_mutation** – Never modify code directly; always work through feature documents and specs.
+6. **external_dev_first** – Flow, governance, context, and integration problems must be solved outside critical runtime before opening critical changes.
 
 ---
 
 ## Simplified SDD Pipeline with Audit
 
-Every functionality is represented by a **`SYSTEM_SPEC` document** that advances through the following states:
+Every functionality is represented by a **`SYSTEM_SPEC` feature record** that advances through the following states:
 
-```
+```text
 DESIGN → SPEC → VALIDATION → TASKS → IMPLEMENT → VERIFY → AUDIT → ARCHIVE
                               ↑______________↓ (if revision needed)
 ```
 
 ### Implementation: SDT vs TDD
 
-**For deterministic components (Go, C, Rust, etc.):** We use **TDD** (Test-Driven Development) during the implementation phase.
-- Write test → Implement minimal code → Refactor
-- Tests derive from SDT scenarios defined in the spec
+**For deterministic components (Go, C, Rust, etc.):** use **TDD** during implementation.
 
-**For components with LLM (non-deterministic):** We use **SDT** (Spec-Driven Testing) as final validation.
-- Implement according to spec → Validate against SDT scenarios manually/automatically
+- Write test → implement minimal code → refactor.
+- Tests derive from SDT scenarios defined in the spec.
+
+**For components with LLM behavior:** use **SDT** as final validation.
+
+- Implement according to spec.
+- Validate against SDT scenarios manually or automatically.
 
 **Hybrid flow:**
+
+```text
+SDD documents → TDD code → SDT validation → Audit → Archive
 ```
-SDD (Documents) → TDD (Code) → SDT Validation (Complete system) → Audit → Archive
-```
 
-| State | Role | Prompt/Skill | Artifact | Description |
-|-------|------|--------------|----------|-------------|
-| **DESIGN** | Designer | `01_execution/prompts/designer.md` | `artifacts/design/<feature_id>.md` | Defines the WHAT: architecture, components, hardware budget. |
-| **SPEC** | Specifier | `01_execution/prompts/specifier.md` | `artifacts/specs/<feature_id>.md` | Defines the HOW: inputs, outputs, errors, SDT scenarios, Gherkin. |
-| **VALIDATION** | Validator | `01_execution/prompts/validator.md` | `validation_result` | Validates that the spec is complete, deterministic, and unambiguous. |
-| **TASKS** | Planner | `01_execution/prompts/planner.md` | `artifacts/tasks/<feature_id>.md` | Generates a minimal, ordered task list from a validated spec. |
-| **IMPLEMENT** | Developer | TDD/SDT | Code + Tests | Implements according to spec, tests pass. |
-| **VERIFY** | Verifier | `01_execution/prompts/verifier.md` | `verification_result` | Verifies that implementation complies with spec and SDT scenarios. |
-| **AUDIT** | Auditor | `01_execution/skills/sdd-audit` (if configured) | `audit_report` | Lightweight audit: spec-code coherence, tests, quality. |
-| **ARCHIVE** | Archiver | `N/A (manual)` | `feature_archived` | Documental consolidation and feature closure. |
+| State | Role | Prompt/Skill | Default Artifact | Description |
+|-------|------|--------------|------------------|-------------|
+| DESIGN | Designer | `docs/sdd/01_execution/prompts/designer.md` | `docs/sdd/artifacts/design/<feature_id>.md` | Defines WHAT. |
+| SPEC | Specifier | `docs/sdd/01_execution/prompts/specifier.md` | `docs/sdd/artifacts/specs/<feature_id>.md` | Defines HOW. |
+| VALIDATION | Validator | `docs/sdd/01_execution/prompts/validator.md` | `validation_result` | Validates completeness, determinism, and implementability. |
+| TASKS | Planner | `docs/sdd/01_execution/prompts/planner.md` | `docs/sdd/artifacts/tasks/<feature_id>.md` | Generates minimal ordered tasks. |
+| IMPLEMENT | Implementer | TDD/SDT | product code + tests | Implements according to spec. |
+| VERIFY | Verifier | `docs/sdd/01_execution/prompts/verifier.md` | `verification_result` | Verifies compliance with spec and SDT scenarios. |
+| AUDIT | Auditor | `docs/sdd/01_execution/skills/sdd-audit` if configured | `docs/sdd/artifacts/audit_reports/<report>.md` | Reviews coherence, quality, risk, and traceability. |
+| ARCHIVE | Archiver / Human | manual or configured role | `feature_archived` | Consolidates and closes feature. |
 
-### Audit Skills
+---
 
-**sdd-audit (Lightweight):**
-- **Trigger:** Automatic after VERIFY
-- **Model:** Fast, economical (sufficient for light audits)
-- **Scope:** Spec-code coherence, tests, basic quality
-- **Output:** Report at `artifacts/audit_reports/audit_[feature]_[date].md`
-- **Result:** PASS/WARN/FAIL
-- **Action:** If FAIL → deep audit; If WARN/PASS → Archive
+## Audit Skills
 
-**sdd-deep-audit (Deep):**
-- **Trigger:** Manual (`/audit-deep`) or every N features (configurable)
-- **Model:** Exhaustive (necessary for deep analysis)
-- **Scope:** Security, architecture, global consistency
-- **Output:** Report at `artifacts/audit_reports/audit_batch_[n]_[date].md`
-- **Result:** PASS/WARN/FAIL with generated tickets
-- **Action:** Can block release if FAIL or CRITICAL
+### sdd-audit (Lightweight)
 
-### External vs Internal Audit
+- **Trigger:** after VERIFY.
+- **Scope:** spec-code coherence, tests, basic quality.
+- **Output:** report at `docs/sdd/artifacts/audit_reports/audit_<feature>_<date>.md`.
+- **Result:** PASS/WARN/FAIL.
+- **Action:** PASS/WARN may proceed to archive; FAIL blocks archive until resolved or waived.
 
-**External (recommended):**
-- System core is audited via external skills
-- Impossible to audit oneself (immutable, conflict of interest)
-- More secure, faster, more flexible
+### sdd-deep-audit (Deep)
 
-**Internal (optional):**
-- Teams or departments may have internal auditor
-- IDE dashboard allows developing from within
-- Autonomous system for departments, NOT for critical core
+- **Trigger:** manual or every N features, if configured.
+- **Scope:** security, architecture, global consistency.
+- **Output:** report at `docs/sdd/artifacts/audit_reports/audit_batch_<n>_<date>.md`.
+- **Result:** PASS/WARN/FAIL with generated tickets.
+- **Action:** FAIL or CRITICAL blocks final acceptance and SDD-governed release/merge gates unless explicitly waived by the project owner.
 
-**Rule:** Critical core audit is always EXTERNAL. Department audit may be INTERNAL.
+---
 
-### SDD Re-audit of Existing Artifacts
+## External vs Internal Audit
+
+**External audit is recommended** for critical core or high-risk work, because self-audit can hide conflicts of interest.
+
+**Internal audit is acceptable** for departments, documentation, low-risk work, or non-critical project areas.
+
+Rule: critical core audit is external unless the owner explicitly accepts the risk.
+
+---
+
+## SDD Re-audit of Existing Artifacts
 
 When what is reviewed is not a new feature but an existing spec, the flow changes:
 
-1. Read the spec, design, tasks, and feature record
-2. Perform internal structural audit
-3. Optionally contrast with external audit frameworks
-4. Triage findings as `adopt`, `adapt`, or `discard`
-5. Normalize affected artifacts
-6. Close the case with an unequivocal report
+1. Read the spec, design, tasks, and feature record.
+2. Perform structural audit.
+3. Optionally contrast with external audit frameworks.
+4. Triage findings as `adopt`, `adapt`, or `discard`.
+5. Normalize affected artifacts.
+6. Close the case with an unequivocal report.
 
-Re-audit priority is governed by:
+A re-audit is not a new implementation. If it detects misalignment, documentation and traceability are corrected before touching runtime.
 
-- `03_operations/SPEC_REAUDIT_WORKFLOW.md`
-- `90_transitional/SPEC_REAUDIT_PRIORITY_PLAN.md` (non-canonical priority planning, if still used)
+---
 
-**Rule:** A re-audit is not a new implementation. If it detects misalignment, documentation and traceability are corrected before touching runtime.
-
-### External Frameworks
-
-External frameworks do not replace the SDD framework:
-
-- They are audit complements, external memory, and spec review
-- Compatible external environments/harnesses
-- Other frameworks: only after explicit mapping
-
-**Rule:** First mapping, then adaptation; never direct fusion.
-
-### Transition Rules
+## Transition Rules
 
 - No state can be skipped.
-- If VALIDATION fails → return to SPEC (never patch code directly).
-- If AUDIT fails → mandatory deep audit; NO archive until PASS/WARN.
+- If VALIDATION fails → return to SPEC.
+- If VERIFY fails → return to IMPLEMENT.
+- If AUDIT fails → corrective work may continue, but archive/final acceptance/release gates are blocked until PASS/WARN or explicit owner waiver.
 - No open `[?]` may leave DESIGN.
-- **Audit does not block but documents:** You can always archive, but with warnings if WARN.
 - If a re-audit opens documental inconsistencies, runtime must not be touched until artifact closure is explicit.
 
-### Complete Flow with Example
+---
 
+## Complete Flow with Example
+
+```text
+1. DESIGN:   Create docs/sdd/artifacts/design/feat-010-worker-pool-v2.md
+             ↓
+2. SPEC:     Specify requirements and SDT scenarios
+             ↓
+3. VALIDATION: Verify completeness and determinism
+             ↓ PASS
+4. TASKS:    Create docs/sdd/artifacts/tasks/feat-010-worker-pool-v2.md
+             ↓
+5. IMPLEMENT: TDD → product code + tests
+             ↓
+6. VERIFY:   tests + SDT PASS
+             ↓
+7. AUDIT:    Generate docs/sdd/artifacts/audit_reports/audit_feat-010_2026-03-29.md
+             ↓ PASS/WARN
+8. ARCHIVE:  Update feature record and trace links
 ```
-1. DESIGN:   Create feat-010-worker-pool-v2.md
-             ↓
-2. SPEC:     Specify requirements, SDT scenarios
-             ↓
-3. VALIDATION: Verify completeness, determinism
-             ↓ [APPROVED]
-4. IMPLEMENT: TDD → workerpool_v2.go + _test.go
-             ↓
-5. VERIFY:   go test ./... (12/12 PASS)
-             ↓
-6. AUDIT:    sdd-audit runs automatically
-             Result: WARN (Score: 75, 1 warning)
-             Report: audit_feat-010_2026-03-29.md
-             Ticket: AUD-007 (improve documentation)
-             ↓
-7. ARCHIVE:  Sync to specs main, update features_for_specs.
-             ↓
-```
 
-### Audit Reports
+---
 
-**Location:** `artifacts/audit_reports/`
+## Audit Reports
+
+**Location:** `docs/sdd/artifacts/audit_reports/`
 
 **Naming:**
-- Soft: `audit_[feature]_[YYYY-MM-DD].md`
-- Deep: `audit_batch_[n]_[YYYY-MM-DD].md`
 
-**Format:** Simple, no noise. Issues table + recommendations + tickets.
+- Soft: `audit_<feature>_<YYYY-MM-DD>.md`
+- Deep: `audit_batch_<n>_<YYYY-MM-DD>.md`
 
-### Commands
-
-```bash
-/verify [feature]       # Verify implementation
-/audit [feature]        # Manual soft audit
-/audit-deep             # Deep batch audit
-/audit-report           # Show latest report
-```
+**Format:** simple, evidence-first, with issues, recommendations, and generated tickets where needed.
 
 ---
 
@@ -167,146 +176,112 @@ External frameworks do not replace the SDD framework:
 
 ### File Naming (MANDATORY)
 
-All feature documents MUST follow this format:
+All feature markdown documents MUST follow this format:
 
-```
-feat_{sequential}_{descriptive-name}.md
+```text
+feat-{NNN}-{short-name}.md
 ```
 
-**Rules:**
-1. **Sequential**: 3-digit number (001, 002, ..., 012, ...)
-2. **Descriptive name**: Lowercase words separated by hyphens (`-`)
-3. **Extension**: `.md` for all documents
+Rules:
 
-**Valid examples:**
-```
+1. **NNN:** 3-digit number, such as `001`, `002`, `012`.
+2. **Short name:** lowercase words separated by hyphens.
+3. **Extension:** `.md` for markdown documents.
+
+Valid examples:
+
+```text
 feat-001-kernel-core.md
 feat-006-api-server.md
-feat-006-dashboard-react.md
 feat-007-worker-pool.md
 feat-012-kernel-status-api.md
 ```
 
-**Folder mapping:**
+Feature record JSON files use:
+
+```text
+feat-{NNN}-{short-name}.json
+```
+
+Folder mapping:
+
 | Folder | Content | Format |
 |--------|---------|--------|
-| `artifacts/design/` | Design documents (WHAT) | `feat-XXX_name.md` |
-| `artifacts/specs/` | Specifications (HOW) | `feat-XXX_name.md` |
-| `artifacts/tasks/` | Task breakdowns | `feat-XXX_name.md` |
-| `artifacts/features_for_specs/` | State JSON | `feat-XXX.json` |
+| `docs/sdd/artifacts/design/` | Design documents | `feat-{NNN}-{short-name}.md` |
+| `docs/sdd/artifacts/specs/` | Specifications | `feat-{NNN}-{short-name}.md` |
+| `docs/sdd/artifacts/tasks/` | Task breakdowns | `feat-{NNN}-{short-name}.md` |
+| `docs/sdd/artifacts/features_for_specs/` | Feature records | `feat-{NNN}-{short-name}.json` |
 
-**Renaming:**
-- `dashboard-backend.md` → `feat-006-api-server.md` (already done)
-- **DO NOT rename** `feat-006.md` (it is the React frontend, differentiated by `backend_` in JSON)
+---
 
-### Design Document (`artifacts/design/<feature_id>.md`)
+## Feature Document Format
 
-Follow the `templates/design.md` template and include:
+Follow the format defined in:
 
-- Motivation and affected components
-- Data models (structs or JSON schemas)
-- Mermaid flow diagram
-- Hardware budget (RAM, CPU, disk) — if applicable to the project
-- Open questions `[?]` (must be ZERO to pass to SPEC)
-
-### Functional Specification (`artifacts/specs/<feature_id>.md`)
-
-Follow the `templates/specs.md` template and include:
-
-- Functional requirements (FR) with RFC 2119 keywords (MUST / MAY / MUST NOT)
-- Typed inputs and outputs
-- Errors (code, message, action)
-- SDT Scenarios (happy path, edge cases, failure modes)
-- Acceptance criteria in Gherkin (Given/When/Then)
-- Dependencies
-
-### Feature Document Format
-
-Follow the format defined in `00_core/SDD_FEATURE_FORMAT.md`.
+```text
+docs/sdd/00_core/SDD_FEATURE_FORMAT.md
+```
 
 ---
 
 ## Step-by-Step Process
 
-1. **Create feature record**: Create `artifacts/features_for_specs/<feature_id>.json` with `state: DESIGN`
-2. **Run Designer**: Read `01_execution/prompts/designer.md`, create `artifacts/design/<feature_id>.md`, update to `state: SPEC`
-3. **Run Specifier**: Read `01_execution/prompts/specifier.md`, create `artifacts/specs/<feature_id>.md`, update to `state: VALIDATION`
-4. **Run Validator**: Read `01_execution/prompts/validator.md`, validate:
-   - PASS → update to `state: TASKS`
-   - FAIL → return to `state: SPEC` (without modifying the spec)
-5. **Run Planner**: Read `01_execution/prompts/planner.md`, create `artifacts/tasks/<feature_id>.md`, update to `state: IMPLEMENT`
-6. **Implementer**: Execute `tasks/` with TDD and implement code + tests
-7. **Run Verifier**: Read `01_execution/prompts/verifier.md`, run tests + SDT:
-   - PASS → `state: AUDIT`
-   - FAIL → return to `state: IMPLEMENT`
-8. **Run Auditor + Archive**: Generate report at `artifacts/audit_reports/` and close feature to `state: ARCHIVE`
+1. Create feature record: `docs/sdd/artifacts/features_for_specs/<feature_id>.json` with `state: DESIGN`.
+2. Run Designer: create `docs/sdd/artifacts/design/<feature_id>.md`, update state to `SPEC`.
+3. Run Specifier: create `docs/sdd/artifacts/specs/<feature_id>.md`, update state to `VALIDATION`.
+4. Run Validator:
+   - PASS → update state to `TASKS`.
+   - FAIL → return to `SPEC` without modifying the spec.
+5. Run Planner: create `docs/sdd/artifacts/tasks/<feature_id>.md`, update state to `IMPLEMENT`.
+6. Run Implementer: execute tasks with TDD/SDT and implement product code + tests.
+7. Run Verifier:
+   - PASS → update state to `AUDIT`.
+   - FAIL → return to `IMPLEMENT`.
+8. Run Auditor: generate report under `docs/sdd/artifacts/audit_reports/`.
+9. Archive only if audit is PASS/WARN, or if an explicit owner waiver records why archive is allowed despite FAIL.
 
 ---
 
 ## SDT (Spec-Driven Testing)
 
-Integrated into the SPEC state. Every spec must define:
+SDT is integrated into the SPEC state. Every spec should define:
 
-1. **Happy Path**: Normal behavior under ideal conditions
-2. **Edge Cases**: Physical limits (disk full, timeout, low memory)
-3. **Failure Modes**: How the system recovers from errors
+1. Happy path.
+2. Edge cases.
+3. Failure modes.
 
-These scenarios translate into integration tests.
+These scenarios translate into tests or verification checks.
 
 ---
 
 ## Relationship with Code
 
-- **Spec**: Documents WHAT and HOW (source of truth)
-- **Implementation**: Code that complies with the spec
-- **Tests**: Derived from Gherkin criteria and SDT scenarios
+- **Spec:** documents expected behavior and constraints.
+- **Implementation:** product code that complies with the spec.
+- **Tests:** derived from acceptance criteria and SDT scenarios.
 
-**Correct order:**
-1. Write spec (SDD)
-2. Implement according to spec
-3. Test against acceptance criteria
-4. If it fails → fix spec (not code), return to 1
+Correct order:
 
-### Re-audit on Existing Code
-
-When implementation already exists and the problem is documental coherence:
-
-1. Do not reimplement by default
-2. Reconstruct the truth chain between spec, design, tasks, and feature record
-3. Record the closure in the audit report
-4. Only then continue with the next spec in the batch
+1. Write and validate spec.
+2. Implement according to spec.
+3. Test against acceptance criteria.
+4. If behavior is undefined, return to spec rather than guessing in code.
 
 ---
 
-## Design Document Update (Mandatory)
+## Design Document Update
 
-**When:** When a feature is marked as ARCHIVE (implementation completed)
+When a feature reaches ARCHIVE, update design and trace documents as needed so future agents can understand what was actually implemented.
 
-**What to update:**
-1. **Design document** (`artifacts/design/*.md`): Add "Implementation Status" section with:
-   - ✅ Implemented components (with files and tests)
-   - ⬜ Pending components (with notes)
-   - References to specs and tests
-   - Changes from original design (if any)
-
-2. **Project Map** (if it exists): Update:
-   - Features section (ARCHIVE/PENDING)
-   - Components implemented per feature
-   - % completion against design
-
-3. **Other documents** (if needed):
-   - Manifest (if there are philosophical changes)
-   - Parking lot (if pending features are removed)
-
-**Why:**
-- Source of truth must reflect real state
-- Future sessions should not have to read all documents
-- Maintain design-implementation coherence
-- Avoid confusion when returning to the project
-
-**Rule:** DO NOT move a feature to ARCHIVE without updating design documents.
+Do not move a feature to ARCHIVE without resolving traceability and audit gates.
 
 ---
 
-**History:** Simplified version (3 roles) to facilitate adoption.  
-**Updated:** 2026-04-23 — Generic framework version.
+## Examples
+
+Examples are educational only and never framework authority. If an example conflicts with `00_core/`, `01_execution/`, `02_policies/`, templates, or `docs/sdd/sdd.config.json`, the framework contracts win.
+
+---
+
+**History:** Simplified version to facilitate adoption.  
+**Updated:** 2026-06-21 — Canonical `docs/sdd/` installation model.
