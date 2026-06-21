@@ -52,7 +52,7 @@ Stop as soon as the phase you are executing is unblocked and deterministic.
 
 | Phase | Minimum required reads |
 |---|---|
-| DESIGN | `AGENTS.md`, config, runtime, feature record, seed/design input |
+| DESIGN | `docs/sdd/AGENTS.md`, `docs/sdd/sdd.config.json`, runtime, feature record, seed/design input |
 | SPEC | design doc, feature record, runtime, handoff contract |
 | VALIDATION | spec doc, design doc, feature record, runtime |
 | TASKS | validated spec, feature record, runtime |
