@@ -4,73 +4,76 @@
 
 ## Purpose
 
-Provide a **navigational guide** for the repository.
+Provide a navigational guide for an installed SDD instance inside a product repository.
 
-New contributors should read this document before exploring the codebase. It answers: *Where does truth live for each concern?*
+New contributors and agents should read this document before exploring the SDD area. It answers: *Where does truth live for each concern?*
 
 ---
 
-## Repository Structure
+## Canonical Repository Structure
 
-```
-{PROJECT_ROOT}/
-├── 00_core/                    # SDD framework core
-│   ├── SDD_RUNTIME.md          # Execution contract (agents)
-│   ├── SDD_GUIDE.md            # Full methodology (humans)
-│   ├── SDD_READING_CONTRACT.md # Minimal reading contract
-│   └── SDD_HANDOFF_CONTRACT.md # Handoff rules between agents
+```text
+{PRODUCT_REPO_ROOT}/
+├── src/                         # Product source code, if applicable
+├── tests/                       # Product tests, if applicable
+├── README.md                    # Product README
 │
-├── 01_execution/               # Role definitions and prompts
-│   ├── prompts/                # Agent role prompts
-│   └── ...
-│
-├── 02_policies/                # Governance policies
-│   ├── REPORT_ENVELOPE.md
-│   ├── INTEGRATION_SURFACES.md
-│   └── ...
-│
-├── 03_operations/              # Operational workflows
-│   ├── WORKFLOW.md
-│   ├── pre_sdd/                # Pre-SDD capture and triage
-│   │   ├── seeds/              # Active seeds (awaiting triage)
-│   │   ├── seeds/deferred/     # Postponed seeds
-│   │   ├── seeds/rejected/     # Rejected seeds
-│   │   ├── seeds/promoted/     # Seeds promoted to features
-│   │   ├── seeds/merged/       # Consolidated seeds
-│   │   ├── templates/
-│   │   │   ├── seed_dossier.md
-│   │   │   └── triage_batch.md
-│   │   ├── PRE_SDD_CONTRACT.md
-│   │   └── PRE_SDD_RUNTIME.md
-│   └── ...
-│
-├── 04_project_governance/      # Project-specific governance
-│   ├── PROJECT_MANIFEST.md     # Identity and philosophy
-│   ├── GLOSSARY.md             # Terminology
-│   └── PROJECT_MAP.md          # This file
-│
-├── templates/                  # Reusable document templates
-│   ├── design.md
-│   ├── specs.md
-│   ├── adr.md
-│   ├── migration_plan.md
-│   └── ...
-│
-├── docs/                         # Human guides and tutorials
-│   ├── GETTING_STARTED.md        # First feature tutorial
-│   ├── SDD_PIPELINE_VISUAL.md    # Diagrams and flowcharts
-│   └── PROJECT_TOUR.md           # Visual repository tour
-│
-├── artifacts/                  # Working deliverables (generated)
-│   ├── features_for_specs/     # Feature records (JSON)
-│   ├── design/                 # Design documents
-│   ├── specs/                  # Validated specifications
-│   ├── tasks/                  # Task breakdowns
-│   └── audit_reports/          # Audit outputs
-│
-├── ROADMAP.md                  # Framework roadmap
-├── sdd.config.json             # Project configuration
-└── AGENTS.md                   # Agent entrypoint
+└── docs/
+    └── sdd/
+        ├── AGENTS.md            # Agent entrypoint
+        ├── sdd.config.json      # Live SDD project configuration
+        │
+        ├── 00_core/             # SDD framework core
+        │   ├── SDD_RUNTIME.md
+        │   ├── SDD_GUIDE.md
+        │   ├── SDD_READING_CONTRACT.md
+        │   └── SDD_HANDOFF_CONTRACT.md
+        │
+        ├── 01_execution/        # Role definitions, prompts, and skills
+        │   ├── prompts/
+        │   └── skills/
+        │
+        ├── 02_policies/         # Governance policies
+        │   ├── REPORT_ENVELOPE_POLICY.md
+        │   ├── INTEGRATION_SURFACE_POLICY.md
+        │   └── ...
+        │
+        ├── 03_operations/       # Operational workflows
+        │   ├── pre_sdd/
+        │   │   ├── seeds/
+        │   │   ├── seeds/deferred/
+        │   │   ├── seeds/rejected/
+        │   │   ├── seeds/promoted/
+        │   │   ├── seeds/merged/
+        │   │   ├── templates/
+        │   │   ├── PRE_SDD_CONTRACT.md
+        │   │   └── PRE_SDD_RUNTIME.md
+        │   └── ...
+        │
+        ├── 04_project_governance/
+        │   ├── PROJECT_MANIFEST.md
+        │   ├── GLOSSARY.md
+        │   └── PROJECT_MAP.md
+        │
+        ├── templates/           # Reusable document templates
+        │   ├── design.md
+        │   ├── specs.md
+        │   ├── adr.md
+        │   ├── migration_plan.md
+        │   └── ...
+        │
+        ├── docs/                # Human SDD guides and tutorials
+        │   ├── GETTING_STARTED.md
+        │   ├── SDD_PIPELINE_VISUAL.md
+        │   └── PROJECT_TOUR.md
+        │
+        └── artifacts/           # Generated SDD deliverables
+            ├── features_for_specs/
+            ├── design/
+            ├── specs/
+            ├── tasks/
+            ├── audit_reports/
+            └── adr/
 ```
 
 ---
@@ -79,63 +82,73 @@ New contributors should read this document before exploring the codebase. It ans
 
 | Concern | Source of Truth | Path |
 |---------|----------------|------|
-| **Execution contract** | `00_core/SDD_RUNTIME.md` | `00_core/SDD_RUNTIME.md` |
-| **Full methodology** | `00_core/SDD_GUIDE.md` | `00_core/SDD_GUIDE.md` |
-| **Agent behavior** | `AGENTS.md` | `AGENTS.md` |
-| **Project configuration** | `sdd.config.json` | `sdd.config.json` |
-| **Project philosophy** | `04_project_governance/PROJECT_MANIFEST.md` | `04_project_governance/PROJECT_MANIFEST.md` |
-| **Terminology** | `04_project_governance/GLOSSARY.md` | `04_project_governance/GLOSSARY.md` |
-| **Feature state** | `artifacts/features_for_specs/*.json` | `artifacts/features_for_specs/` |
-| **Design documents** | `artifacts/design/*.md` | `artifacts/design/` |
-| **Validated specs** | `artifacts/specs/*.md` | `artifacts/specs/` |
-| **Task breakdowns** | `artifacts/tasks/*.md` | `artifacts/tasks/` |
-| **Audit reports** | `artifacts/audit_reports/*.md` | `artifacts/audit_reports/` |
-| **Policies** | `02_policies/*.md` | `02_policies/` |
-| **Workflows** | `03_operations/*.md` | `03_operations/` |
-| **Templates** | `templates/*.md` | `templates/` |
-| **Architecture decisions** | `artifacts/adr/*.md` (or as configured) | `{adr_path}` |
-| **Agent decision rules** | `00_core/AGENT_DECISION_TABLE.md` | `00_core/AGENT_DECISION_TABLE.md` |
-| **Human guides** | `docs/*.md` | `docs/` |
-| **Framework roadmap** | `ROADMAP.md` | `ROADMAP.md` |
-| **Migration playbook** | `03_operations/MIGRATION_PLAYBOOK.md` | `03_operations/MIGRATION_PLAYBOOK.md` |
-| **Roadmap planning** | `03_operations/ROADMAP_TEMPLATE.md` | `03_operations/ROADMAP_TEMPLATE.md` |
-| **Skills reference** | `01_execution/skills/*.md` | `01_execution/skills/` |
+| Execution contract | `SDD_RUNTIME.md` | `docs/sdd/00_core/SDD_RUNTIME.md` |
+| Full methodology | `SDD_GUIDE.md` | `docs/sdd/00_core/SDD_GUIDE.md` |
+| Agent behavior | `AGENTS.md` | `docs/sdd/AGENTS.md` |
+| Project SDD configuration | `sdd.config.json` | `docs/sdd/sdd.config.json` |
+| Project philosophy | `PROJECT_MANIFEST.md` | `docs/sdd/04_project_governance/PROJECT_MANIFEST.md` |
+| Terminology | `GLOSSARY.md` | `docs/sdd/04_project_governance/GLOSSARY.md` |
+| Feature state | feature record JSON | `docs/sdd/artifacts/features_for_specs/` |
+| Design documents | design markdown | `docs/sdd/artifacts/design/` |
+| Validated specs | spec markdown | `docs/sdd/artifacts/specs/` |
+| Task breakdowns | task markdown | `docs/sdd/artifacts/tasks/` |
+| Audit reports | audit markdown | `docs/sdd/artifacts/audit_reports/` |
+| Policies | policy markdown | `docs/sdd/02_policies/` |
+| Workflows | operation docs | `docs/sdd/03_operations/` |
+| Templates | reusable templates | `docs/sdd/templates/` |
+| Architecture decisions | ADR markdown | `docs/sdd/artifacts/adr/` |
+| Agent decision rules | decision table | `docs/sdd/00_core/AGENT_DECISION_TABLE.md` |
+| Human SDD guides | guide markdown | `docs/sdd/docs/` |
+| Migration playbook | migration workflow | `docs/sdd/03_operations/MIGRATION_PLAYBOOK.md` |
+| Roadmap planning | roadmap template | `docs/sdd/03_operations/ROADMAP_TEMPLATE.md` |
+| Skills reference | skills docs | `docs/sdd/01_execution/skills/` |
 
 ---
 
 ## Navigation by Role
 
 ### I am a new developer
-1. Read `04_project_governance/PROJECT_MANIFEST.md`
-2. Read `04_project_governance/GLOSSARY.md`
-3. Read `docs/PROJECT_TOUR.md`
-4. Read `docs/GETTING_STARTED.md` (follow the tutorial)
-5. Read `00_core/SDD_GUIDE.md`
-6. Read `AGENTS.md`
-7. Pick up a task from `artifacts/tasks/`
+
+1. Read `docs/sdd/04_project_governance/PROJECT_MANIFEST.md`.
+2. Read `docs/sdd/04_project_governance/GLOSSARY.md`.
+3. Read `docs/sdd/docs/PROJECT_TOUR.md` if present.
+4. Read `docs/sdd/docs/GETTING_STARTED.md` if present.
+5. Read `docs/sdd/00_core/SDD_GUIDE.md`.
+6. Read `docs/sdd/AGENTS.md`.
+7. Pick up a task from `docs/sdd/artifacts/tasks/` only after validation has passed.
 
 ### I am a product manager
-1. Read `04_project_governance/PROJECT_MANIFEST.md`
-2. Read `03_operations/pre_sdd/PRE_SDD_CONTRACT.md`
-3. Submit seeds to `03_operations/pre_sdd/`
+
+1. Read `docs/sdd/04_project_governance/PROJECT_MANIFEST.md`.
+2. Read `docs/sdd/03_operations/pre_sdd/PRE_SDD_CONTRACT.md`.
+3. Submit seeds to `docs/sdd/03_operations/pre_sdd/seeds/`.
 
 ### I am an agent (AI)
-1. Read `AGENTS.md`
-2. Read `00_core/SDD_RUNTIME.md`
-3. Read `00_core/SDD_HANDOFF_CONTRACT.md`
-4. Read `sdd.config.json`
-5. Follow the canonical pipeline
+
+1. Read `docs/sdd/AGENTS.md`.
+2. Read `docs/sdd/00_core/SDD_RUNTIME.md`.
+3. Read `docs/sdd/00_core/SDD_HANDOFF_CONTRACT.md`.
+4. Read `docs/sdd/sdd.config.json`.
+5. Follow the canonical pipeline.
 
 ### I am an auditor
-1. Read `02_policies/REPORT_ENVELOPE.md`
-2. Read `02_policies/INTEGRATION_SURFACES.md`
-3. Read the feature spec + code
-4. Produce report per envelope rules
+
+1. Read `docs/sdd/02_policies/REPORT_ENVELOPE_POLICY.md`.
+2. Read `docs/sdd/02_policies/INTEGRATION_SURFACE_POLICY.md`.
+3. Read the feature spec + code + verification evidence.
+4. Produce a report per envelope rules.
+5. Remember that `AUDIT FAIL` blocks archive/final acceptance/release gates unless explicitly waived by the owner.
 
 ---
 
 ## Related Documents
 
-- `04_project_governance/PROJECT_MANIFEST.md` — project identity
-- `04_project_governance/GLOSSARY.md` — terminology
-- `sdd.config.json` — machine-readable paths and stack
+- `docs/sdd/04_project_governance/PROJECT_MANIFEST.md` — project identity
+- `docs/sdd/04_project_governance/GLOSSARY.md` — terminology
+- `docs/sdd/sdd.config.json` — machine-readable paths and stack
+
+---
+
+## Examples
+
+`examples/` content is educational only and never framework authority.
