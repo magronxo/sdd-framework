@@ -1,0 +1,150 @@
+{
+  "manifest_version": "1.0.0",
+  "distribution": "Canonical SDD Model v1",
+  "install_root": "docs/sdd",
+  "runtime_dependencies": [
+    {
+      "kind": "python-runtime",
+      "name": "Python",
+      "requirement": ">=3.11",
+      "purpose": "Run the installed validator and installation smoke commands."
+    },
+    {
+      "kind": "python-package",
+      "name": "jsonschema",
+      "requirement": "==4.25.1",
+      "requirements_path": "docs/sdd/contract/v1/requirements-validator.txt",
+      "purpose": "Validate Canonical SDD feature records with Draft 2020-12."
+    }
+  ],
+  "entries": [
+    {
+      "source": "contract/v1/install-manifest.json",
+      "destination": "docs/sdd/contract/v1/install-manifest.json",
+      "source_kind": "file",
+      "type": "contract",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "contract/v1/feature-record.schema.json",
+      "destination": "docs/sdd/contract/v1/feature-record.schema.json",
+      "source_kind": "file",
+      "type": "contract",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "contract/v1/sdd-protocol.json",
+      "destination": "docs/sdd/contract/v1/sdd-protocol.json",
+      "source_kind": "file",
+      "type": "contract",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "contract/v1/README.md",
+      "destination": "docs/sdd/contract/v1/README.md",
+      "source_kind": "file",
+      "type": "contract",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "contract/v1/requirements-validator.txt",
+      "destination": "docs/sdd/contract/v1/requirements-validator.txt",
+      "source_kind": "file",
+      "type": "config",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "tools/sdd_validate.py",
+      "destination": "docs/sdd/tools/sdd_validate.py",
+      "source_kind": "file",
+      "type": "tool",
+      "required": true,
+      "executable": true
+    },
+    {
+      "source": "AGENTS.md",
+      "destination": "docs/sdd/AGENTS.md",
+      "source_kind": "file",
+      "type": "runtime",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "00_core",
+      "destination": "docs/sdd/00_core",
+      "source_kind": "directory",
+      "type": "runtime",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "01_execution",
+      "destination": "docs/sdd/01_execution",
+      "source_kind": "directory",
+      "type": "prompt",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "02_policies",
+      "destination": "docs/sdd/02_policies",
+      "source_kind": "directory",
+      "type": "policy",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "03_operations",
+      "destination": "docs/sdd/03_operations",
+      "source_kind": "directory",
+      "type": "runtime",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "04_project_governance",
+      "destination": "docs/sdd/04_project_governance",
+      "source_kind": "directory",
+      "type": "policy",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "templates",
+      "destination": "docs/sdd/templates",
+      "source_kind": "directory",
+      "type": "template",
+      "required": true,
+      "executable": false
+    },
+    {
+      "source": "init-sdd.sh",
+      "destination": "docs/sdd/init-sdd.sh",
+      "source_kind": "file",
+      "type": "tool",
+      "required": true,
+      "executable": true
+    },
+    {
+      "source": "init-sdd.ps1",
+      "destination": "docs/sdd/init-sdd.ps1",
+      "source_kind": "file",
+      "type": "tool",
+      "required": true,
+      "executable": true
+    },
+    {
+      "source": "templates/sdd.config.json",
+      "destination": "docs/sdd/sdd.config.json",
+      "source_kind": "file",
+      "type": "config",
+      "required": true,
+      "executable": false
+    }
+  ]
+}

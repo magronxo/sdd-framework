@@ -1,137 +1,104 @@
 # Canonical SDD Model v1
 
-This directory is the machine-readable authority for Phase 1 of the Canonical SDD Model.
+## Machine-readable authority
 
-- `feature-record.schema.json` defines feature-record fields, types, enums, legacy reads, paths, timestamps, open questions, results, audit waiver, and internal record invariants.
-- `sdd-protocol.json` defines lifecycle, transitions, gates, conditional human checkpoints, regressions, blockers, compatibility policy, and gate-result semantics.
+- `feature-record.schema.json` defines feature-record fields, types, enums, aliases, paths, and invariants.
+- `sdd-protocol.json` defines lifecycle, transitions, gates, blockers, regressions, compatibility interpretation, and conditional checkpoints.
 
-Human-facing documents may summarize these rules but do not override them.
+Markdown summaries do not override these files.
 
-## Install development dependency
+## Distribution contract
+
+`install-manifest.json` is the versioned, declarative inventory for a Canonical SDD v1 installation. It maps repository sources to destinations below `docs/sdd/`, declares element types and executable flags, and records runtime dependencies without duplicating lifecycle enums or gate rules.
+
+The installed validator dependency is pinned in `requirements-validator.txt`:
 
 ```bash
-python -m pip install -r requirements-dev.txt
+python -m pip install -r docs/sdd/contract/v1/requirements-validator.txt
 ```
 
-## Validate a record
+The installer performs no dependency installation and no network access.
 
-Tolerant legacy-read mode is the default:
+## Install from a source checkout
+
+The installation commands in this section must be run from the root of a source checkout of `sdd-framework`:
 
 ```bash
-python tools/sdd_validate.py path/to/feature-record.json
+python tools/sdd_install.py --target /path/to/product-repo
 ```
 
-Strict canonical-write validation:
+Dry-run:
 
 ```bash
-python tools/sdd_validate.py path/to/feature-record.json --mode write
+python tools/sdd_install.py --target /path/to/product-repo --dry-run --format json
 ```
 
-Machine-readable output:
+An alternate manifest is accepted only from another source checkout with the exact layout `<source-root>/contract/v1/install-manifest.json`:
 
 ```bash
-python tools/sdd_validate.py path/to/feature-record.json --format json
-```
-
-## Evaluate a transition
-
-Core semantic prerequisites only:
-
-```bash
-python tools/sdd_validate.py path/to/feature-record.json \
-  --transition TASKS:IMPLEMENT \
+python tools/sdd_install.py \
+  --target /path/to/product-repo \
+  --manifest /path/to/source-root/contract/v1/install-manifest.json \
+  --source-root /path/to/source-root \
+  --dry-run \
   --format json
 ```
 
-When an already-resolved project, risk, or external governance profile requires approval:
+`tools/sdd_install.py` is a source-distribution tool. It is not copied into the product repository. The target must exist and must not already contain `docs/sdd/`. Upgrade, overwrite, migration, and uninstall are unsupported.
 
-```bash
-python tools/sdd_validate.py path/to/feature-record.json \
-  --transition TASKS:IMPLEMENT \
-  --require-approval TASKS_TO_IMPLEMENT \
-  --approval TASKS_TO_IMPLEMENT \
-  --format json
-```
+## Installed runtime
 
-The core does not resolve profiles and does not integrate with Baranes Tècniques or wrappers in this phase.
-
-## Validation legacy read: `PASS_WITH_FOLLOWUP`
-
-`PASS_WITH_FOLLOWUP` belongs only to `validation_result`.
-
-In tolerant-read mode:
-
-- it emits `LEGACY_PASS_WITH_FOLLOWUP`;
-- its effective validation result is `PASS`;
-- `VALIDATION -> TASKS` may return `ALLOW` only when no open question is blocking.
-
-In canonical-write mode it produces `NON_CANONICAL_WRITE`.
-
-`verification_result: PASS_WITH_FOLLOWUP` is invalid.
-
-## Verification legacy read: `PARTIAL`
-
-For an active feature, including `state: VERIFY`:
-
-- the record is invalid;
-- it produces `VERIFICATION_NOT_EXECUTED`;
-- `VERIFY -> AUDIT` returns `DENY`.
-
-For `ARCHIVE`, `DONE`, or `ARCHIVED` in tolerant-read mode:
-
-- the record remains unchanged;
-- it emits `LEGACY_PARTIAL_AMBIGUOUS`;
-- effective verification is `null`;
-- `migration_review_required` is `true`.
-
-Canonical writes reject `PARTIAL` with `NON_CANONICAL_WRITE`.
-
-## Artifact paths
-
-Canonical paths start with:
+The installed product contains the validator at:
 
 ```text
-docs/sdd/artifacts/
+docs/sdd/tools/sdd_validate.py
 ```
 
-Tolerant reads accept `artifacts/...` with `LEGACY_ARTIFACT_PATH`.
+It does not contain the installer. Commands executed from an installed product therefore start with `docs/sdd/tools/sdd_validate.py`, not `tools/sdd_install.py`.
 
-Any exact path segment equal to `..` is invalid, including immediately after either prefix.
+### Installed self-check
 
-## Exit codes
+From the product repository root:
 
-- `0`: valid record and gate `ALLOW`, or contract self-check passed.
-- `1`: invalid record or gate `DENY`.
-- `2`: invocation, input, schema, or protocol error.
-- `3`: gate `HUMAN_REQUIRED`.
+```bash
+python docs/sdd/tools/sdd_validate.py \
+  --schema docs/sdd/contract/v1/feature-record.schema.json \
+  --protocol docs/sdd/contract/v1/sdd-protocol.json \
+  --self-check \
+  --format json
+```
 
-## Compatibility behavior
+## Validation and gates
 
-Canonical writes require `id`, `ARCHIVE`, `task_path`, canonical result values, and canonical artifact paths.
+Tolerant read is the default. Canonical write validation uses `--mode write`.
 
-Tolerant reads recognize:
+Historical validation `PASS_WITH_FOLLOWUP` has effective validation `PASS` only when blocking-open-question checks also pass. It is not a verification result.
 
-- `feature_id`;
-- `DONE` and `ARCHIVED`;
-- `tasks_path`;
-- `artifacts/...`;
-- validation `PASS_WITH_FOLLOWUP`;
-- archived verification `PARTIAL`.
+Active verification `PARTIAL` is invalid. Archived verification `PARTIAL` is a tolerant historical read with effective result `null` and migration review required; the validator never changes the record.
 
-No legacy input is silently normalized or rewritten.
+`TASKS -> IMPLEMENT` evaluates semantic prerequisites. An externally resolved policy may request the `TASKS_TO_IMPLEMENT` checkpoint through `--require-approval`; the core does not resolve profiles.
 
-## Tests
+An owner waiver applies only to `AUDIT -> ARCHIVE` and does not authorize merge, release, deploy, or push.
+
+## Installer exit codes
+
+- `0`: installation or dry-run succeeded.
+- `2`: command-line usage error.
+- `3`: invalid target or existing installation.
+- `4`: invalid or unsafe manifest, source-root layout, version, or distribution identity.
+- `5`: missing, mismatched, or unsafe source.
+- `6`: copy or finalization failure.
+
+## Repository validation
+
+These commands are run from the source checkout:
 
 ```bash
 python3 -m compileall -q tools tests
 python3 -m json.tool contract/v1/feature-record.schema.json
 python3 -m json.tool contract/v1/sdd-protocol.json
+python3 -m json.tool contract/v1/install-manifest.json
 python3 tools/sdd_validate.py --self-check --format json
+python3 tools/sdd_conformance.py --format json
 python3 -m unittest discover -s tests -v
 ```
-
-The fixture suite is stored in `tests/fixtures/v1/feature-record-cases.json`.
-
-## Read-only guarantee
-
-The validator reads the record, schema, and protocol and writes only to standard output and standard error. Tests compare inspected file bytes, SHA-256 digest, and modification timestamp before and after validation. Historical `PARTIAL` records are reported for migration review but are not modified, reopened, or migrated.

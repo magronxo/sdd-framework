@@ -2,100 +2,53 @@
 
 > **Mode Diátaxis**: Reference
 
-## Purpose
+## Purpose and authority
 
-Define the minimal executable Spec-Driven Development flow for an installed SDD instance.
+This document summarizes the installed runtime. Machine-readable authority is:
 
-The machine-readable v1 authority is split between `contract/v1/feature-record.schema.json` for record shape and `contract/v1/sdd-protocol.json` for lifecycle, transitions, gates, blockers, and compatibility.
+- `docs/sdd/contract/v1/feature-record.schema.json` for feature-record shape and invariants;
+- `docs/sdd/contract/v1/sdd-protocol.json` for lifecycle, transitions, gates, blockers, regressions, and checkpoints.
+
+No Markdown file overrides those contracts.
 
 ## Install context
 
-Canonical installed location:
+The installed root is `docs/sdd/`. Generated artifacts use `docs/sdd/artifacts/`. Product source remains outside the installed root.
 
-```text
-docs/sdd/
-```
+## Persistent lifecycle
 
-Generated artifacts live under `docs/sdd/artifacts/`.
-
-## Canonical pipeline
+`SEED` and `INTAKE` are pre-record activities.
 
 ```text
 DESIGN -> SPEC -> VALIDATION -> TASKS -> IMPLEMENT -> VERIFY -> AUDIT -> ARCHIVE
 ```
 
-`SEED` and `INTAKE` are pre-record activities.
-
-## Hard rules
+## Core rules
 
 - No implementation without effective validation `PASS`.
-- Validation must be explicitly recorded.
-- Blocking open questions deny progression.
-- `TASKS -> IMPLEMENT` validates core semantic prerequisites.
-- Human approval for `TASKS -> IMPLEMENT` is conditional on an active project, risk, or external governance policy.
-- No role mixing or skipped states.
-- Do not archive unresolved `AUDIT FAIL` without a valid owner waiver.
-- No silent legacy normalization.
+- Blocking open questions deny progression independently of result interpretation.
+- `TASKS -> IMPLEMENT` validates semantic prerequisites.
+- Human approval is conditional on an active external policy requesting a protocol-declared checkpoint.
+- The core does not resolve profiles or integrate wrappers.
+- No role mixing, skipped states, or silent normalization.
 
-This phase does not integrate with Baranes Tècniques or wrappers.
+## Results
 
-## Result compatibility
+Canonical validation and verification results are `PASS` or `FAIL`. Canonical audit results are `PASS`, `WARN`, or `FAIL`.
 
-### Validation
+Historical validation `PASS_WITH_FOLLOWUP` is a tolerant read with effective validation `PASS` only when no open question is blocking. Canonical writes reject it.
 
-Canonical:
-
-```text
-PASS
-FAIL
-```
-
-Historical `PASS_WITH_FOLLOWUP` is accepted only in tolerant reads:
-
-- effective result `PASS`;
-- warning `LEGACY_PASS_WITH_FOLLOWUP`;
-- open blocking questions still deny `VALIDATION -> TASKS`;
-- canonical writes reject it.
-
-### Verification
-
-Canonical:
-
-```text
-PASS
-FAIL
-```
-
-`verification_result: PASS_WITH_FOLLOWUP` is invalid.
-
-Active `PARTIAL` is invalid and produces `VERIFICATION_NOT_EXECUTED`.
-
-Archived `PARTIAL` under `ARCHIVE`, `DONE`, or `ARCHIVED`:
-
-- is a tolerant historical read;
-- emits `LEGACY_PARTIAL_AMBIGUOUS`;
-- has effective verification `null`;
-- sets `migration_review_required: true`;
-- must not be modified, reopened, or migrated automatically.
+Active verification `PARTIAL` is invalid and produces `VERIFICATION_NOT_EXECUTED`. Archived `PARTIAL` is an ambiguous tolerant read with effective verification `null` and `migration_review_required: true`; it must not be changed automatically.
 
 ## Failure handling
 
 - `VALIDATION FAIL -> SPEC`
 - `VERIFY FAIL -> IMPLEMENT`
-- `AUDIT FAIL` blocks archive unless waived and does not choose a repair phase automatically.
+- `AUDIT FAIL` blocks `AUDIT -> ARCHIVE` unless a valid owner waiver is recorded.
+- Audit failure does not select an automatic repair phase.
 
-## Artifact paths
+An owner waiver has no effect outside the archival transition.
 
-Canonical:
+## Paths
 
-- `docs/sdd/artifacts/design/<feature>.md`
-- `docs/sdd/artifacts/specs/<feature>.md`
-- `docs/sdd/artifacts/tasks/<feature>.md`
-
-Legacy `artifacts/...` is read relative to `sdd_root` with a warning.
-
-Any exact path segment equal to `..` is invalid, including the first segment after the canonical or legacy prefix.
-
-## Completion
-
-A feature is complete when validation, implementation, verification, audit, and archival gates all permit completion and no blocking open question remains.
+Canonical artifact paths begin with `docs/sdd/artifacts/`. The explicit legacy prefix is interpreted only as declared by the schema and validator. Exact `..` path segments are invalid.
