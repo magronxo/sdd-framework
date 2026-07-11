@@ -36,6 +36,11 @@
     "DENY",
     "HUMAN_REQUIRED"
   ],
+  "gate_semantics": {
+    "ALLOW": "All core semantic prerequisites and active policy requirements are satisfied.",
+    "DENY": "At least one core semantic prerequisite or policy declaration is invalid.",
+    "HUMAN_REQUIRED": "Core semantic prerequisites pass, but an active policy requires a declared human approval that is not recorded."
+  },
   "gate_interpretations": {
     "verification_legacy_reads": {
       "PARTIAL": {
@@ -53,6 +58,30 @@
         "WARN"
       ],
       "fail_override": "valid owner_waiver"
+    }
+  },
+  "human_approval_policy": {
+    "core_default": "not_required",
+    "resolution_mode": "external_input_only",
+    "supported_sources": [
+      "project_profile",
+      "risk_profile",
+      "external_governance"
+    ],
+    "integration_implemented": false,
+    "out_of_scope_integrations": [
+      "Baranes Tecniques",
+      "operational wrappers"
+    ]
+  },
+  "human_checkpoints": {
+    "TASKS_TO_IMPLEMENT": {
+      "transition": {
+        "from": "TASKS",
+        "to": "IMPLEMENT"
+      },
+      "default_required": false,
+      "description": "A project, risk, or external governance profile may require human approval before implementation."
     }
   },
   "compatibility": {
@@ -84,7 +113,8 @@
     "BLOCKING_OPEN_QUESTION": "At least one structured open question is blocking.",
     "AUDIT_FAILED": "AUDIT FAIL blocks ARCHIVE without a valid owner waiver.",
     "OWNER_WAIVER_INVALID": "The audit waiver is missing or invalid.",
-    "HUMAN_APPROVAL_REQUIRED": "The transition requires an explicit human approval.",
+    "HUMAN_APPROVAL_REQUIRED": "The active policy requires an explicit human approval that is not recorded.",
+    "POLICY_REQUIREMENT_INVALID": "The requested policy checkpoint is unknown or does not apply to this transition.",
     "SOURCE_STATE_MISMATCH": "The record state does not match the requested transition source state."
   },
   "warning_codes": {
@@ -152,12 +182,10 @@
         {
           "type": "no_blocking_open_questions",
           "blocker": "BLOCKING_OPEN_QUESTION"
-        },
-        {
-          "type": "human_approval",
-          "approval": "TASKS_TO_IMPLEMENT",
-          "blocker": "HUMAN_APPROVAL_REQUIRED"
         }
+      ],
+      "policy_hooks": [
+        "TASKS_TO_IMPLEMENT"
       ]
     },
     {
