@@ -1,68 +1,34 @@
-# Legacy Specs Policy (Kill Debt)
+# Legacy Specs Policy
 
 ## Purpose
 
-Allow legacy / non-normalized specs to exist for historical traceability **without** letting them leak into runtime decisions or implementation.
+Preserve historical specification material for traceability without allowing it to govern active implementation until explicitly promoted.
 
-This policy is designed to prevent “paper complete” drift.
+## Authority boundaries
 
----
+- `docs/sdd/contract/v1/feature-record.schema.json` governs feature-record shape.
+- `docs/sdd/contract/v1/sdd-protocol.json` governs workflow and gates.
+- A validated feature spec under `docs/sdd/artifacts/specs/` governs the behavior promised for its active feature.
+- Product code is implementation evidence. It does not silently override a validated feature spec.
 
 ## Definitions
 
-**Canonical spec**
-A spec located under `artifacts/specs/` that is intended to govern behavior.
+A canonical spec is a validated specification recorded through the canonical feature record and stored under `docs/sdd/artifacts/specs/`.
 
-**Legacy spec / legacy content**
-Any spec-like document that is:
-- outside `artifacts/specs/`, or
-- inside artifacts but not validated / not aligned with runtime, or
-- known to be stale / incomplete / inconsistent with code.
+Legacy content is any spec-like material that is unvalidated, stale, outside the canonical path, or explicitly marked historical. It is informative and read-only, not active authority.
 
-Legacy content may be informative, but it is not authoritative.
+## Rules
 
----
+1. No validated canonical spec means no implementation justified by legacy material.
+2. Legacy material may inform discovery, comparison, or a new design/spec cycle.
+3. Promotion requires an explicit canonical feature workflow and the protocol-defined gates; file relocation alone is not promotion.
+4. When code and a validated spec disagree, agents report the mismatch and follow the active feature workflow. They do not declare that either surface silently wins.
+5. Corrective work may update implementation to satisfy the validated spec or reopen specification through the declared workflow when the intended behavior has changed.
+6. Historical documents are not mass-rewritten, auto-promoted, or auto-migrated.
 
-## Hard Rules
+## Operational handling
 
-1) **No validated canonical spec → no implementation.**
-If a spec is legacy, it cannot be used to justify code changes.
-
-2) **Legacy specs are read-only references.**
-They can inform discussion and re-audit, but they do not define behavior.
-
-3) **Promotion requires gates.**
-A legacy spec becomes canonical authority only after:
-- `VALIDATION = PASS`, and
-- tasks exist (`TASKS`), and
-- implementation is verified (`VERIFY`), and
-- an audit report exists (`AUDIT`), then archive (`ARCHIVE`).
-
-4) **If docs disagree with code, code wins until corrected.**
-The correction must happen by:
-- updating the spec to match reality (and re-validating), or
-- implementing missing behavior to satisfy the spec (and verifying).
-
----
-
-## Operational Enforcement (what agents must do)
-
-When a task references a spec:
-
-1) Resolve the *canonical* spec path under `artifacts/specs/`.
-2) If the spec is not validated, STOP and request VALIDATION.
-3) If a spec/tasks doc claims “implemented”, but the code lacks it:
-   - open an alignment report under `artifacts/audit_reports/`
-   - re-open the feature state to `IMPLEMENT` (or earlier)
-   - remove any “paper complete” claims from the feature record (move `implemented` items back to `pending`)
-
----
-
-## Minimal Cleanup Strategy (no mass refactor)
-
-We do **not** rewrite all legacy docs immediately.
-We instead:
-
-- keep legacy docs as traceability,
-- enforce the gates so they can’t cause wrong implementation,
-- promote only the specs we actively work on via re-audit + validation.
+- Resolve active specs under `docs/sdd/artifacts/specs/`.
+- Store audit/alignment reports under `docs/sdd/artifacts/audit_reports/`.
+- Stop when validation or authority is ambiguous.
+- Keep legacy material as traceability until an explicit project-owner decision promotes it through the canonical process.
