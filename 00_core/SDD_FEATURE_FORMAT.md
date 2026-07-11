@@ -1,193 +1,71 @@
 # SDD Feature Format
 
-Every feature is represented by a document of type `SYSTEM_SPEC`. This document is the single source of truth for feature progress.
+> Human-readable overview. The machine-readable authority for feature-record fields and internal invariants is `contract/v1/feature-record.schema.json`. Workflow transitions and gates are authoritative only in `contract/v1/sdd-protocol.json`.
 
----
+Every persisted feature is represented by one JSON record of type `SYSTEM_SPEC`.
 
-## Canonical Location
-
-Installed SDD instances live under:
+## Lifecycle
 
 ```text
-docs/sdd/
+DESIGN -> SPEC -> VALIDATION -> TASKS -> IMPLEMENT -> VERIFY -> AUDIT -> ARCHIVE
 ```
 
-Feature records live under:
+`SEED` and `INTAKE` happen before record creation. `BLOCKED`, `VALIDATED`, and `VERIFIED` are derived conditions.
 
-```text
-docs/sdd/artifacts/features_for_specs/
-```
+## Primary artifact paths
 
----
-
-## Required Fields
-
-```json
-{
-  "id": "feat-001",
-  "type": "SYSTEM_SPEC",
-  "state": "DESIGN",
-  "title": "Brief description",
-  "created_at": "2026-03-28T10:00:00Z",
-  "updated_at": "2026-03-28T10:00:00Z"
-}
-```
-
----
-
-## Canonical States
-
-| State | Meaning |
-|-------|---------|
-| DESIGN | Feature defined at WHAT level, but not yet specified |
-| SPEC | Spec written; may still have pending validation feedback |
-| VALIDATION | Phase of completeness and determinism review |
-| TASKS | Minimal, ordered work breakdown derived from a validated spec |
-| IMPLEMENT | Implementation in progress or ready to start |
-| VERIFY | Verification of compliance against spec and SDT |
-| AUDIT | Quality, coherence, risk, and traceability audit |
-| ARCHIVE | Documental closure and consolidation |
-
-Legacy: `DONE` exists in old feature records. Treat it as a legacy alias of `ARCHIVE`. Do not use it for new work.
-
----
-
-## Optional Fields by State
-
-| State | Additional Fields |
-|-------|------------------|
-| DESIGN | `design_path` (string), `open_questions` (array) |
-| SPEC | `spec_path` (string), `acceptance_criteria` (array Gherkin) |
-| VALIDATION | `validation_result` (PASS/FAIL), `validated_at` (ISO8601), `validation_issues` (array, only if FAIL), `validation_details` (string, legacy/freeform) |
-| TASKS | `task_path` (string), `task_list` (array) |
-| IMPLEMENT | `implementation_notes` (string) |
-| VERIFY | `verification_result` (PASS/FAIL), `verification_details` (string) |
-| AUDIT | `audit_result` (PASS/WARN/FAIL), `audit_reasons` (array), `audit_report_path` (string), `owner_waiver` (object, only if FAIL is waived) |
-| ARCHIVE | `archived_at` (ISO8601), `archive_notes` (string) |
-
----
-
-## Cross-cutting Fields
-
-These fields may appear in more than one state if they provide traceability:
+Each artifact-producing phase uses one singular field:
 
 - `design_path`
 - `spec_path`
 - `task_path`
-- `task_list`
-- `sdt_scenarios`
-- `dependencies`
-- `audit_result`
 - `audit_report_path`
-- `validation_result`
 
----
-
-## Complete Example
-
-```json
-{
-  "id": "feat-001",
-  "type": "SYSTEM_SPEC",
-  "state": "ARCHIVE",
-  "title": "Implement path validation",
-  "created_at": "2026-03-28T10:00:00Z",
-  "updated_at": "2026-03-28T14:30:00Z",
-  "design_path": "docs/sdd/artifacts/design/feat-001-path-validation.md",
-  "spec_path": "docs/sdd/artifacts/specs/feat-001-path-validation.md",
-  "sdt_scenarios": [
-    {
-      "scenario": "Path traversal with ..",
-      "expected_behavior": "Reject with E_PATH_TRAVERSAL"
-    }
-  ],
-  "task_path": "docs/sdd/artifacts/tasks/feat-001-path-validation.md",
-  "task_list": [
-    "Implement path validator",
-    "Add unit test",
-    "Document error E_PATH_TRAVERSAL"
-  ],
-  "validation_result": "PASS",
-  "verification_result": "PASS",
-  "audit_result": "PASS",
-  "audit_report_path": "docs/sdd/artifacts/audit_reports/audit_feat-001_2026-03-28.md",
-  "archived_at": "2026-03-28T14:00:00Z",
-  "archive_notes": "Feature completed and consolidated."
-}
-```
-
----
-
-## File Naming (MANDATORY)
-
-All feature markdown documents MUST follow this format:
+Canonical paths are repository-relative:
 
 ```text
-feat-{NNN}-{short-name}.md
+docs/sdd/artifacts/...
 ```
 
-Feature record JSON files MUST follow this format:
+`artifacts/...` is a tolerant legacy read and emits a warning. Any exact `..` segment is invalid.
 
-```text
-feat-{NNN}-{short-name}.json
-```
+## Results
 
-Examples:
+Canonical values:
 
-- `feat-001-kernel-core.md`
-- `feat-006-api-server.md`
-- `feat-007-worker-pool.md`
-- `feat-012-kernel-status-api.md`
-- `feat-001-kernel-core.json`
+- validation: `PASS`, `FAIL`
+- verification: `PASS`, `FAIL`
+- audit: `PASS`, `WARN`, `FAIL`
 
-Each JSON file must point to actual repo-relative paths via:
+Historical validation `PASS_WITH_FOLLOWUP` is a tolerant read with effective result `PASS`. Progression remains blocked when an open question is blocking. It is not valid under `verification_result`.
+
+Active verification `PARTIAL` is invalid. Archived `PARTIAL` is tolerated only for read compatibility, emits `LEGACY_PARTIAL_AMBIGUOUS`, has no effective verification result, and requires migration review without modifying the record.
+
+## Open questions
 
 ```json
 {
-  "design_path": "docs/sdd/artifacts/design/feat-NNN-short-name.md",
-  "spec_path": "docs/sdd/artifacts/specs/feat-NNN-short-name.md",
-  "task_path": "docs/sdd/artifacts/tasks/feat-NNN-short-name.md"
+  "id": "Q-001",
+  "text": "Pregunta pendent",
+  "blocking": true,
+  "owner": "role-or-person",
+  "status": "OPEN"
 }
 ```
 
-Legacy paths are allowed only for traceability during migration:
+## Compatibility
 
-```json
-{
-  "design_path": "artifacts/design/feat-NNN-short-name.md",
-  "spec_path": "/SDD/artifacts/specs/feat-NNN-short-name.md"
-}
-```
+Explicit tolerant reads:
 
-Do not normalize legacy paths via silent exceptions. Mark migration status explicitly.
+- `feature_id` as alias of `id`
+- `DONE` or `ARCHIVED` as aliases of `ARCHIVE`
+- `tasks_path` as alias of `task_path`
+- `artifacts/...`
+- validation `PASS_WITH_FOLLOWUP`
+- archived verification `PARTIAL`
 
----
+Canonical writes reject all legacy forms. The validator never rewrites inspected records.
 
-## Audit Gate Field
+## Validation
 
-If `audit_result` is `FAIL`, the feature MUST NOT move to `ARCHIVE` unless one of these is true:
-
-1. A later audit result changes the gate to PASS/WARN.
-2. An explicit owner waiver is recorded in `owner_waiver`.
-
-Example waiver field:
-
-```json
-{
-  "owner_waiver": {
-    "waived_by": "project owner",
-    "waived_at": "2026-03-28T15:00:00Z",
-    "reason": "Accepted risk for non-release internal prototype"
-  }
-}
-```
-
----
-
-## Notes
-
-- The `id` field must be unique and sequential within the project.
-- The `state` field can only contain values from the defined enumeration.
-- Documents are saved to configured paths in `docs/sdd/sdd.config.json`.
-- Default feature records live under `docs/sdd/artifacts/features_for_specs/`.
-- Examples are educational only and never authority.
+See `contract/v1/README.md`.
