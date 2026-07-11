@@ -3,18 +3,38 @@ name: Canonical SDD v1
 on:
   pull_request:
     paths:
+      - "README.md"
+      - "AGENTS.md"
+      - "00_core/**"
+      - "01_execution/**"
+      - "02_policies/**"
+      - "03_operations/**"
+      - "04_project_governance/**"
+      - "templates/**"
       - "contract/v1/**"
-      - "tools/sdd_validate.py"
+      - "tools/**"
       - "tests/**"
+      - "init-sdd.sh"
+      - "init-sdd.ps1"
       - "requirements-dev.txt"
       - ".github/workflows/canonical-sdd-v1.yml"
   push:
     branches:
       - main
     paths:
+      - "README.md"
+      - "AGENTS.md"
+      - "00_core/**"
+      - "01_execution/**"
+      - "02_policies/**"
+      - "03_operations/**"
+      - "04_project_governance/**"
+      - "templates/**"
       - "contract/v1/**"
-      - "tools/sdd_validate.py"
+      - "tools/**"
       - "tests/**"
+      - "init-sdd.sh"
+      - "init-sdd.ps1"
       - "requirements-dev.txt"
       - ".github/workflows/canonical-sdd-v1.yml"
 
@@ -22,7 +42,7 @@ permissions:
   contents: read
 
 jobs:
-  contract-and-validator:
+  contract-distribution-and-conformance:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,5 +54,22 @@ jobs:
       - run: python -m compileall -q tools tests
       - run: python -m json.tool contract/v1/feature-record.schema.json >/dev/null
       - run: python -m json.tool contract/v1/sdd-protocol.json >/dev/null
+      - run: python -m json.tool contract/v1/install-manifest.json >/dev/null
       - run: python tools/sdd_validate.py --self-check --format json
+      - run: python tools/sdd_conformance.py --format json
+      - name: Installer dry-run and installed self-check
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp_root="$(mktemp -d)"
+          trap 'rm -rf "$temp_root"' EXIT
+          target="$temp_root/product"
+          mkdir -p "$target"
+          python tools/sdd_install.py --target "$target" --dry-run --format json
+          python tools/sdd_install.py --target "$target" --format json
+          python "$target/docs/sdd/tools/sdd_validate.py" \
+            --schema "$target/docs/sdd/contract/v1/feature-record.schema.json" \
+            --protocol "$target/docs/sdd/contract/v1/sdd-protocol.json" \
+            --self-check \
+            --format json
       - run: python -m unittest discover -s tests -v
