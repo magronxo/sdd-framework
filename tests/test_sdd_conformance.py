@@ -12,7 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
 sys.path.insert(0, str(TOOLS))
 
-spec = importlib.util.spec_from_file_location("sdd_conformance", TOOLS / "sdd_conformance.py")
+spec = importlib.util.spec_from_file_location(
+    "sdd_conformance", TOOLS / "sdd_conformance.py"
+)
 assert spec and spec.loader
 conformance = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = conformance
@@ -26,7 +28,9 @@ class ConformanceGuardTests(unittest.TestCase):
     def mutated_root(self):
         temp = tempfile.TemporaryDirectory()
         root = Path(temp.name) / "repo"
-        shutil.copytree(ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        shutil.copytree(
+            ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__")
+        )
         return temp, root
 
     def test_repository_is_conformant(self) -> None:
@@ -39,7 +43,11 @@ class ConformanceGuardTests(unittest.TestCase):
         temp, root = self.mutated_root()
         try:
             path = root / "01_execution/prompts/verifier.md"
-            path.write_text(path.read_text(encoding="utf-8") + '\nPARTIAL -> AUDIT\n{"verification_result": "PARTIAL"}\n', encoding="utf-8")
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + '\nPARTIAL -> AUDIT\n{"verification_result": "PARTIAL"}\n',
+                encoding="utf-8",
+            )
             codes = self.codes(root)
             self.assertIn("ACTIVE_PARTIAL_TO_AUDIT", codes)
             self.assertIn("ACTIVE_PARTIAL_OUTPUT", codes)
@@ -51,7 +59,11 @@ class ConformanceGuardTests(unittest.TestCase):
         try:
             path = root / "contract/v1/sdd-protocol.json"
             protocol = json.loads(path.read_text(encoding="utf-8"))
-            rule = next(item for item in protocol["transitions"] if (item["from"], item["to"]) == ("TASKS", "IMPLEMENT"))
+            rule = next(
+                item
+                for item in protocol["transitions"]
+                if (item["from"], item["to"]) == ("TASKS", "IMPLEMENT")
+            )
             rule["requirements"].append({"type": "human_approval"})
             path.write_text(json.dumps(protocol), encoding="utf-8")
             self.assertIn("UNIVERSAL_HUMAN_APPROVAL", self.codes(root))
@@ -62,7 +74,76 @@ class ConformanceGuardTests(unittest.TestCase):
         temp, root = self.mutated_root()
         try:
             path = root / "AGENTS.md"
-            path.write_text(path.read_text(encoding="utf-8") + "\nAn owner waiver allows merge and release.\n", encoding="utf-8")
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\nAn owner waiver allows merge and release.\n",
+                encoding="utf-8",
+            )
+            self.assertIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
+        finally:
+            temp.cleanup()
+
+    def test_detects_owner_waiver_only_allows_merge(self) -> None:
+        temp, root = self.mutated_root()
+        try:
+            path = root / "AGENTS.md"
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\nAn owner waiver only allows merge.\n",
+                encoding="utf-8",
+            )
+            self.assertIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
+        finally:
+            temp.cleanup()
+
+    def test_owner_waiver_archive_only_scope_is_not_detected(self) -> None:
+        temp, root = self.mutated_root()
+        try:
+            path = root / "AGENTS.md"
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\nAn owner waiver applies only to AUDIT -> ARCHIVE.\n",
+                encoding="utf-8",
+            )
+            self.assertNotIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
+        finally:
+            temp.cleanup()
+
+    def test_owner_waiver_external_negation_is_not_detected(self) -> None:
+        temp, root = self.mutated_root()
+        try:
+            path = root / "AGENTS.md"
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\nAn owner waiver does not authorize merge, release, deploy, or push.\n",
+                encoding="utf-8",
+            )
+            self.assertNotIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
+        finally:
+            temp.cleanup()
+
+    def test_owner_waiver_no_external_effect_is_not_detected(self) -> None:
+        temp, root = self.mutated_root()
+        try:
+            path = root / "AGENTS.md"
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\nAn owner waiver has no effect on external operations.\n",
+                encoding="utf-8",
+            )
+            self.assertNotIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
+        finally:
+            temp.cleanup()
+
+    def test_detects_waiver_regression_in_operational_prompt(self) -> None:
+        temp, root = self.mutated_root()
+        try:
+            path = root / "01_execution/prompts/verifier.md"
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\nAn owner waiver unblocks deploy or push.\n",
+                encoding="utf-8",
+            )
             self.assertIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
         finally:
             temp.cleanup()
@@ -71,9 +152,20 @@ class ConformanceGuardTests(unittest.TestCase):
         temp, root = self.mutated_root()
         try:
             agents = root / "AGENTS.md"
-            agents.write_text(agents.read_text(encoding="utf-8").replace("2. `docs/sdd/contract/v1/feature-record.schema.json`\n", ""), encoding="utf-8")
+            agents.write_text(
+                agents.read_text(encoding="utf-8").replace(
+                    "2. `docs/sdd/contract/v1/feature-record.schema.json`\n", ""
+                ),
+                encoding="utf-8",
+            )
             readme = root / "README.md"
-            readme.write_text(readme.read_text(encoding="utf-8").replace("python tools/sdd_install.py --target", "python legacy-copy --target"), encoding="utf-8")
+            readme.write_text(
+                readme.read_text(encoding="utf-8").replace(
+                    "python tools/sdd_install.py --target",
+                    "python legacy-copy --target",
+                ),
+                encoding="utf-8",
+            )
             codes = self.codes(root)
             self.assertIn("AUTHORITY_ORDER_INVALID", codes)
             self.assertIn("INSTALL_DOCUMENTATION_INCOMPLETE", codes)
@@ -84,9 +176,17 @@ class ConformanceGuardTests(unittest.TestCase):
         temp, root = self.mutated_root()
         try:
             agents = root / "AGENTS.md"
-            agents.write_text(agents.read_text(encoding="utf-8") + "\nDESIGN -> TASKS -> IMPLEMENT -> ARCHIVE\n", encoding="utf-8")
+            agents.write_text(
+                agents.read_text(encoding="utf-8")
+                + "\nDESIGN -> TASKS -> IMPLEMENT -> ARCHIVE\n",
+                encoding="utf-8",
+            )
             policy = root / "02_policies/LEGACY_SPECS_POLICY.md"
-            policy.write_text(policy.read_text(encoding="utf-8") + "\nWrite to artifacts/specs/example.md.\n", encoding="utf-8")
+            policy.write_text(
+                policy.read_text(encoding="utf-8")
+                + "\nWrite to artifacts/specs/example.md.\n",
+                encoding="utf-8",
+            )
             codes = self.codes(root)
             self.assertIn("LIFECYCLE_DRIFT", codes)
             self.assertIn("ROOT_PATH_DRIFT", codes)
