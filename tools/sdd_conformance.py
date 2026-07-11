@@ -37,6 +37,26 @@ ACTIVE_AUTHORITY_DOCS = (
     "02_policies/LEGACY_SPECS_POLICY.md",
 )
 
+WAIVER_PATTERN = re.compile(r"\b(?:owner\s+)?waiver\b", re.IGNORECASE)
+EXTERNAL_OPERATION_PATTERN = re.compile(
+    r"\b(?:merge|release|deploy|push)\b", re.IGNORECASE
+)
+AUTHORIZATION_VERB_PATTERN = re.compile(
+    r"\b(?:allow(?:s|ed|ing)?|permit(?:s|ted|ting)?|"
+    r"authori[sz](?:e|es|ed|ing)?|unblock(?:s|ed|ing)?|"
+    r"waive(?:s|d|ing)?)\b",
+    re.IGNORECASE,
+)
+CLAUSE_SEPARATOR_PATTERN = re.compile(
+    r"\s*(?:;|\b(?:but|however|although|while|yet)\b)\s*,?\s*",
+    re.IGNORECASE,
+)
+LOCAL_NEGATION_PATTERN = re.compile(
+    r"(?:does\s+not|do\s+not|did\s+not|must\s+not|cannot|"
+    r"can\s+not|never)\s+(?:only\s+)?$",
+    re.IGNORECASE,
+)
+
 
 @dataclass(frozen=True)
 class Finding:
@@ -54,7 +74,7 @@ def _json(path: Path) -> dict:
 
 
 def _statement_fragments(text: str) -> list[str]:
-    """Split prose into contextual units without treating a remote negation as global."""
+    """Split prose into sentence-like statements before clause-local analysis."""
     return [
         part.strip()
         for part in re.split(r"(?<=[.!?])\s+|\n+", text)
@@ -177,45 +197,47 @@ def _waiver_scan_paths() -> list[Path]:
         ROOT / "AGENTS.md",
         ROOT / "contract/v1/README.md",
     }
-    for directory in (ROOT / "00_core", ROOT / "02_policies", ROOT / "01_execution/prompts"):
+    for directory in (
+        ROOT / "00_core",
+        ROOT / "02_policies",
+        ROOT / "01_execution/prompts",
+    ):
         if directory.exists():
             candidates.update(directory.rglob("*.md"))
     return sorted(path for path in candidates if path.is_file())
 
 
+def _authorization_verb_is_negated(clause: str, verb_start: int) -> bool:
+    """Return whether the concrete authorization verb has a local negation."""
+    prefix = clause[:verb_start]
+    return LOCAL_NEGATION_PATTERN.search(prefix) is not None
+
+
 def _waiver_statement_authorizes_external_operation(statement: str) -> bool:
-    if not re.search(r"\bowner\s+waiver\b|\bwaiver\b", statement, re.IGNORECASE):
-        return False
-    if not re.search(r"\b(?:merge|release|deploy|push)\b", statement, re.IGNORECASE):
+    """Detect an unnegated authorization verb governing an external operation.
+
+    The waiver subject is inherited across coordinated clauses in the same
+    statement, but negation is attached only to the concrete verb it precedes.
+    """
+    if WAIVER_PATTERN.search(statement) is None:
         return False
 
-    verb = r"(?:allow(?:s|ed|ing)?|permit(?:s|ted|ting)?|authori[sz](?:e|es|ed|ing)?|unblock(?:s|ed|ing)?|waive(?:s|d|ing)?)"
-    positive = re.compile(rf"\b{verb}\b", re.IGNORECASE)
-    if not positive.search(statement):
-        return False
-
-    contextual_negative = re.compile(
-        rf"\b(?:does\s+not|do\s+not|must\s+not|cannot|can\s+not|never)\s+{verb}\b",
-        re.IGNORECASE,
-    )
-    if contextual_negative.search(statement):
-        return False
-
-    safe_scope = re.compile(
-        r"\bwaiver\b.*\bappl(?:y|ies)\s+only\s+to\s+`?AUDIT\s*(?:→|->)\s*ARCHIVE`?",
-        re.IGNORECASE,
-    )
-    if safe_scope.search(statement):
-        return False
-
-    no_external_effect = re.compile(
-        r"\bwaiver\b.*\bhas\s+no\s+effect\s+on\s+external\s+operations\b",
-        re.IGNORECASE,
-    )
-    if no_external_effect.search(statement):
-        return False
-
-    return True
+    clauses = [
+        clause.strip(" ,")
+        for clause in CLAUSE_SEPARATOR_PATTERN.split(statement)
+        if clause.strip(" ,")
+    ]
+    for clause in clauses:
+        verbs = list(AUTHORIZATION_VERB_PATTERN.finditer(clause))
+        for index, verb in enumerate(verbs):
+            scope_end = verbs[index + 1].start() if index + 1 < len(verbs) else len(clause)
+            governed_text = clause[verb.end() : scope_end]
+            if EXTERNAL_OPERATION_PATTERN.search(governed_text) is None:
+                continue
+            if _authorization_verb_is_negated(clause, verb.start()):
+                continue
+            return True
+    return False
 
 
 def _waiver_findings() -> list[Finding]:
