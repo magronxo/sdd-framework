@@ -1,0 +1,465 @@
+{
+  "fixture_version": "1.0.0",
+  "description": "Synthetic Canonical SDD Model v1 contract and gate cases.",
+  "cases": [
+    {
+      "name": "canonical_valid_record",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "ARCHIVE",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "design_path": "docs/sdd/artifacts/design/feat-900-canonical-model-v1.md",
+        "spec_path": "docs/sdd/artifacts/specs/feat-900-canonical-model-v1.md",
+        "task_path": "docs/sdd/artifacts/tasks/feat-900-canonical-model-v1.md",
+        "audit_report_path": "docs/sdd/artifacts/audit_reports/feat-900-canonical-model-v1.md",
+        "validation_result": "PASS",
+        "validated_at": "2026-07-11T09:20:00Z",
+        "verification_result": "PASS",
+        "verified_at": "2026-07-11T09:40:00Z",
+        "audit_result": "PASS",
+        "audited_at": "2026-07-11T09:50:00Z",
+        "archived_at": "2026-07-11T10:00:00Z"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      }
+    },
+    {
+      "name": "non_canonical_state",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "IN_PROGRESS",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": []
+      },
+      "expect": {
+        "valid": false,
+        "warning_codes": [],
+        "error_codes": ["SCHEMA_INVALID"]
+      }
+    },
+    {
+      "name": "done_legacy_alias",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "DONE",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "archived_at": "2026-07-11T10:00:00Z"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": ["LEGACY_STATE_ALIAS"],
+        "error_codes": []
+      }
+    },
+    {
+      "name": "feature_id_legacy_alias",
+      "mode": "read",
+      "record": {
+        "type": "SYSTEM_SPEC",
+        "state": "DESIGN",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "feature_id": "feat-900-canonical-model-v1"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": ["LEGACY_FEATURE_ID"],
+        "error_codes": []
+      }
+    },
+    {
+      "name": "canonical_artifact_path",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "DESIGN",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "design_path": "docs/sdd/artifacts/design/feat-900-canonical-model-v1.md"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      }
+    },
+    {
+      "name": "legacy_artifact_path",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "DESIGN",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "design_path": "artifacts/design/feat-900-canonical-model-v1.md"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": ["LEGACY_ARTIFACT_PATH"],
+        "error_codes": []
+      }
+    },
+    {
+      "name": "verification_partial",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "VERIFY",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "task_path": "docs/sdd/artifacts/tasks/feat-900-canonical-model-v1.md",
+        "verification_result": "PARTIAL",
+        "verified_at": "2026-07-11T09:40:00Z"
+      },
+      "expect": {
+        "valid": false,
+        "warning_codes": [],
+        "error_codes": ["VERIFICATION_NOT_EXECUTED"]
+      },
+      "transition": {
+        "from": "VERIFY",
+        "to": "AUDIT",
+        "approvals": [],
+        "result": "DENY",
+        "reason_codes": ["VERIFICATION_NOT_EXECUTED"]
+      }
+    },
+    {
+      "name": "pass_with_followup",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "VERIFY",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [
+          {
+            "id": "Q-001",
+            "text": "Document an optional performance follow-up.",
+            "blocking": false,
+            "owner": "maintainer",
+            "status": "OPEN"
+          }
+        ],
+        "task_path": "docs/sdd/artifacts/tasks/feat-900-canonical-model-v1.md",
+        "verification_result": "PASS_WITH_FOLLOWUP",
+        "verified_at": "2026-07-11T09:40:00Z"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": ["LEGACY_PASS_WITH_FOLLOWUP"],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "VERIFY",
+        "to": "AUDIT",
+        "approvals": [],
+        "result": "ALLOW",
+        "reason_codes": []
+      }
+    },
+    {
+      "name": "blocking_open_question",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "VALIDATION",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [
+          {
+            "id": "Q-002",
+            "text": "Choose the unresolved persistence model.",
+            "blocking": true,
+            "owner": "project-owner",
+            "status": "OPEN"
+          }
+        ],
+        "validation_result": "PASS",
+        "validated_at": "2026-07-11T09:20:00Z"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "VALIDATION",
+        "to": "TASKS",
+        "approvals": [],
+        "result": "DENY",
+        "reason_codes": ["BLOCKING_OPEN_QUESTION"]
+      }
+    },
+    {
+      "name": "tasks_to_implement_without_human_approval",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "TASKS",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "validation_result": "PASS",
+        "validated_at": "2026-07-11T09:20:00Z",
+        "task_path": "docs/sdd/artifacts/tasks/feat-900-canonical-model-v1.md"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "TASKS",
+        "to": "IMPLEMENT",
+        "approvals": [],
+        "result": "HUMAN_REQUIRED",
+        "reason_codes": ["HUMAN_APPROVAL_REQUIRED"]
+      }
+    },
+    {
+      "name": "audit_fail_without_waiver",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "AUDIT",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "verification_result": "PASS",
+        "verified_at": "2026-07-11T09:40:00Z",
+        "audit_result": "FAIL",
+        "audited_at": "2026-07-11T09:50:00Z"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "AUDIT",
+        "to": "ARCHIVE",
+        "approvals": [],
+        "result": "DENY",
+        "reason_codes": ["AUDIT_FAILED"]
+      }
+    },
+    {
+      "name": "audit_fail_with_valid_waiver",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "AUDIT",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "verification_result": "PASS",
+        "verified_at": "2026-07-11T09:40:00Z",
+        "audit_result": "FAIL",
+        "audited_at": "2026-07-11T09:50:00Z",
+        "owner_waiver": {
+          "waived_by": "project-owner",
+          "waived_at": "2026-07-11T09:55:00Z",
+          "reason": "Accepted bounded risk for archival."
+        }
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "AUDIT",
+        "to": "ARCHIVE",
+        "approvals": [],
+        "result": "ALLOW",
+        "reason_codes": []
+      }
+    },
+    {
+      "name": "alias_divergence",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "DESIGN",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "feature_id": "feat-901-different-id"
+      },
+      "expect": {
+        "valid": false,
+        "warning_codes": ["LEGACY_FEATURE_ID"],
+        "error_codes": ["ALIAS_DIVERGENCE"]
+      }
+    },
+    {
+      "name": "illegal_transition",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "DESIGN",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": []
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "DESIGN",
+        "to": "IMPLEMENT",
+        "approvals": [],
+        "result": "DENY",
+        "reason_codes": ["INVALID_TRANSITION"]
+      }
+    },
+    {
+      "name": "validation_fail_regression",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "VALIDATION",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "validation_result": "FAIL",
+        "validated_at": "2026-07-11T09:20:00Z",
+        "validation_issues": ["Ambiguous timeout behavior."]
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "VALIDATION",
+        "to": "SPEC",
+        "approvals": [],
+        "result": "ALLOW",
+        "reason_codes": []
+      }
+    },
+    {
+      "name": "verify_fail_regression",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "VERIFY",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "task_path": "docs/sdd/artifacts/tasks/feat-900-canonical-model-v1.md",
+        "verification_result": "FAIL",
+        "verified_at": "2026-07-11T09:40:00Z"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "VERIFY",
+        "to": "IMPLEMENT",
+        "approvals": [],
+        "result": "ALLOW",
+        "reason_codes": []
+      }
+    },
+    {
+      "name": "archived_legacy_alias",
+      "mode": "read",
+      "record": {
+        "type": "SYSTEM_SPEC",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "id": "feat-902-archived-alias",
+        "state": "ARCHIVED",
+        "archived_at": "2026-07-11T10:00:00Z"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": ["LEGACY_STATE_ALIAS"],
+        "error_codes": []
+      }
+    },
+    {
+      "name": "tasks_path_legacy_alias",
+      "mode": "read",
+      "record": {
+        "type": "SYSTEM_SPEC",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "id": "feat-903-tasks-path-alias",
+        "state": "TASKS",
+        "validation_result": "PASS",
+        "validated_at": "2026-07-11T09:20:00Z",
+        "tasks_path": "docs/sdd/artifacts/tasks/feat-903-tasks-path-alias.md"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": ["LEGACY_TASKS_PATH"],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "TASKS",
+        "to": "IMPLEMENT",
+        "approvals": ["TASKS_TO_IMPLEMENT"],
+        "result": "ALLOW",
+        "reason_codes": []
+      }
+    }
+  ]
+}
