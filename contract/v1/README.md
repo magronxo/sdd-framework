@@ -19,7 +19,9 @@ python -m pip install -r docs/sdd/contract/v1/requirements-validator.txt
 
 The installer performs no dependency installation and no network access.
 
-## Install
+## Install from a source checkout
+
+The installation commands in this section must be run from the root of a source checkout of `sdd-framework`:
 
 ```bash
 python tools/sdd_install.py --target /path/to/product-repo
@@ -31,9 +33,30 @@ Dry-run:
 python tools/sdd_install.py --target /path/to/product-repo --dry-run --format json
 ```
 
-The target must exist and must not already contain `docs/sdd/`. Upgrade, overwrite, migration, and uninstall are unsupported.
+An alternate manifest is accepted only from another source checkout with the exact layout `<source-root>/contract/v1/install-manifest.json`:
 
-## Installed self-check
+```bash
+python tools/sdd_install.py \
+  --target /path/to/product-repo \
+  --manifest /path/to/source-root/contract/v1/install-manifest.json \
+  --source-root /path/to/source-root \
+  --dry-run \
+  --format json
+```
+
+`tools/sdd_install.py` is a source-distribution tool. It is not copied into the product repository. The target must exist and must not already contain `docs/sdd/`. Upgrade, overwrite, migration, and uninstall are unsupported.
+
+## Installed runtime
+
+The installed product contains the validator at:
+
+```text
+docs/sdd/tools/sdd_validate.py
+```
+
+It does not contain the installer. Commands executed from an installed product therefore start with `docs/sdd/tools/sdd_validate.py`, not `tools/sdd_install.py`.
+
+### Installed self-check
 
 From the product repository root:
 
@@ -55,18 +78,20 @@ Active verification `PARTIAL` is invalid. Archived verification `PARTIAL` is a t
 
 `TASKS -> IMPLEMENT` evaluates semantic prerequisites. An externally resolved policy may request the `TASKS_TO_IMPLEMENT` checkpoint through `--require-approval`; the core does not resolve profiles.
 
-An owner waiver applies only to `AUDIT -> ARCHIVE`.
+An owner waiver applies only to `AUDIT -> ARCHIVE` and does not authorize merge, release, deploy, or push.
 
 ## Installer exit codes
 
 - `0`: installation or dry-run succeeded.
 - `2`: command-line usage error.
 - `3`: invalid target or existing installation.
-- `4`: invalid or unsafe manifest.
+- `4`: invalid or unsafe manifest, source-root layout, version, or distribution identity.
 - `5`: missing, mismatched, or unsafe source.
 - `6`: copy or finalization failure.
 
 ## Repository validation
+
+These commands are run from the source checkout:
 
 ```bash
 python3 -m compileall -q tools tests
