@@ -33,6 +33,13 @@ class ConformanceGuardTests(unittest.TestCase):
         )
         return temp, root
 
+    def assert_waiver_statement(self, statement: str, expected: bool) -> None:
+        self.assertEqual(
+            conformance._waiver_statement_authorizes_external_operation(statement),
+            expected,
+            statement,
+        )
+
     def test_repository_is_conformant(self) -> None:
         result = conformance.check(ROOT)
         self.assertTrue(result["conformant"], result["findings"])
@@ -84,56 +91,23 @@ class ConformanceGuardTests(unittest.TestCase):
             temp.cleanup()
 
     def test_detects_owner_waiver_only_allows_merge(self) -> None:
-        temp, root = self.mutated_root()
-        try:
-            path = root / "AGENTS.md"
-            path.write_text(
-                path.read_text(encoding="utf-8")
-                + "\nAn owner waiver only allows merge.\n",
-                encoding="utf-8",
-            )
-            self.assertIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
-        finally:
-            temp.cleanup()
+        self.assert_waiver_statement("An owner waiver only allows merge.", True)
 
     def test_owner_waiver_archive_only_scope_is_not_detected(self) -> None:
-        temp, root = self.mutated_root()
-        try:
-            path = root / "AGENTS.md"
-            path.write_text(
-                path.read_text(encoding="utf-8")
-                + "\nAn owner waiver applies only to AUDIT -> ARCHIVE.\n",
-                encoding="utf-8",
-            )
-            self.assertNotIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
-        finally:
-            temp.cleanup()
+        self.assert_waiver_statement(
+            "An owner waiver applies only to AUDIT -> ARCHIVE.", False
+        )
 
     def test_owner_waiver_external_negation_is_not_detected(self) -> None:
-        temp, root = self.mutated_root()
-        try:
-            path = root / "AGENTS.md"
-            path.write_text(
-                path.read_text(encoding="utf-8")
-                + "\nAn owner waiver does not authorize merge, release, deploy, or push.\n",
-                encoding="utf-8",
-            )
-            self.assertNotIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
-        finally:
-            temp.cleanup()
+        self.assert_waiver_statement(
+            "An owner waiver does not authorize merge, release, deploy, or push.",
+            False,
+        )
 
     def test_owner_waiver_no_external_effect_is_not_detected(self) -> None:
-        temp, root = self.mutated_root()
-        try:
-            path = root / "AGENTS.md"
-            path.write_text(
-                path.read_text(encoding="utf-8")
-                + "\nAn owner waiver has no effect on external operations.\n",
-                encoding="utf-8",
-            )
-            self.assertNotIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
-        finally:
-            temp.cleanup()
+        self.assert_waiver_statement(
+            "An owner waiver has no effect on external operations.", False
+        )
 
     def test_detects_waiver_regression_in_operational_prompt(self) -> None:
         temp, root = self.mutated_root()
@@ -147,6 +121,68 @@ class ConformanceGuardTests(unittest.TestCase):
             self.assertIn("WAIVER_EXTERNAL_AUTHORITY", self.codes(root))
         finally:
             temp.cleanup()
+
+    def test_detects_mixed_negated_merge_but_permitted_release(self) -> None:
+        self.assert_waiver_statement(
+            "An owner waiver does not authorize merge but permits release.", True
+        )
+
+    def test_detects_mixed_archive_scope_and_allowed_merge(self) -> None:
+        self.assert_waiver_statement(
+            "An owner waiver applies only to AUDIT -> ARCHIVE and allows merge.",
+            True,
+        )
+
+    def test_detects_mixed_no_external_effect_and_allowed_deploy(self) -> None:
+        self.assert_waiver_statement(
+            "An owner waiver has no effect on external operations but allows deploy.",
+            True,
+        )
+
+    def test_detects_mixed_negated_push_and_unblocked_release(self) -> None:
+        self.assert_waiver_statement(
+            "An owner waiver cannot authorize push; however, it unblocks release.",
+            True,
+        )
+
+    def test_detects_mixed_negated_release_and_allowed_merge(self) -> None:
+        self.assert_waiver_statement(
+            "An owner waiver does not permit release, although it allows merge.",
+            True,
+        )
+
+    def test_accepts_two_locally_negated_external_authorizations(self) -> None:
+        self.assert_waiver_statement(
+            "An owner waiver cannot permit merge and must not unblock release.",
+            False,
+        )
+
+    def test_accepts_archive_authorization_and_external_negation(self) -> None:
+        self.assert_waiver_statement(
+            "The waiver allows AUDIT -> ARCHIVE only and does not authorize external operations.",
+            False,
+        )
+
+    def test_waiver_scan_covers_all_required_authority_and_prompt_markdown(self) -> None:
+        actual = {
+            path.relative_to(ROOT).as_posix()
+            for path in conformance._waiver_scan_paths()
+        }
+        expected = {
+            "README.md",
+            "AGENTS.md",
+            "contract/v1/README.md",
+        }
+        for directory in (
+            ROOT / "00_core",
+            ROOT / "02_policies",
+            ROOT / "01_execution/prompts",
+        ):
+            expected.update(
+                path.relative_to(ROOT).as_posix()
+                for path in directory.rglob("*.md")
+            )
+        self.assertEqual(actual, expected)
 
     def test_detects_authority_order_and_install_documentation_drift(self) -> None:
         temp, root = self.mutated_root()
