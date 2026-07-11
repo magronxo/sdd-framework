@@ -1,0 +1,38 @@
+name: Canonical SDD v1
+
+on:
+  pull_request:
+    paths:
+      - "contract/v1/**"
+      - "tools/sdd_validate.py"
+      - "tests/**"
+      - "requirements-dev.txt"
+      - ".github/workflows/canonical-sdd-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "contract/v1/**"
+      - "tools/sdd_validate.py"
+      - "tests/**"
+      - "requirements-dev.txt"
+      - ".github/workflows/canonical-sdd-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract-and-validator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m compileall -q tools tests
+      - run: python -m json.tool contract/v1/feature-record.schema.json >/dev/null
+      - run: python -m json.tool contract/v1/sdd-protocol.json >/dev/null
+      - run: python tools/sdd_validate.py --self-check --format json
+      - run: python -m unittest discover -s tests -v
