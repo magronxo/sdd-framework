@@ -1,0 +1,243 @@
+{
+  "protocol_version": "1.0.0",
+  "authority": {
+    "feature_record_shape": "contract/v1/feature-record.schema.json",
+    "workflow_and_gates": "contract/v1/sdd-protocol.json"
+  },
+  "lifecycle": {
+    "persistent_states": [
+      "DESIGN",
+      "SPEC",
+      "VALIDATION",
+      "TASKS",
+      "IMPLEMENT",
+      "VERIFY",
+      "AUDIT",
+      "ARCHIVE"
+    ],
+    "pre_record_activities": [
+      "SEED",
+      "INTAKE"
+    ],
+    "derived_conditions": [
+      "IN_PROGRESS",
+      "VALIDATED",
+      "VERIFIED",
+      "AUDITED",
+      "BLOCKED"
+    ],
+    "legacy_state_aliases": {
+      "DONE": "ARCHIVE",
+      "ARCHIVED": "ARCHIVE"
+    }
+  },
+  "gate_results": [
+    "ALLOW",
+    "DENY",
+    "HUMAN_REQUIRED"
+  ],
+  "gate_interpretations": {
+    "verification_legacy_reads": {
+      "PARTIAL": {
+        "effective_result": null,
+        "blocker": "VERIFICATION_NOT_EXECUTED"
+      },
+      "PASS_WITH_FOLLOWUP": {
+        "effective_result": "PASS",
+        "requires": "all open follow-up questions must be non-blocking"
+      }
+    },
+    "audit_archive": {
+      "allow_when": [
+        "PASS",
+        "WARN"
+      ],
+      "fail_override": "valid owner_waiver"
+    }
+  },
+  "compatibility": {
+    "policy": "strict canonical writes; explicit tolerant legacy reads; no silent normalization",
+    "read_aliases": {
+      "feature_id": "id",
+      "DONE": "ARCHIVE",
+      "ARCHIVED": "ARCHIVE",
+      "tasks_path": "task_path",
+      "artifacts/": "resolve relative to sdd_root and emit LEGACY_ARTIFACT_PATH"
+    },
+    "canonical_write_requirements": {
+      "identifier": "id",
+      "terminal_state": "ARCHIVE",
+      "task_artifact_field": "task_path",
+      "artifact_path_prefix": "docs/sdd/artifacts/"
+    }
+  },
+  "blockers": {
+    "SCHEMA_INVALID": "The feature record does not conform to the v1 schema.",
+    "ALIAS_DIVERGENCE": "Canonical and legacy alias fields disagree.",
+    "NON_CANONICAL_WRITE": "A legacy alias or legacy value was used in canonical write mode.",
+    "TIMESTAMP_ORDER_INVALID": "updated_at is earlier than created_at.",
+    "ARCHIVE_TIMESTAMP_MISSING": "An archived record has no archived_at timestamp.",
+    "INVALID_TRANSITION": "The requested transition or regression is not declared.",
+    "REQUIRED_ARTIFACT_MISSING": "A required primary artifact path is absent.",
+    "VALIDATION_NOT_PASSED": "The validation result does not permit the transition.",
+    "VERIFICATION_NOT_EXECUTED": "Verification did not produce canonical PASS or FAIL evidence.",
+    "BLOCKING_OPEN_QUESTION": "At least one structured open question is blocking.",
+    "AUDIT_FAILED": "AUDIT FAIL blocks ARCHIVE without a valid owner waiver.",
+    "OWNER_WAIVER_INVALID": "The audit waiver is missing or invalid.",
+    "HUMAN_APPROVAL_REQUIRED": "The transition requires an explicit human approval.",
+    "SOURCE_STATE_MISMATCH": "The record state does not match the requested transition source state."
+  },
+  "warning_codes": {
+    "LEGACY_FEATURE_ID": "feature_id was read as the legacy alias of id.",
+    "LEGACY_STATE_ALIAS": "DONE or ARCHIVED was read as ARCHIVE.",
+    "LEGACY_TASKS_PATH": "tasks_path was read as the legacy alias of task_path.",
+    "LEGACY_ARTIFACT_PATH": "artifacts/... was read relative to sdd_root.",
+    "LEGACY_PASS_WITH_FOLLOWUP": "PASS_WITH_FOLLOWUP was read as PASS with non-blocking follow-up questions."
+  },
+  "transitions": [
+    {
+      "from": "DESIGN",
+      "to": "SPEC",
+      "requirements": [
+        {
+          "type": "field_present",
+          "field": "design_path",
+          "blocker": "REQUIRED_ARTIFACT_MISSING"
+        }
+      ]
+    },
+    {
+      "from": "SPEC",
+      "to": "VALIDATION",
+      "requirements": [
+        {
+          "type": "field_present",
+          "field": "spec_path",
+          "blocker": "REQUIRED_ARTIFACT_MISSING"
+        }
+      ]
+    },
+    {
+      "from": "VALIDATION",
+      "to": "TASKS",
+      "requirements": [
+        {
+          "type": "field_equals",
+          "field": "validation_result",
+          "value": "PASS",
+          "blocker": "VALIDATION_NOT_PASSED"
+        },
+        {
+          "type": "no_blocking_open_questions",
+          "blocker": "BLOCKING_OPEN_QUESTION"
+        }
+      ]
+    },
+    {
+      "from": "TASKS",
+      "to": "IMPLEMENT",
+      "requirements": [
+        {
+          "type": "field_equals",
+          "field": "validation_result",
+          "value": "PASS",
+          "blocker": "VALIDATION_NOT_PASSED"
+        },
+        {
+          "type": "field_present_alias_aware",
+          "field": "task_path",
+          "legacy_alias": "tasks_path",
+          "blocker": "REQUIRED_ARTIFACT_MISSING"
+        },
+        {
+          "type": "no_blocking_open_questions",
+          "blocker": "BLOCKING_OPEN_QUESTION"
+        },
+        {
+          "type": "human_approval",
+          "approval": "TASKS_TO_IMPLEMENT",
+          "blocker": "HUMAN_APPROVAL_REQUIRED"
+        }
+      ]
+    },
+    {
+      "from": "IMPLEMENT",
+      "to": "VERIFY",
+      "requirements": [
+        {
+          "type": "field_present_alias_aware",
+          "field": "task_path",
+          "legacy_alias": "tasks_path",
+          "blocker": "REQUIRED_ARTIFACT_MISSING"
+        }
+      ]
+    },
+    {
+      "from": "VERIFY",
+      "to": "AUDIT",
+      "requirements": [
+        {
+          "type": "effective_verification_equals",
+          "value": "PASS",
+          "blocker": "VERIFICATION_NOT_EXECUTED"
+        },
+        {
+          "type": "no_blocking_open_questions",
+          "blocker": "BLOCKING_OPEN_QUESTION"
+        }
+      ]
+    },
+    {
+      "from": "AUDIT",
+      "to": "ARCHIVE",
+      "requirements": [
+        {
+          "type": "audit_allows_archive",
+          "blocker": "AUDIT_FAILED"
+        },
+        {
+          "type": "no_blocking_open_questions",
+          "blocker": "BLOCKING_OPEN_QUESTION"
+        }
+      ]
+    }
+  ],
+  "regressions": [
+    {
+      "from": "VALIDATION",
+      "to": "SPEC",
+      "trigger": {
+        "field": "validation_result",
+        "equals": "FAIL"
+      },
+      "requirements": [
+        {
+          "type": "field_equals",
+          "field": "validation_result",
+          "value": "FAIL",
+          "blocker": "VALIDATION_NOT_PASSED"
+        }
+      ]
+    },
+    {
+      "from": "VERIFY",
+      "to": "IMPLEMENT",
+      "trigger": {
+        "field": "verification_result",
+        "equals": "FAIL"
+      },
+      "requirements": [
+        {
+          "type": "field_equals",
+          "field": "verification_result",
+          "value": "FAIL",
+          "blocker": "VERIFICATION_NOT_EXECUTED"
+        }
+      ]
+    }
+  ],
+  "audit_fail_repair": {
+    "automatic_target": null,
+    "reason": "A human decision or a future explicit rule is required."
+  }
+}
