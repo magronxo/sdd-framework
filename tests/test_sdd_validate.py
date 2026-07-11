@@ -35,8 +35,14 @@ class CanonicalSddV1Tests(unittest.TestCase):
         self.assertEqual(
             self.protocol["lifecycle"]["persistent_states"],
             [
-                "DESIGN", "SPEC", "VALIDATION", "TASKS",
-                "IMPLEMENT", "VERIFY", "AUDIT", "ARCHIVE",
+                "DESIGN",
+                "SPEC",
+                "VALIDATION",
+                "TASKS",
+                "IMPLEMENT",
+                "VERIFY",
+                "AUDIT",
+                "ARCHIVE",
             ],
         )
         self.assertEqual(
@@ -46,6 +52,24 @@ class CanonicalSddV1Tests(unittest.TestCase):
         self.assertEqual(
             self.protocol["gate_results"],
             ["ALLOW", "DENY", "HUMAN_REQUIRED"],
+        )
+
+    def test_tasks_to_implement_approval_is_conditional_not_universal(self) -> None:
+        policy = self.protocol["human_approval_policy"]
+        checkpoint = self.protocol["human_checkpoints"]["TASKS_TO_IMPLEMENT"]
+        task_rule = next(
+            item
+            for item in self.protocol["transitions"]
+            if item["from"] == "TASKS" and item["to"] == "IMPLEMENT"
+        )
+        self.assertEqual(policy["core_default"], "not_required")
+        self.assertEqual(policy["resolution_mode"], "external_input_only")
+        self.assertFalse(policy["integration_implemented"])
+        self.assertFalse(checkpoint["default_required"])
+        self.assertEqual(task_rule["policy_hooks"], ["TASKS_TO_IMPLEMENT"])
+        self.assertNotIn(
+            "human_approval",
+            {requirement["type"] for requirement in task_rule["requirements"]},
         )
 
     def test_fixture_manifest_contains_all_required_cases(self) -> None:
@@ -59,7 +83,9 @@ class CanonicalSddV1Tests(unittest.TestCase):
             "verification_partial",
             "pass_with_followup",
             "blocking_open_question",
-            "tasks_to_implement_without_human_approval",
+            "tasks_to_implement_without_approval_policy",
+            "tasks_to_implement_policy_requires_approval",
+            "tasks_to_implement_policy_with_approval",
             "audit_fail_without_waiver",
             "audit_fail_with_valid_waiver",
             "alias_divergence",
@@ -75,7 +101,10 @@ class CanonicalSddV1Tests(unittest.TestCase):
         for case in self.fixtures["cases"]:
             with self.subTest(case=case["name"]):
                 validation = sdd_validate.validate_record(
-                    case["record"], self.schema, self.protocol, case.get("mode", "read")
+                    case["record"],
+                    self.schema,
+                    self.protocol,
+                    case.get("mode", "read"),
                 )
                 expected = case["expect"]
                 self.assertEqual(validation["valid"], expected["valid"])
@@ -96,6 +125,7 @@ class CanonicalSddV1Tests(unittest.TestCase):
                         transition["from"],
                         transition["to"],
                         transition.get("approvals", []),
+                        transition.get("required_approvals", []),
                     )
                     self.assertEqual(gate.result, transition["result"])
                     self.assertEqual(
@@ -103,17 +133,40 @@ class CanonicalSddV1Tests(unittest.TestCase):
                         sorted(transition["reason_codes"]),
                     )
 
-    def test_tasks_to_implement_allows_after_explicit_human_approval(self) -> None:
-        case = self.cases["tasks_to_implement_without_human_approval"]
+    def test_tasks_to_implement_policy_matrix(self) -> None:
+        expected = {
+            "tasks_to_implement_without_approval_policy": "ALLOW",
+            "tasks_to_implement_policy_requires_approval": "HUMAN_REQUIRED",
+            "tasks_to_implement_policy_with_approval": "ALLOW",
+        }
+        for name, result in expected.items():
+            with self.subTest(case=name):
+                case = self.cases[name]
+                transition = case["transition"]
+                gate = sdd_validate.evaluate_transition(
+                    case["record"],
+                    self.protocol,
+                    "TASKS",
+                    "IMPLEMENT",
+                    transition["approvals"],
+                    transition["required_approvals"],
+                )
+                self.assertEqual(gate.result, result)
+
+    def test_unknown_or_non_applicable_policy_checkpoint_is_denied(self) -> None:
+        case = self.cases["tasks_to_implement_without_approval_policy"]
         gate = sdd_validate.evaluate_transition(
             case["record"],
             self.protocol,
             "TASKS",
             "IMPLEMENT",
-            ["TASKS_TO_IMPLEMENT"],
+            required_approvals=["UNKNOWN_CHECKPOINT"],
         )
-        self.assertEqual(gate.result, "ALLOW")
-        self.assertEqual(gate.reasons, ())
+        self.assertEqual(gate.result, "DENY")
+        self.assertEqual(
+            {item.code for item in gate.reasons},
+            {"POLICY_REQUIREMENT_INVALID"},
+        )
 
     def test_legacy_read_is_warning_but_canonical_write_is_rejected(self) -> None:
         case = self.cases["done_legacy_alias"]
@@ -126,7 +179,8 @@ class CanonicalSddV1Tests(unittest.TestCase):
         self.assertTrue(read_result["valid"])
         self.assertFalse(write_result["valid"])
         self.assertIn(
-            "NON_CANONICAL_WRITE", {item.code for item in write_result["errors"]}
+            "NON_CANONICAL_WRITE",
+            {item.code for item in write_result["errors"]},
         )
 
     def test_schema_does_not_define_workflow_or_gate_profiles(self) -> None:
@@ -134,6 +188,7 @@ class CanonicalSddV1Tests(unittest.TestCase):
         self.assertNotIn('"transitions"', serialized)
         self.assertNotIn('"regressions"', serialized)
         self.assertNotIn('"gate_results"', serialized)
+        self.assertNotIn('"human_checkpoints"', serialized)
 
     def test_protocol_does_not_duplicate_feature_record_properties(self) -> None:
         self.assertNotIn("properties", self.protocol)
@@ -164,8 +219,12 @@ class CanonicalSddV1Tests(unittest.TestCase):
             "audit_result": "WARN",
             "audited_at": "2026-07-11T09:50:00Z",
         }
-        validation = sdd_validate.validate_record(record, self.schema, self.protocol)
-        gate = sdd_validate.evaluate_transition(record, self.protocol, "AUDIT", "ARCHIVE")
+        validation = sdd_validate.validate_record(
+            record, self.schema, self.protocol
+        )
+        gate = sdd_validate.evaluate_transition(
+            record, self.protocol, "AUDIT", "ARCHIVE"
+        )
         self.assertTrue(validation["valid"])
         self.assertEqual(gate.result, "ALLOW")
 
@@ -175,25 +234,49 @@ class CanonicalSddV1Tests(unittest.TestCase):
             case["record"], self.protocol, "SPEC", "VALIDATION"
         )
         self.assertEqual(gate.result, "DENY")
-        self.assertEqual({item.code for item in gate.reasons}, {"SOURCE_STATE_MISMATCH"})
+        self.assertEqual(
+            {item.code for item in gate.reasons},
+            {"SOURCE_STATE_MISMATCH"},
+        )
 
     def test_cli_json_output_and_exit_codes(self) -> None:
         scenarios = [
-            ("canonical_valid_record", None, 0, None),
-            ("verification_partial", "VERIFY:AUDIT", 1, "DENY"),
+            ("canonical_valid_record", None, [], 0, None),
+            ("verification_partial", "VERIFY:AUDIT", [], 1, "DENY"),
             (
-                "tasks_to_implement_without_human_approval",
+                "tasks_to_implement_without_approval_policy",
                 "TASKS:IMPLEMENT",
+                [],
+                0,
+                "ALLOW",
+            ),
+            (
+                "tasks_to_implement_policy_requires_approval",
+                "TASKS:IMPLEMENT",
+                ["--require-approval", "TASKS_TO_IMPLEMENT"],
                 3,
                 "HUMAN_REQUIRED",
             ),
+            (
+                "tasks_to_implement_policy_with_approval",
+                "TASKS:IMPLEMENT",
+                [
+                    "--require-approval",
+                    "TASKS_TO_IMPLEMENT",
+                    "--approval",
+                    "TASKS_TO_IMPLEMENT",
+                ],
+                0,
+                "ALLOW",
+            ),
         ]
         with tempfile.TemporaryDirectory() as temp_dir:
-            for name, transition, expected_code, expected_gate in scenarios:
+            for name, transition, extra_args, expected_code, expected_gate in scenarios:
                 with self.subTest(case=name):
                     path = Path(temp_dir) / f"{name}.json"
                     path.write_text(
-                        json.dumps(self.cases[name]["record"]), encoding="utf-8"
+                        json.dumps(self.cases[name]["record"]),
+                        encoding="utf-8",
                     )
                     command = [
                         sys.executable,
@@ -204,6 +287,7 @@ class CanonicalSddV1Tests(unittest.TestCase):
                     ]
                     if transition:
                         command.extend(["--transition", transition])
+                    command.extend(extra_args)
                     completed = subprocess.run(
                         command,
                         cwd=ROOT,
@@ -211,7 +295,11 @@ class CanonicalSddV1Tests(unittest.TestCase):
                         capture_output=True,
                         check=False,
                     )
-                    self.assertEqual(completed.returncode, expected_code, completed.stderr)
+                    self.assertEqual(
+                        completed.returncode,
+                        expected_code,
+                        completed.stderr,
+                    )
                     payload = json.loads(completed.stdout)
                     self.assertTrue(payload["read_only"])
                     if expected_gate is not None:
@@ -221,13 +309,22 @@ class CanonicalSddV1Tests(unittest.TestCase):
         case = self.cases["legacy_artifact_path"]
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "record.json"
-            path.write_text(json.dumps(case["record"], indent=2) + "\n", encoding="utf-8")
+            path.write_text(
+                json.dumps(case["record"], indent=2) + "\n",
+                encoding="utf-8",
+            )
             before_bytes = path.read_bytes()
             before_hash = hashlib.sha256(before_bytes).hexdigest()
             before_stat = path.stat()
 
             completed = subprocess.run(
-                [sys.executable, str(VALIDATOR_PATH), str(path), "--format", "json"],
+                [
+                    sys.executable,
+                    str(VALIDATOR_PATH),
+                    str(path),
+                    "--format",
+                    "json",
+                ],
                 cwd=ROOT,
                 text=True,
                 capture_output=True,
@@ -244,7 +341,14 @@ class CanonicalSddV1Tests(unittest.TestCase):
 
     def test_validator_source_contains_no_write_operations(self) -> None:
         source = VALIDATOR_PATH.read_text(encoding="utf-8")
-        forbidden = ("write_text(", "write_bytes(", "open(\"w", "open('w", "open(\"a", "open('a")
+        forbidden = (
+            "write_text(",
+            "write_bytes(",
+            'open("w',
+            "open('w",
+            'open("a',
+            "open('a",
+        )
         for token in forbidden:
             with self.subTest(token=token):
                 self.assertNotIn(token, source)
