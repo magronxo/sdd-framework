@@ -46,7 +46,9 @@
       "expect": {
         "valid": false,
         "warning_codes": [],
-        "error_codes": ["SCHEMA_INVALID"]
+        "error_codes": [
+          "SCHEMA_INVALID"
+        ]
       }
     },
     {
@@ -64,7 +66,9 @@
       },
       "expect": {
         "valid": true,
-        "warning_codes": ["LEGACY_STATE_ALIAS"],
+        "warning_codes": [
+          "LEGACY_STATE_ALIAS"
+        ],
         "error_codes": []
       }
     },
@@ -82,7 +86,9 @@
       },
       "expect": {
         "valid": true,
-        "warning_codes": ["LEGACY_FEATURE_ID"],
+        "warning_codes": [
+          "LEGACY_FEATURE_ID"
+        ],
         "error_codes": []
       }
     },
@@ -120,7 +126,9 @@
       },
       "expect": {
         "valid": true,
-        "warning_codes": ["LEGACY_ARTIFACT_PATH"],
+        "warning_codes": [
+          "LEGACY_ARTIFACT_PATH"
+        ],
         "error_codes": []
       }
     },
@@ -142,14 +150,19 @@
       "expect": {
         "valid": false,
         "warning_codes": [],
-        "error_codes": ["VERIFICATION_NOT_EXECUTED"]
+        "error_codes": [
+          "VERIFICATION_NOT_EXECUTED"
+        ]
       },
       "transition": {
         "from": "VERIFY",
         "to": "AUDIT",
         "approvals": [],
+        "required_approvals": [],
         "result": "DENY",
-        "reason_codes": ["VERIFICATION_NOT_EXECUTED"]
+        "reason_codes": [
+          "VERIFICATION_NOT_EXECUTED"
+        ]
       }
     },
     {
@@ -177,13 +190,16 @@
       },
       "expect": {
         "valid": true,
-        "warning_codes": ["LEGACY_PASS_WITH_FOLLOWUP"],
+        "warning_codes": [
+          "LEGACY_PASS_WITH_FOLLOWUP"
+        ],
         "error_codes": []
       },
       "transition": {
         "from": "VERIFY",
         "to": "AUDIT",
         "approvals": [],
+        "required_approvals": [],
         "result": "ALLOW",
         "reason_codes": []
       }
@@ -219,12 +235,15 @@
         "from": "VALIDATION",
         "to": "TASKS",
         "approvals": [],
+        "required_approvals": [],
         "result": "DENY",
-        "reason_codes": ["BLOCKING_OPEN_QUESTION"]
+        "reason_codes": [
+          "BLOCKING_OPEN_QUESTION"
+        ]
       }
     },
     {
-      "name": "tasks_to_implement_without_human_approval",
+      "name": "tasks_to_implement_without_approval_policy",
       "mode": "read",
       "record": {
         "id": "feat-900-canonical-model-v1",
@@ -247,8 +266,75 @@
         "from": "TASKS",
         "to": "IMPLEMENT",
         "approvals": [],
+        "required_approvals": [],
+        "result": "ALLOW",
+        "reason_codes": []
+      }
+    },
+    {
+      "name": "tasks_to_implement_policy_requires_approval",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "TASKS",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "validation_result": "PASS",
+        "validated_at": "2026-07-11T09:20:00Z",
+        "task_path": "docs/sdd/artifacts/tasks/feat-900-canonical-model-v1.md"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "TASKS",
+        "to": "IMPLEMENT",
+        "approvals": [],
+        "required_approvals": [
+          "TASKS_TO_IMPLEMENT"
+        ],
         "result": "HUMAN_REQUIRED",
-        "reason_codes": ["HUMAN_APPROVAL_REQUIRED"]
+        "reason_codes": [
+          "HUMAN_APPROVAL_REQUIRED"
+        ]
+      }
+    },
+    {
+      "name": "tasks_to_implement_policy_with_approval",
+      "mode": "read",
+      "record": {
+        "id": "feat-900-canonical-model-v1",
+        "type": "SYSTEM_SPEC",
+        "state": "TASKS",
+        "title": "Synthetic feature record fixture",
+        "created_at": "2026-07-11T09:00:00Z",
+        "updated_at": "2026-07-11T10:00:00Z",
+        "open_questions": [],
+        "validation_result": "PASS",
+        "validated_at": "2026-07-11T09:20:00Z",
+        "task_path": "docs/sdd/artifacts/tasks/feat-900-canonical-model-v1.md"
+      },
+      "expect": {
+        "valid": true,
+        "warning_codes": [],
+        "error_codes": []
+      },
+      "transition": {
+        "from": "TASKS",
+        "to": "IMPLEMENT",
+        "approvals": [
+          "TASKS_TO_IMPLEMENT"
+        ],
+        "required_approvals": [
+          "TASKS_TO_IMPLEMENT"
+        ],
+        "result": "ALLOW",
+        "reason_codes": []
       }
     },
     {
@@ -276,8 +362,11 @@
         "from": "AUDIT",
         "to": "ARCHIVE",
         "approvals": [],
+        "required_approvals": [],
         "result": "DENY",
-        "reason_codes": ["AUDIT_FAILED"]
+        "reason_codes": [
+          "AUDIT_FAILED"
+        ]
       }
     },
     {
@@ -310,6 +399,7 @@
         "from": "AUDIT",
         "to": "ARCHIVE",
         "approvals": [],
+        "required_approvals": [],
         "result": "ALLOW",
         "reason_codes": []
       }
@@ -329,8 +419,12 @@
       },
       "expect": {
         "valid": false,
-        "warning_codes": ["LEGACY_FEATURE_ID"],
-        "error_codes": ["ALIAS_DIVERGENCE"]
+        "warning_codes": [
+          "LEGACY_FEATURE_ID"
+        ],
+        "error_codes": [
+          "ALIAS_DIVERGENCE"
+        ]
       }
     },
     {
@@ -354,8 +448,11 @@
         "from": "DESIGN",
         "to": "IMPLEMENT",
         "approvals": [],
+        "required_approvals": [],
         "result": "DENY",
-        "reason_codes": ["INVALID_TRANSITION"]
+        "reason_codes": [
+          "INVALID_TRANSITION"
+        ]
       }
     },
     {
@@ -371,7 +468,9 @@
         "open_questions": [],
         "validation_result": "FAIL",
         "validated_at": "2026-07-11T09:20:00Z",
-        "validation_issues": ["Ambiguous timeout behavior."]
+        "validation_issues": [
+          "Ambiguous timeout behavior."
+        ]
       },
       "expect": {
         "valid": true,
@@ -382,6 +481,7 @@
         "from": "VALIDATION",
         "to": "SPEC",
         "approvals": [],
+        "required_approvals": [],
         "result": "ALLOW",
         "reason_codes": []
       }
@@ -410,6 +510,7 @@
         "from": "VERIFY",
         "to": "IMPLEMENT",
         "approvals": [],
+        "required_approvals": [],
         "result": "ALLOW",
         "reason_codes": []
       }
@@ -418,18 +519,20 @@
       "name": "archived_legacy_alias",
       "mode": "read",
       "record": {
+        "id": "feat-902-archived-alias",
         "type": "SYSTEM_SPEC",
+        "state": "ARCHIVED",
         "title": "Synthetic feature record fixture",
         "created_at": "2026-07-11T09:00:00Z",
         "updated_at": "2026-07-11T10:00:00Z",
         "open_questions": [],
-        "id": "feat-902-archived-alias",
-        "state": "ARCHIVED",
         "archived_at": "2026-07-11T10:00:00Z"
       },
       "expect": {
         "valid": true,
-        "warning_codes": ["LEGACY_STATE_ALIAS"],
+        "warning_codes": [
+          "LEGACY_STATE_ALIAS"
+        ],
         "error_codes": []
       }
     },
@@ -437,26 +540,29 @@
       "name": "tasks_path_legacy_alias",
       "mode": "read",
       "record": {
+        "id": "feat-903-tasks-path-alias",
         "type": "SYSTEM_SPEC",
+        "state": "TASKS",
         "title": "Synthetic feature record fixture",
         "created_at": "2026-07-11T09:00:00Z",
         "updated_at": "2026-07-11T10:00:00Z",
         "open_questions": [],
-        "id": "feat-903-tasks-path-alias",
-        "state": "TASKS",
         "validation_result": "PASS",
         "validated_at": "2026-07-11T09:20:00Z",
         "tasks_path": "docs/sdd/artifacts/tasks/feat-903-tasks-path-alias.md"
       },
       "expect": {
         "valid": true,
-        "warning_codes": ["LEGACY_TASKS_PATH"],
+        "warning_codes": [
+          "LEGACY_TASKS_PATH"
+        ],
         "error_codes": []
       },
       "transition": {
         "from": "TASKS",
         "to": "IMPLEMENT",
-        "approvals": ["TASKS_TO_IMPLEMENT"],
+        "approvals": [],
+        "required_approvals": [],
         "result": "ALLOW",
         "reason_codes": []
       }
