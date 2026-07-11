@@ -75,6 +75,11 @@ def _valid_waiver(record: dict[str, Any]) -> bool:
     return True
 
 
+def _find_rule(protocol: dict[str, Any], from_state: str, to_state: str) -> dict[str, Any] | None:
+    rules = protocol.get("transitions", []) + protocol.get("regressions", [])
+    return next((r for r in rules if r.get("from") == from_state and r.get("to") == to_state), None)
+
+
 def _validate_protocol(protocol: dict[str, Any]) -> None:
     states = ["DESIGN", "SPEC", "VALIDATION", "TASKS", "IMPLEMENT", "VERIFY", "AUDIT", "ARCHIVE"]
     if protocol.get("protocol_version") != "1.0.0":
@@ -87,10 +92,28 @@ def _validate_protocol(protocol: dict[str, Any]) -> None:
         raise ValueError("protocol legacy state aliases are invalid")
     if not isinstance(protocol.get("blockers"), dict) or not protocol["blockers"]:
         raise ValueError("protocol blockers are missing")
-    declared = {(item.get("from"), item.get("to")) for item in protocol.get("transitions", [])}
+    declared = {(r.get("from"), r.get("to")) for r in protocol.get("transitions", [])}
     required = {(states[i], states[i + 1]) for i in range(len(states) - 1)}
     if declared != required:
         raise ValueError("protocol canonical transitions are incomplete or duplicated")
+
+    policy = protocol.get("human_approval_policy", {})
+    if policy.get("core_default") != "not_required" or policy.get("resolution_mode") != "external_input_only":
+        raise ValueError("human approval must be conditional external policy input")
+    if policy.get("integration_implemented") is not False:
+        raise ValueError("Phase 1 must not implement external governance integration")
+    checkpoints = protocol.get("human_checkpoints", {})
+    checkpoint = checkpoints.get("TASKS_TO_IMPLEMENT", {})
+    if checkpoint.get("default_required") is not False or checkpoint.get("transition") != {"from": "TASKS", "to": "IMPLEMENT"}:
+        raise ValueError("TASKS_TO_IMPLEMENT checkpoint is invalid")
+    task_rule = _find_rule(protocol, "TASKS", "IMPLEMENT")
+    if task_rule is None or task_rule.get("policy_hooks") != ["TASKS_TO_IMPLEMENT"]:
+        raise ValueError("TASKS -> IMPLEMENT conditional policy hook is missing")
+    if any(req.get("type") == "human_approval" for req in task_rule.get("requirements", [])):
+        raise ValueError("TASKS -> IMPLEMENT must not require universal human approval")
+    for rule in protocol.get("transitions", []):
+        if any(hook not in checkpoints for hook in rule.get("policy_hooks", [])):
+            raise ValueError("transition references an undeclared policy hook")
 
 
 def load_contracts(schema_path: Path = DEFAULT_SCHEMA, protocol_path: Path = DEFAULT_PROTOCOL) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -166,17 +189,23 @@ def _reason(code: str, message: str, path: str = "$") -> Finding:
     return Finding(code, message, path)
 
 
-def evaluate_transition(record: dict[str, Any], protocol: dict[str, Any], from_state: str, to_state: str, approvals: Iterable[str] = ()) -> GateResult:
+def evaluate_transition(
+    record: dict[str, Any],
+    protocol: dict[str, Any],
+    from_state: str,
+    to_state: str,
+    approvals: Iterable[str] = (),
+    required_approvals: Iterable[str] = (),
+) -> GateResult:
     if _effective_state(record.get("state"), protocol) != from_state:
         return GateResult("DENY", from_state, to_state, (_reason("SOURCE_STATE_MISMATCH", "Record state does not match the requested transition source.", "$.state"),))
-    declarations = protocol.get("transitions", []) + protocol.get("regressions", [])
-    rule = next((item for item in declarations if item.get("from") == from_state and item.get("to") == to_state), None)
+    rule = _find_rule(protocol, from_state, to_state)
     if rule is None:
         return GateResult("DENY", from_state, to_state, (_reason("INVALID_TRANSITION", f"Transition {from_state} -> {to_state} is not declared."),))
 
     deny: list[Finding] = []
     human: list[Finding] = []
-    approvals = set(approvals)
+    approvals, required_approvals = set(approvals), set(required_approvals)
     for req in rule.get("requirements", []):
         kind, blocker = req.get("type"), req.get("blocker", "SCHEMA_INVALID")
         if kind == "field_present":
@@ -198,18 +227,24 @@ def evaluate_transition(record: dict[str, Any], protocol: dict[str, Any], from_s
         elif kind == "no_blocking_open_questions":
             blocked = _blocking_questions(record)
             if blocked:
-                deny.append(_reason(blocker, "Blocking open questions remain: " + ", ".join(str(q.get("id", "?")) for q in blocked) + ".", "$.open_questions"))
+                ids = ", ".join(str(q.get("id", "?")) for q in blocked)
+                deny.append(_reason(blocker, f"Blocking open questions remain: {ids}.", "$.open_questions"))
         elif kind == "audit_allows_archive":
             result = record.get("audit_result")
             if result not in {"PASS", "WARN"} and not (result == "FAIL" and _valid_waiver(record)):
                 code = "OWNER_WAIVER_INVALID" if result == "FAIL" and "owner_waiver" in record else blocker
                 path = "$.owner_waiver" if code == "OWNER_WAIVER_INVALID" else "$.audit_result"
                 deny.append(_reason(code, "AUDIT FAIL blocks ARCHIVE without a valid owner waiver.", path))
-        elif kind == "human_approval":
-            if req["approval"] not in approvals:
-                human.append(Finding(blocker, f"Explicit human approval {req['approval']} is required.", "$.approvals", "HUMAN_REQUIRED"))
         else:
             deny.append(_reason("SCHEMA_INVALID", f"Unknown protocol requirement type: {kind}."))
+
+    checkpoints = protocol.get("human_checkpoints", {})
+    hooks = set(rule.get("policy_hooks", []))
+    for checkpoint in sorted(required_approvals):
+        if checkpoint not in checkpoints or checkpoint not in hooks:
+            deny.append(_reason("POLICY_REQUIREMENT_INVALID", f"Policy checkpoint {checkpoint} does not apply to {from_state} -> {to_state}.", "$.policy"))
+        elif checkpoint not in approvals:
+            human.append(Finding("HUMAN_APPROVAL_REQUIRED", f"Active policy requires human approval {checkpoint}.", "$.approvals", "HUMAN_REQUIRED"))
 
     if deny:
         return GateResult("DENY", from_state, to_state, tuple(deny))
@@ -267,7 +302,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--protocol", type=Path, default=DEFAULT_PROTOCOL)
     parser.add_argument("--mode", choices=("read", "write"), default="read")
     parser.add_argument("--transition", type=_parse_transition, metavar="FROM:TO")
-    parser.add_argument("--approval", action="append", default=[])
+    parser.add_argument("--require-approval", action="append", default=[], metavar="CHECKPOINT")
+    parser.add_argument("--approval", action="append", default=[], metavar="CHECKPOINT")
     parser.add_argument("--format", choices=("text", "json"), default="text")
     parser.add_argument("--self-check", action="store_true")
     return parser
@@ -296,13 +332,15 @@ def main(argv: list[str] | None = None) -> int:
         print("INPUT_ERROR: feature record must be a JSON object", file=sys.stderr)
         return EXIT_USAGE
     validation = validate_record(record, schema, protocol, args.mode)
-    gate = evaluate_transition(record, protocol, *args.transition, args.approval) if args.transition else None
+    gate = evaluate_transition(
+        record, protocol, *args.transition,
+        approvals=args.approval, required_approvals=args.require_approval,
+    ) if args.transition else None
     payload = _payload(args.record, validation, gate)
-    print(json.dumps(payload, indent=2, sort_keys=True) if args.format == "json" else "", end="" if args.format == "json" else "")
-    if args.format == "text":
+    if args.format == "json":
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
         _print_text(payload)
-    elif args.format == "json":
-        print()
     if not validation["valid"] or (gate and gate.result == "DENY"):
         return EXIT_INVALID
     return EXIT_HUMAN_REQUIRED if gate and gate.result == "HUMAN_REQUIRED" else EXIT_OK
