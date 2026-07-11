@@ -1,1 +1,1 @@
-jsonschema>=4.23,<5
+-r contract/v1/requirements-validator.txt
