@@ -15,7 +15,11 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MANIFEST = ROOT / "contract/v1/install-manifest.json"
+MANIFEST_RELATIVE_PATH = PurePosixPath("contract/v1/install-manifest.json")
+DEFAULT_MANIFEST = ROOT / Path(*MANIFEST_RELATIVE_PATH.parts)
+EXPECTED_MANIFEST_VERSION = "1.0.0"
+EXPECTED_DISTRIBUTION = "Canonical SDD Model v1"
+EXPECTED_INSTALL_ROOT = "docs/sdd"
 EXIT_OK = 0
 EXIT_TARGET = 3
 EXIT_MANIFEST = 4
@@ -61,6 +65,7 @@ class Entry:
 @dataclass(frozen=True)
 class Manifest:
     version: str
+    distribution: str
     install_root: str
     dependencies: tuple[dict[str, Any], ...]
     entries: tuple[Entry, ...]
@@ -98,16 +103,83 @@ def _is_parent(parent: PurePosixPath, child: PurePosixPath) -> bool:
     return len(parent.parts) < len(child.parts) and child.parts[: len(parent.parts)] == parent.parts
 
 
+def _validated_source_root(path: Path) -> Path:
+    try:
+        if path.is_symlink():
+            raise ManifestError(f"Source root must not be a symlink: {path}")
+        resolved = path.resolve(strict=True)
+    except ManifestError:
+        raise
+    except (OSError, RuntimeError) as exc:
+        raise ManifestError(f"Cannot resolve source root {path}: {exc}") from exc
+    if not resolved.is_dir():
+        raise ManifestError(f"Source root must be an existing directory: {path}")
+    return resolved
+
+
+def resolve_manifest_context(manifest_arg: Path | None, source_root_arg: Path | None) -> tuple[Path, Path]:
+    """Resolve the only supported source layout without inferring arbitrary depth."""
+    if manifest_arg is None:
+        if source_root_arg is not None:
+            raise ManifestError("--source-root is only valid together with --manifest")
+        source_root = _validated_source_root(ROOT)
+        manifest_path = source_root / Path(*MANIFEST_RELATIVE_PATH.parts)
+        return manifest_path, source_root
+
+    if source_root_arg is None:
+        raise ManifestError("--source-root is required when --manifest is provided")
+
+    source_root = _validated_source_root(source_root_arg)
+    try:
+        if manifest_arg.is_symlink():
+            raise ManifestError(f"Manifest must not be a symlink: {manifest_arg}")
+        manifest_path = manifest_arg.resolve(strict=False)
+        relative = manifest_path.relative_to(source_root)
+    except ManifestError:
+        raise
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise ManifestError(f"Manifest must be contained within source root: {manifest_arg}") from exc
+
+    expected = Path(*MANIFEST_RELATIVE_PATH.parts)
+    if relative != expected:
+        raise ManifestError(
+            "Alternate manifest must be located exactly at "
+            f"{MANIFEST_RELATIVE_PATH.as_posix()} below --source-root"
+        )
+    return manifest_path, source_root
+
+
 def load_manifest(path: Path = DEFAULT_MANIFEST, source_root: Path = ROOT) -> Manifest:
-    raw = _load_json(path)
+    source_root_resolved = _validated_source_root(source_root)
+    try:
+        path_resolved = path.resolve(strict=False)
+        relative_manifest = path_resolved.relative_to(source_root_resolved)
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise ManifestError(f"Manifest escapes source root: {path}") from exc
+    expected_manifest = Path(*MANIFEST_RELATIVE_PATH.parts)
+    if relative_manifest != expected_manifest:
+        raise ManifestError(
+            "Manifest must be located exactly at "
+            f"{MANIFEST_RELATIVE_PATH.as_posix()} below source root"
+        )
+
+    raw = _load_json(path_resolved)
     if not isinstance(raw, dict):
         raise ManifestError("Manifest root must be an object")
+
     version = raw.get("manifest_version")
-    if not isinstance(version, str) or not version.strip():
-        raise ManifestError("manifest_version is required")
+    if version != EXPECTED_MANIFEST_VERSION:
+        raise ManifestError(
+            f"Unsupported manifest_version {version!r}; expected {EXPECTED_MANIFEST_VERSION!r}"
+        )
+    distribution = raw.get("distribution")
+    if distribution != EXPECTED_DISTRIBUTION:
+        raise ManifestError(
+            f"Unsupported distribution {distribution!r}; expected {EXPECTED_DISTRIBUTION!r}"
+        )
     install_root = _safe_relative_path(raw.get("install_root"), "install_root")
-    if str(install_root) != "docs/sdd":
-        raise ManifestError("install_root must be exactly docs/sdd")
+    if str(install_root) != EXPECTED_INSTALL_ROOT:
+        raise ManifestError(f"install_root must be exactly {EXPECTED_INSTALL_ROOT}")
 
     dependencies = raw.get("runtime_dependencies")
     if not isinstance(dependencies, list) or not dependencies:
@@ -125,7 +197,6 @@ def load_manifest(path: Path = DEFAULT_MANIFEST, source_root: Path = ROOT) -> Ma
 
     entries: list[Entry] = []
     destinations: list[PurePosixPath] = []
-    source_root_resolved = source_root.resolve()
     for index, item in enumerate(raw_entries):
         if not isinstance(item, dict):
             raise ManifestError(f"entries[{index}] must be an object")
@@ -144,12 +215,12 @@ def load_manifest(path: Path = DEFAULT_MANIFEST, source_root: Path = ROOT) -> Ma
         if item["executable"] and (source_kind != "file" or element_type != "tool"):
             raise ManifestError(f"entries[{index}] executable entries must be tool files")
 
-        source_path = source_root / Path(*source.parts)
+        source_path = source_root_resolved / Path(*source.parts)
         try:
             resolved_source = source_path.resolve(strict=False)
             resolved_source.relative_to(source_root_resolved)
-        except (OSError, ValueError) as exc:
-            raise ManifestError(f"source escapes repository root: {source}") from exc
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise ManifestError(f"source escapes source root: {source}") from exc
         if source_path.is_symlink():
             raise ManifestError(f"source symlinks are not allowed: {source}")
 
@@ -175,13 +246,25 @@ def load_manifest(path: Path = DEFAULT_MANIFEST, source_root: Path = ROOT) -> Ma
         requirements_path = dependency.get("requirements_path")
         if requirements_path is None:
             continue
-        path = _safe_relative_path(requirements_path, f"runtime_dependencies[{index}].requirements_path")
-        if not _is_parent(install_root, path):
-            raise ManifestError(f"runtime dependency requirements_path must be below docs/sdd/: {path}")
-        if str(path) not in destination_values:
-            raise ManifestError(f"runtime dependency requirements_path is not installed: {path}")
+        dependency_path = _safe_relative_path(
+            requirements_path, f"runtime_dependencies[{index}].requirements_path"
+        )
+        if not _is_parent(install_root, dependency_path):
+            raise ManifestError(
+                f"runtime dependency requirements_path must be below docs/sdd/: {dependency_path}"
+            )
+        if str(dependency_path) not in destination_values:
+            raise ManifestError(
+                f"runtime dependency requirements_path is not installed: {dependency_path}"
+            )
 
-    return Manifest(version, str(install_root), tuple(dependencies), tuple(entries))
+    return Manifest(
+        version,
+        distribution,
+        str(install_root),
+        tuple(dependencies),
+        tuple(entries),
+    )
 
 
 def _assert_source_tree_safe(path: Path, display: str) -> None:
@@ -190,12 +273,19 @@ def _assert_source_tree_safe(path: Path, display: str) -> None:
     if path.is_dir():
         for child in path.rglob("*"):
             if child.is_symlink():
-                raise SourceError(f"Source tree contains a symlink: {display}/{child.relative_to(path)}")
+                raise SourceError(
+                    f"Source tree contains a symlink: {display}/{child.relative_to(path)}"
+                )
 
 
 def validate_sources(manifest: Manifest, source_root: Path = ROOT) -> None:
+    source_root_resolved = _validated_source_root(source_root)
     for entry in manifest.entries:
-        source = source_root / entry.source
+        source = source_root_resolved / entry.source
+        try:
+            source.resolve(strict=False).relative_to(source_root_resolved)
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise SourceError(f"Source escapes source root: {entry.source}") from exc
         if not source.exists():
             if entry.required:
                 raise SourceError(f"Required source does not exist: {entry.source}")
@@ -243,13 +333,19 @@ def _destination_path(base: Path, destination: str, install_root: str) -> Path:
 
 
 def plan_install(manifest: Manifest, target: Path, source_root: Path = ROOT) -> dict[str, Any]:
-    validate_sources(manifest, source_root)
+    source_root_resolved = _validated_source_root(source_root)
+    validate_sources(manifest, source_root_resolved)
     target_resolved, install_root = _resolve_install_root(target, manifest.install_root)
     return {
         "manifest_version": manifest.version,
+        "distribution": manifest.distribution,
         "target": str(target_resolved),
         "install_root": str(install_root),
-        "created": [str(target_resolved / entry.destination) for entry in manifest.entries if (source_root / entry.source).exists()],
+        "created": [
+            str(target_resolved / entry.destination)
+            for entry in manifest.entries
+            if (source_root_resolved / entry.source).exists()
+        ],
         "runtime_dependencies": list(manifest.dependencies),
     }
 
@@ -261,16 +357,25 @@ def _copy_entry(source: Path, destination: Path, executable: bool) -> None:
     else:
         shutil.copy2(source, destination)
     if executable and destination.is_file():
-        destination.chmod(destination.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        destination.chmod(
+            destination.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
 
 
-def install(manifest: Manifest, target: Path, *, source_root: Path = ROOT, dry_run: bool = False) -> dict[str, Any]:
+def install(
+    manifest: Manifest,
+    target: Path,
+    *,
+    source_root: Path = ROOT,
+    dry_run: bool = False,
+) -> dict[str, Any]:
     result = plan_install(manifest, target, source_root)
     result["dry_run"] = dry_run
     result["status"] = "DRY_RUN" if dry_run else "INSTALLED"
     if dry_run:
         return result
 
+    source_root_resolved = _validated_source_root(source_root)
     target_resolved = Path(result["target"])
     install_root = Path(result["install_root"])
     docs_dir = target_resolved / "docs"
@@ -280,10 +385,12 @@ def install(manifest: Manifest, target: Path, *, source_root: Path = ROOT, dry_r
     stage.chmod(0o755)
     try:
         for entry in manifest.entries:
-            source = source_root / entry.source
+            source = source_root_resolved / entry.source
             if not source.exists():
                 continue
-            staged_destination = _destination_path(stage, entry.destination, manifest.install_root)
+            staged_destination = _destination_path(
+                stage, entry.destination, manifest.install_root
+            )
             _copy_entry(source, staged_destination, entry.executable)
         os.replace(stage, install_root)
     except Exception as exc:
@@ -302,6 +409,7 @@ def install(manifest: Manifest, target: Path, *, source_root: Path = ROOT, dry_r
 def _format_text(result: dict[str, Any]) -> str:
     lines = [
         f"STATUS: {result['status']}",
+        f"DISTRIBUTION: {result['distribution']}",
         f"MANIFEST_VERSION: {result['manifest_version']}",
         f"TARGET: {result['target']}",
         f"INSTALL_ROOT: {result['install_root']}",
@@ -316,9 +424,24 @@ def _format_text(result: dict[str, Any]) -> str:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--target", required=True, type=Path, help="Existing product repository root")
-    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST, help="Install manifest path")
-    parser.add_argument("--dry-run", action="store_true", help="Validate and print planned paths without writing")
+    parser.add_argument(
+        "--target", required=True, type=Path, help="Existing product repository root"
+    )
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=None,
+        help="Alternate manifest at <source-root>/contract/v1/install-manifest.json",
+    )
+    parser.add_argument(
+        "--source-root",
+        type=Path,
+        default=None,
+        help="Explicit source checkout root; required with --manifest",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Validate and print planned paths without writing"
+    )
     parser.add_argument("--format", choices=("text", "json"), default="text")
     return parser
 
@@ -326,15 +449,30 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Iterable[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        manifest_path = args.manifest.resolve()
-        source_root = ROOT if manifest_path == DEFAULT_MANIFEST.resolve() else manifest_path.parents[2]
+        manifest_path, source_root = resolve_manifest_context(
+            args.manifest, args.source_root
+        )
         manifest = load_manifest(manifest_path, source_root)
-        result = install(manifest, args.target, source_root=source_root, dry_run=args.dry_run)
+        result = install(
+            manifest,
+            args.target,
+            source_root=source_root,
+            dry_run=args.dry_run,
+        )
     except InstallError as exc:
         payload = {"status": "ERROR", "error": str(exc), "exit_code": exc.exit_code}
-        print(json.dumps(payload, indent=2, sort_keys=True) if args.format == "json" else f"ERROR: {exc}", file=sys.stderr)
+        print(
+            json.dumps(payload, indent=2, sort_keys=True)
+            if args.format == "json"
+            else f"ERROR: {exc}",
+            file=sys.stderr,
+        )
         return exc.exit_code
-    print(json.dumps(result, indent=2, sort_keys=True) if args.format == "json" else _format_text(result))
+    print(
+        json.dumps(result, indent=2, sort_keys=True)
+        if args.format == "json"
+        else _format_text(result)
+    )
     return EXIT_OK
 
 
