@@ -51,8 +51,12 @@ def _effective_state(value: Any, protocol: dict[str, Any]) -> Any:
     return protocol["lifecycle"]["legacy_state_aliases"].get(value, value)
 
 
+def _effective_validation(value: Any) -> Any:
+    return "PASS" if value == "PASS_WITH_FOLLOWUP" else value
+
+
 def _effective_verification(value: Any) -> Any:
-    return "PASS" if value == "PASS_WITH_FOLLOWUP" else None if value == "PARTIAL" else value
+    return None if value == "PARTIAL" else value
 
 
 def _blocking_questions(record: dict[str, Any]) -> list[dict[str, Any]]:
@@ -90,12 +94,24 @@ def _validate_protocol(protocol: dict[str, Any]) -> None:
         raise ValueError("protocol gate_results are invalid")
     if protocol.get("lifecycle", {}).get("legacy_state_aliases") != {"DONE": "ARCHIVE", "ARCHIVED": "ARCHIVE"}:
         raise ValueError("protocol legacy state aliases are invalid")
-    if not isinstance(protocol.get("blockers"), dict) or not protocol["blockers"]:
-        raise ValueError("protocol blockers are missing")
     declared = {(r.get("from"), r.get("to")) for r in protocol.get("transitions", [])}
     required = {(states[i], states[i + 1]) for i in range(len(states) - 1)}
     if declared != required:
         raise ValueError("protocol canonical transitions are incomplete or duplicated")
+
+    interpretations = protocol.get("gate_interpretations", {})
+    validation_legacy = interpretations.get("validation_legacy_reads", {})
+    verification_legacy = interpretations.get("verification_legacy_reads", {})
+    if validation_legacy.get("PASS_WITH_FOLLOWUP", {}).get("effective_result") != "PASS":
+        raise ValueError("PASS_WITH_FOLLOWUP must be a validation legacy read")
+    if "PASS_WITH_FOLLOWUP" in verification_legacy:
+        raise ValueError("PASS_WITH_FOLLOWUP must not be a verification legacy read")
+    partial = verification_legacy.get("PARTIAL", {})
+    archived = partial.get("historical_archive", {})
+    if partial.get("active_feature", {}).get("blocker") != "VERIFICATION_NOT_EXECUTED":
+        raise ValueError("active PARTIAL semantics are invalid")
+    if archived.get("warning") != "LEGACY_PARTIAL_AMBIGUOUS" or archived.get("migration_review_required") is not True or archived.get("mutation_allowed") is not False:
+        raise ValueError("historical PARTIAL semantics are invalid")
 
     policy = protocol.get("human_approval_policy", {})
     if policy.get("core_default") != "not_required" or policy.get("resolution_mode") != "external_input_only":
@@ -111,9 +127,9 @@ def _validate_protocol(protocol: dict[str, Any]) -> None:
         raise ValueError("TASKS -> IMPLEMENT conditional policy hook is missing")
     if any(req.get("type") == "human_approval" for req in task_rule.get("requirements", [])):
         raise ValueError("TASKS -> IMPLEMENT must not require universal human approval")
-    for rule in protocol.get("transitions", []):
-        if any(hook not in checkpoints for hook in rule.get("policy_hooks", [])):
-            raise ValueError("transition references an undeclared policy hook")
+    validation_rule = _find_rule(protocol, "VALIDATION", "TASKS")
+    if not validation_rule or not any(req.get("type") == "effective_validation_equals" for req in validation_rule.get("requirements", [])):
+        raise ValueError("VALIDATION -> TASKS must use effective validation")
 
 
 def load_contracts(schema_path: Path = DEFAULT_SCHEMA, protocol_path: Path = DEFAULT_PROTOCOL) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -128,58 +144,73 @@ def validate_record(record: dict[str, Any], schema: dict[str, Any], protocol: di
         raise ValueError("mode must be read or write")
     errors: list[Finding] = []
     warnings: list[Finding] = []
-    add_error = lambda code, msg, path="$": errors.append(Finding(code, msg, path))
-    add_warning = lambda code, msg, path: warnings.append(Finding(code, msg, path, "WARNING"))
+
+    def error(code: str, message: str, path: str = "$") -> None:
+        errors.append(Finding(code, message, path))
+
+    def warning(code: str, message: str, path: str) -> None:
+        warnings.append(Finding(code, message, path, "WARNING"))
 
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
-    for err in sorted(validator.iter_errors(record), key=lambda item: list(item.absolute_path)):
-        add_error("SCHEMA_INVALID", err.message, _json_path(err.absolute_path))
+    for item in sorted(validator.iter_errors(record), key=lambda e: _json_path(e.absolute_path)):
+        error("SCHEMA_INVALID", item.message, _json_path(item.absolute_path))
 
     if "feature_id" in record:
-        add_warning("LEGACY_FEATURE_ID", "feature_id is a legacy read alias; canonical writes use id.", "$.feature_id")
+        warning("LEGACY_FEATURE_ID", "feature_id is a legacy read alias; canonical writes use id.", "$.feature_id")
     if "id" in record and "feature_id" in record and record["id"] != record["feature_id"]:
-        add_error("ALIAS_DIVERGENCE", "id and feature_id contain different values.", "$.feature_id")
+        error("ALIAS_DIVERGENCE", "id and feature_id contain different values.", "$.feature_id")
     if "tasks_path" in record:
-        add_warning("LEGACY_TASKS_PATH", "tasks_path is a legacy read alias; canonical writes use task_path.", "$.tasks_path")
+        warning("LEGACY_TASKS_PATH", "tasks_path is a legacy read alias; canonical writes use task_path.", "$.tasks_path")
     if "task_path" in record and "tasks_path" in record and record["task_path"] != record["tasks_path"]:
-        add_error("ALIAS_DIVERGENCE", "task_path and tasks_path contain different values.", "$.tasks_path")
+        error("ALIAS_DIVERGENCE", "task_path and tasks_path contain different values.", "$.tasks_path")
 
     state = record.get("state")
+    effective_state = _effective_state(state, protocol)
     if state in protocol["lifecycle"]["legacy_state_aliases"]:
-        add_warning("LEGACY_STATE_ALIAS", f"{state} is a legacy read alias for ARCHIVE.", "$.state")
+        warning("LEGACY_STATE_ALIAS", f"{state} is a legacy read alias for ARCHIVE.", "$.state")
     for field, value in record.items():
         if (field.endswith("_path") or field == "tasks_path") and isinstance(value, str) and value.startswith("artifacts/"):
-            add_warning("LEGACY_ARTIFACT_PATH", "Legacy artifacts/... path is relative to sdd_root and was not normalized.", f"$.{field}")
+            warning("LEGACY_ARTIFACT_PATH", "Legacy artifacts/... path is relative to sdd_root and was not normalized.", f"$.{field}")
+
+    validation = record.get("validation_result")
+    if validation == "PASS_WITH_FOLLOWUP":
+        warning("LEGACY_PASS_WITH_FOLLOWUP", "validation_result PASS_WITH_FOLLOWUP was interpreted as effective PASS.", "$.validation_result")
 
     verification = record.get("verification_result")
+    migration_review_required = False
     if verification == "PARTIAL":
-        add_error("VERIFICATION_NOT_EXECUTED", "PARTIAL is not canonical verification evidence.", "$.verification_result")
-    elif verification == "PASS_WITH_FOLLOWUP":
-        add_warning("LEGACY_PASS_WITH_FOLLOWUP", "PASS_WITH_FOLLOWUP was interpreted as PASS with non-blocking follow-up questions.", "$.verification_result")
-        if _blocking_questions(record):
-            add_error("BLOCKING_OPEN_QUESTION", "PASS_WITH_FOLLOWUP cannot coexist with a blocking open question.", "$.open_questions")
+        if effective_state == "ARCHIVE":
+            migration_review_required = True
+            warning("LEGACY_PARTIAL_AMBIGUOUS", "Archived verification_result PARTIAL is ambiguous; migration review is required without modifying the record.", "$.verification_result")
+        else:
+            error("VERIFICATION_NOT_EXECUTED", "Active features cannot use PARTIAL as verification evidence.", "$.verification_result")
 
     created, updated = record.get("created_at"), record.get("updated_at")
     if isinstance(created, str) and isinstance(updated, str):
         try:
             if _parse_time(updated) < _parse_time(created):
-                add_error("TIMESTAMP_ORDER_INVALID", "updated_at is earlier than created_at.", "$.updated_at")
+                error("TIMESTAMP_ORDER_INVALID", "updated_at is earlier than created_at.", "$.updated_at")
         except ValueError:
             pass
-    if _effective_state(state, protocol) == "ARCHIVE" and "archived_at" not in record:
-        add_error("ARCHIVE_TIMESTAMP_MISSING", "Archived records require archived_at.", "$.archived_at")
+    if effective_state == "ARCHIVE" and "archived_at" not in record:
+        error("ARCHIVE_TIMESTAMP_MISSING", "Archived records require archived_at.", "$.archived_at")
+
     if mode == "write":
         errors.extend(Finding("NON_CANONICAL_WRITE", f"Canonical write rejected legacy construct {w.code}.", w.path) for w in warnings)
+        if verification == "PARTIAL" and not any(e.code == "NON_CANONICAL_WRITE" and e.path == "$.verification_result" for e in errors):
+            error("NON_CANONICAL_WRITE", "Canonical writes reject verification_result PARTIAL.", "$.verification_result")
 
     return {
         "valid": not errors,
         "mode": mode,
         "errors": errors,
         "warnings": warnings,
+        "migration_review_required": migration_review_required,
         "effective": {
             "id": record.get("id", record.get("feature_id")),
-            "state": _effective_state(state, protocol),
+            "state": effective_state,
             "task_path": record.get("task_path", record.get("tasks_path")),
+            "validation_result": _effective_validation(validation),
             "verification_result": _effective_verification(verification),
         },
     }
@@ -189,14 +220,7 @@ def _reason(code: str, message: str, path: str = "$") -> Finding:
     return Finding(code, message, path)
 
 
-def evaluate_transition(
-    record: dict[str, Any],
-    protocol: dict[str, Any],
-    from_state: str,
-    to_state: str,
-    approvals: Iterable[str] = (),
-    required_approvals: Iterable[str] = (),
-) -> GateResult:
+def evaluate_transition(record: dict[str, Any], protocol: dict[str, Any], from_state: str, to_state: str, approvals: Iterable[str] = (), required_approvals: Iterable[str] = ()) -> GateResult:
     if _effective_state(record.get("state"), protocol) != from_state:
         return GateResult("DENY", from_state, to_state, (_reason("SOURCE_STATE_MISMATCH", "Record state does not match the requested transition source.", "$.state"),))
     rule = _find_rule(protocol, from_state, to_state)
@@ -205,7 +229,6 @@ def evaluate_transition(
 
     deny: list[Finding] = []
     human: list[Finding] = []
-    approvals, required_approvals = set(approvals), set(required_approvals)
     for req in rule.get("requirements", []):
         kind, blocker = req.get("type"), req.get("blocker", "SCHEMA_INVALID")
         if kind == "field_present":
@@ -221,9 +244,14 @@ def evaluate_transition(
             field, expected = req["field"], req["value"]
             if record.get(field) != expected:
                 deny.append(_reason(blocker, f"{field} must equal {expected}.", f"$.{field}"))
+        elif kind == "effective_validation_equals":
+            expected = req["value"]
+            if _effective_validation(record.get("validation_result")) != expected:
+                deny.append(_reason(blocker, f"validation_result must provide effective {expected} evidence.", "$.validation_result"))
         elif kind == "effective_verification_equals":
-            if _effective_verification(record.get("verification_result")) != req["value"]:
-                deny.append(_reason(blocker, f"verification_result must provide effective {req['value']} evidence.", "$.verification_result"))
+            expected = req["value"]
+            if _effective_verification(record.get("verification_result")) != expected:
+                deny.append(_reason(blocker, f"verification_result must provide effective {expected} evidence.", "$.verification_result"))
         elif kind == "no_blocking_open_questions":
             blocked = _blocking_questions(record)
             if blocked:
@@ -240,10 +268,11 @@ def evaluate_transition(
 
     checkpoints = protocol.get("human_checkpoints", {})
     hooks = set(rule.get("policy_hooks", []))
-    for checkpoint in sorted(required_approvals):
+    approvals_set = set(approvals)
+    for checkpoint in sorted(set(required_approvals)):
         if checkpoint not in checkpoints or checkpoint not in hooks:
             deny.append(_reason("POLICY_REQUIREMENT_INVALID", f"Policy checkpoint {checkpoint} does not apply to {from_state} -> {to_state}.", "$.policy"))
-        elif checkpoint not in approvals:
+        elif checkpoint not in approvals_set:
             human.append(Finding("HUMAN_APPROVAL_REQUIRED", f"Active policy requires human approval {checkpoint}.", "$.approvals", "HUMAN_REQUIRED"))
 
     if deny:
@@ -263,7 +292,10 @@ def _payload(record: Path | None, validation: dict[str, Any] | None, gate: GateR
         out["record"] = str(record)
     if validation is not None:
         out.update({
-            "valid": validation["valid"], "mode": validation["mode"], "effective": validation["effective"],
+            "valid": validation["valid"],
+            "mode": validation["mode"],
+            "effective": validation["effective"],
+            "migration_review_required": validation["migration_review_required"],
             "errors": [_finding_dict(x) for x in validation["errors"]],
             "warnings": [_finding_dict(x) for x in validation["warnings"]],
         })
@@ -277,7 +309,7 @@ def _print_text(payload: dict[str, Any]) -> None:
         print("CONTRACTS: PASS\nREAD_ONLY: true")
         return
     status = "FAIL" if not payload["valid"] else "PASS_WITH_WARNINGS" if payload["warnings"] else "PASS"
-    print(f"VALIDATION: {status}\nMODE: {payload['mode']}\nREAD_ONLY: true")
+    print(f"VALIDATION: {status}\nMODE: {payload['mode']}\nREAD_ONLY: true\nMIGRATION_REVIEW_REQUIRED: {str(payload['migration_review_required']).lower()}")
     for kind in ("warnings", "errors"):
         for item in payload[kind]:
             print(f"{item['severity']} [{item['code']}] {item['path']}: {item['message']}")
@@ -331,16 +363,15 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(record, dict):
         print("INPUT_ERROR: feature record must be a JSON object", file=sys.stderr)
         return EXIT_USAGE
+
     validation = validate_record(record, schema, protocol, args.mode)
-    gate = evaluate_transition(
-        record, protocol, *args.transition,
-        approvals=args.approval, required_approvals=args.require_approval,
-    ) if args.transition else None
+    gate = evaluate_transition(record, protocol, *args.transition, approvals=args.approval, required_approvals=args.require_approval) if args.transition else None
     payload = _payload(args.record, validation, gate)
-    if args.format == "json":
-        print(json.dumps(payload, indent=2, sort_keys=True))
-    else:
+    print(json.dumps(payload, indent=2, sort_keys=True) if args.format == "json" else "", end="" if args.format == "json" else "")
+    if args.format == "text":
         _print_text(payload)
+    elif args.format == "json":
+        print()
     if not validation["valid"] or (gate and gate.result == "DENY"):
         return EXIT_INVALID
     return EXIT_HUMAN_REQUIRED if gate and gate.result == "HUMAN_REQUIRED" else EXIT_OK
