@@ -75,6 +75,14 @@ Canonical result values are:
 
 `PARTIAL` is not canonical verification evidence. `PASS_WITH_FOLLOWUP` is a tolerated historical read interpreted as `PASS` only when follow-up questions are non-blocking.
 
+## Conditional human approval
+
+The core transition `TASKS -> IMPLEMENT` validates the approved semantic prerequisites: validated spec, task artifact, and no blocking open questions.
+
+Human approval is not universally required. A project profile, risk profile, or external governance layer may activate the `TASKS_TO_IMPLEMENT` checkpoint. When active and not recorded, the gate returns `HUMAN_REQUIRED`; otherwise a semantically valid transition returns `ALLOW`.
+
+Profile resolution and external governance integrations are outside this phase.
+
 ## Explicit legacy reads
 
 The v1 validator can read these historical forms with explicit warnings:
