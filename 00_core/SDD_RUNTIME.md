@@ -6,7 +6,7 @@
 
 Define the minimal executable Spec-Driven Development flow for an installed SDD instance.
 
-This document is the operational source of truth for agents. It does not replace `SDD_GUIDE`; it reduces it to an executable contract.
+This is a human-readable runtime guide. The machine-readable v1 authority is split between `contract/v1/feature-record.schema.json` for record shape and `contract/v1/sdd-protocol.json` for lifecycle, transitions, gates, blockers, and compatibility behavior.
 
 ---
 
@@ -41,7 +41,11 @@ Product code stays outside `docs/sdd/`. Generated SDD artifacts live under `docs
 
 ## Canonical Pipeline
 
+```text
 DESIGN -> SPEC -> VALIDATION -> TASKS -> IMPLEMENT -> VERIFY -> AUDIT -> ARCHIVE
+```
+
+`SEED` and `INTAKE` are pre-record activities, not persistent states.
 
 ---
 
@@ -60,8 +64,8 @@ DESIGN -> SPEC -> VALIDATION -> TASKS -> IMPLEMENT -> VERIFY -> AUDIT -> ARCHIVE
 
 Legacy note:
 
-- Some existing feature records may still use `DONE` as a terminal state.
-- Treat `DONE` as legacy alias of `ARCHIVE`; do not use it for new work.
+- Existing feature records may use `DONE` or `ARCHIVED` as terminal states.
+- Treat both as explicit read aliases of `ARCHIVE`; do not use them for new work.
 
 ---
 
@@ -73,7 +77,7 @@ Legacy note:
 | Specifier | Defines HOW | `docs/sdd/artifacts/specs/<feature>.md` |
 | Validator | Validates spec only | PASS / FAIL decision |
 | Planner | Generates tasks from validated spec | `docs/sdd/artifacts/tasks/<feature>.md` |
-| Implementer | Executes tasks | product code + tests |
+| Implementer | Executes approved tasks | product code + tests |
 | Verifier | Runs tests + SDT scenarios | PASS / FAIL decision |
 | Auditor | Produces report and gate result | `docs/sdd/artifacts/audit_reports/<report>.md` |
 | Archiver | Closes feature when gates allow closure | archived feature record |
@@ -84,6 +88,7 @@ Legacy note:
 
 - DO NOT implement without validated spec (`validation_result: PASS`).
 - VALIDATION must be explicitly recorded in the feature record (`validation_result` + `validated_at`).
+- `TASKS -> IMPLEMENT` requires explicit human approval.
 - DO NOT modify spec after validation without reopening state.
 - DO NOT mix roles.
 - DO NOT skip states.
@@ -98,6 +103,7 @@ Legacy note:
 - VALIDATION FAIL -> back to SPEC.
 - VERIFY FAIL -> back to IMPLEMENT.
 - AUDIT FAIL -> corrective work may continue, but archive, final acceptance, and SDD-governed release/merge gates are blocked until PASS/WARN or explicit owner waiver.
+- AUDIT FAIL does not select an automatic repair phase.
 
 ---
 
@@ -109,7 +115,7 @@ Legacy note:
 | SPEC | design doc | `docs/sdd/artifacts/specs/<feature>.md` |
 | VALIDATION | spec doc | PASS / FAIL |
 | TASKS | validated spec | `docs/sdd/artifacts/tasks/<feature>.md` |
-| IMPLEMENT | tasks doc | product code + tests |
+| IMPLEMENT | approved tasks doc | product code + tests |
 | VERIFY | code + tests | PASS / FAIL |
 | AUDIT | spec + code + verification evidence | audit report + PASS/WARN/FAIL |
 | ARCHIVE | report + gates | closed feature |
@@ -133,13 +139,13 @@ Other folders under `docs/sdd/` govern and operate the flow, but they are not pr
 
 ## Path Format (Feature Records)
 
-Canonical path format inside `docs/sdd/artifacts/features_for_specs/*.json` is repo-relative:
+Canonical path format inside `docs/sdd/artifacts/features_for_specs/*.json` is repository-relative:
 
 - `design_path`: `docs/sdd/artifacts/design/<feature>.md`
 - `spec_path`: `docs/sdd/artifacts/specs/<feature>.md`
 - `task_path`: `docs/sdd/artifacts/tasks/<feature>.md`
 
-Legacy aliases are allowed only for traceability during migration: `/SDD/artifacts/...`, `artifacts/...`, or other historical prefixes.
+The only initial legacy path compatibility is `artifacts/...`, interpreted relative to `sdd_root` with an explicit warning. It must not be silently normalized.
 
 ---
 
@@ -171,7 +177,7 @@ A feature is complete when:
 - SDT scenarios pass
 - audit report is generated
 - audit is PASS or WARN, or owner waiver is explicitly recorded
-- feature is archived without open contract issues
+- feature is archived without blocking open questions
 
 ---
 
