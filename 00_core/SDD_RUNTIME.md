@@ -77,7 +77,7 @@ Legacy note:
 | Specifier | Defines HOW | `docs/sdd/artifacts/specs/<feature>.md` |
 | Validator | Validates spec only | PASS / FAIL decision |
 | Planner | Generates tasks from validated spec | `docs/sdd/artifacts/tasks/<feature>.md` |
-| Implementer | Executes approved tasks | product code + tests |
+| Implementer | Executes gated tasks | product code + tests |
 | Verifier | Runs tests + SDT scenarios | PASS / FAIL decision |
 | Auditor | Produces report and gate result | `docs/sdd/artifacts/audit_reports/<report>.md` |
 | Archiver | Closes feature when gates allow closure | archived feature record |
@@ -88,13 +88,24 @@ Legacy note:
 
 - DO NOT implement without validated spec (`validation_result: PASS`).
 - VALIDATION must be explicitly recorded in the feature record (`validation_result` + `validated_at`).
-- `TASKS -> IMPLEMENT` requires explicit human approval.
+- `TASKS -> IMPLEMENT` must satisfy its semantic prerequisites.
+- Human approval for `TASKS -> IMPLEMENT` applies only when an active project, risk, or external governance profile requires the `TASKS_TO_IMPLEMENT` checkpoint.
 - DO NOT modify spec after validation without reopening state.
 - DO NOT mix roles.
 - DO NOT skip states.
 - DO NOT generate tasks before validation.
 - DO NOT archive if `audit_result: FAIL` is unresolved, unless an owner waiver is explicitly recorded.
 - Legacy specs are non-authoritative unless explicitly promoted; see `docs/sdd/02_policies/LEGACY_SPECS_POLICY.md`.
+
+### Conditional checkpoint behavior
+
+The core protocol does not resolve project or risk profiles. It accepts the resolved policy requirement as gate input:
+
+- checkpoint not required + semantic prerequisites valid -> `ALLOW`;
+- checkpoint required + approval absent -> `HUMAN_REQUIRED`;
+- checkpoint required + approval recorded -> `ALLOW`.
+
+No Baranes Tècniques or wrapper integration is implemented in this phase.
 
 ---
 
@@ -115,7 +126,7 @@ Legacy note:
 | SPEC | design doc | `docs/sdd/artifacts/specs/<feature>.md` |
 | VALIDATION | spec doc | PASS / FAIL |
 | TASKS | validated spec | `docs/sdd/artifacts/tasks/<feature>.md` |
-| IMPLEMENT | approved tasks doc | product code + tests |
+| IMPLEMENT | tasks doc satisfying active gate policy | product code + tests |
 | VERIFY | code + tests | PASS / FAIL |
 | AUDIT | spec + code + verification evidence | audit report + PASS/WARN/FAIL |
 | ARCHIVE | report + gates | closed feature |
