@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/magronxo/sdd-framework/examples/sdd-doctor/internal/doctor"
+	"github.com/CollSalvia-Org/sdd-framework/examples/sdd-doctor/internal/doctor"
 )
 
 func main() {

@@ -224,7 +224,7 @@ Summary: X PASS, Y WARN, Z FAIL, W BLOCKED
 
 ### Module Structure
 ```
-github.com/magronxo/sdd-framework/examples/sdd-doctor
+github.com/CollSalvia-Org/sdd-framework/examples/sdd-doctor
 ├── cmd/sdd-doctor/main.go
 └── internal/doctor/doctor.go
 ```

@@ -9,7 +9,7 @@
 ## 1. Implementation Tasks
 
 ### Task 1.1: Module Setup
-- [ ] **1.1.1**: Create `go.mod` with module `github.com/magronxo/sdd-framework/examples/sdd-doctor` and Go version 1.25
+- [ ] **1.1.1**: Create `go.mod` with module `github.com/CollSalvia-Org/sdd-framework/examples/sdd-doctor` and Go version 1.25
 - [ ] **1.1.2**: Create directory structure (`cmd/sdd-doctor/`, `internal/doctor/`)
 - [ ] **1.1.3**: Verify `go build` produces no errors
 

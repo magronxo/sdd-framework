@@ -59,7 +59,7 @@ sdd-doctor extends to validate SDD artifact envelopes: the structural completene
 
 ### Module Structure
 ```
-github.com/magronxo/sdd-framework/examples/sdd-doctor
+github.com/CollSalvia-Org/sdd-framework/examples/sdd-doctor
 ├── cmd/sdd-doctor/main.go          (unchanged)
 └── internal/doctor/
     ├── doctor.go                   (add checkEnvelopes call)

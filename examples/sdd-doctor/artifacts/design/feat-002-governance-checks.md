@@ -55,7 +55,7 @@ If state is TASKS, IMPLEMENT, VERIFY, AUDIT, or ARCHIVE, then validation_result 
 
 ### Module Structure
 ```
-github.com/magronxo/sdd-framework/examples/sdd-doctor
+github.com/CollSalvia-Org/sdd-framework/examples/sdd-doctor
 ├── cmd/sdd-doctor/main.go          (unchanged)
 └── internal/doctor/
     ├── doctor.go                    (add checkGovernance method)

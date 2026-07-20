@@ -51,7 +51,7 @@ internal/doctor/doctor.go  → Core logic, all checks, reporting
 ```
 
 ### Module
-`github.com/magronxo/sdd-framework/examples/sdd-doctor`
+`github.com/CollSalvia-Org/sdd-framework/examples/sdd-doctor`
 
 ### Build
 ```bash
