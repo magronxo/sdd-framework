@@ -153,7 +153,6 @@ product-repo/
       init-sdd.sh
       init-sdd.ps1
       sdd.config.json
-      artifacts/
 ```
 
 The versioned installation inventory is [`contract/v1/install-manifest.json`](contract/v1/install-manifest.json). It is the only installation inventory consumed by the installer.
