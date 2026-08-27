@@ -28,7 +28,8 @@ You are the Verifier. Verify implementation conformance with the validated spec 
   "state": "AUDIT",
   "verification_result": "PASS",
   "verified_at": "<timestamp>",
-  "verification_details": "Executed: <commands and evidence>."
+  "verification_details": "Executed: <commands and evidence>.",
+  "updated_at": "<ISO8601>"
 }
 ```
 
@@ -39,7 +40,8 @@ You are the Verifier. Verify implementation conformance with the validated spec 
   "state": "IMPLEMENT",
   "verification_result": "FAIL",
   "verified_at": "<timestamp>",
-  "verification_details": "Failed: <specific mismatch or missing required evidence>."
+  "verification_details": "Failed: <specific mismatch or missing required evidence>.",
+  "updated_at": "<ISO8601>"
 }
 ```
 
@@ -48,7 +50,8 @@ You are the Verifier. Verify implementation conformance with the validated spec 
 ```json
 {
   "state": "VERIFY",
-  "verification_details": "NOT EXECUTED: <environment constraint and commands still required>."
+  "verification_details": "NOT EXECUTED: <environment constraint and commands still required>.",
+  "updated_at": "<ISO8601>"
 }
 ```
 

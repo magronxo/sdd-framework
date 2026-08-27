@@ -90,23 +90,25 @@ If ANY implementer would need to "figure it out" or "ask the designer", the spec
 
 ## Output Format
 
-PASS
+PASS — apply this PATCH (fields to update) to the feature record:
 ```json
 {
   "state": "TASKS",
   "validation_result": "PASS",
-  "notes": "Spec complete and deterministic"
+  "validated_at": "<ISO8601>",
+  "validation_details": "<concise evidence>",
+  "updated_at": "<ISO8601>"
 }
 ```
 
-FAIL
+FAIL — apply this PATCH (fields to update) to the feature record:
 ```json
 {
   "state": "SPEC",
   "validation_result": "FAIL",
-  "issues": [
-    "Issue 1",
-    "Issue 2"
-  ]
+  "validated_at": "<ISO8601>",
+  "validation_issues": ["<issue>"],
+  "validation_details": "<concise summary>",
+  "updated_at": "<ISO8601>"
 }
 ```

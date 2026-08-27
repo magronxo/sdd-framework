@@ -4,123 +4,113 @@
 
 ## Purpose
 
-Define when a document is **authoritative** (binding) vs **proposed** (draft) during the SDD lifecycle.
+Define when a document is **authoritative** (binding) versus **proposed** (draft) without adding feature-record fields or lifecycle transitions beyond Canonical SDD Model v1.
 
-This prevents:
-- Implementing from unvalidated specs
-- Treating legacy specs as current truth
-- Confusion about which version of a design is "the real one"
+Machine-readable authority remains:
+
+- `docs/sdd/contract/v1/feature-record.schema.json` for feature-record fields;
+- `docs/sdd/contract/v1/sdd-protocol.json` for transitions, regressions, and gates.
+
+This policy prevents:
+
+- implementing from unvalidated specs;
+- treating legacy specs as current truth;
+- confusing documentary review status with persistent feature state.
 
 ---
 
-## Document States and Authority
+## Documentary Status and Authority
 
-| State | Authority | Can Modify | Who Can Modify |
-|-------|-----------|------------|----------------|
-| **Draft** | Proposed | Yes | Author, with feedback |
-| **Under Review** | Proposed | Yes | Reviewers with comments |
-| **Validated** | Authoritative | No | No one without reopening |
-| **Superseded** | Non-authoritative | No | Archived for traceability |
-| **Legacy** | Non-authoritative | No | Read-only, see `02_policies/LEGACY_SPECS_POLICY.md` |
+Documentary labels such as Draft, Under Review, Superseded, and Legacy are document-local descriptions. They are not feature-record states.
+
+| Documentary status | Authority | Mutation rule |
+|---|---|---|
+| **Draft / Under Review** | Proposed | May be revised by the role that owns the current canonical phase. |
+| **Validated spec** | Authoritative for feature behavior | Implementation must follow it; do not silently revise it. |
+| **Superseded / Legacy** | Historical, non-authoritative | Preserve for traceability; see `docs/sdd/02_policies/LEGACY_SPECS_POLICY.md`. |
 
 ---
 
 ## Authority by Artifact Type
 
-### Feature Records (`artifacts/features_for_specs/*.json`)
+### Feature Records (`docs/sdd/artifacts/features_for_specs/*.json`)
 
-| Field | Authority Rule |
-|-------|---------------|
-| `state` | Authoritative when current; may change via state transitions only |
-| `validation_result` | Authoritative once `"PASS"`; changing it requires reopening to SPEC |
-| `spec_path` | Authoritative once validated; path changes require traceability |
-| `design_path` | Authoritative once DESIGN is complete |
-| `implementation_notes` | Informational; does not override spec |
+- Fields must conform to the closed v1 schema.
+- `state` changes only through protocol-declared transitions or regressions.
+- Canonical writes use `id`, `task_path`, and `docs/sdd/artifacts/...` paths.
+- No policy-local metadata may be added to a feature record.
 
-### Design Documents (`artifacts/design/*.md`)
+### Design Documents (`docs/sdd/artifacts/design/*.md`)
 
-| Phase | Authority | Notes |
-|-------|-----------|-------|
-| During DESIGN | Proposed | Designer can iterate freely |
-| After DESIGN → SPEC | Authoritative for "WHAT" | Specifier uses it as input; cannot change the "WHAT" without reopening |
-| After ARCHIVE | Non-authoritative | Historical reference only |
+- During DESIGN, the design is proposed and may be refined.
+- `DESIGN -> SPEC` records the completed design as the WHAT input for specification.
+- A later role must not silently rewrite the design.
 
-### Spec Documents (`artifacts/specs/*.md`)
+### Spec Documents (`docs/sdd/artifacts/specs/*.md`)
 
-| Phase | Authority | Notes |
-|-------|-----------|-------|
-| During SPEC | Proposed | Specifier can iterate freely |
-| After VALIDATION = PASS | **Authoritative** | This is the contract. No implementation may deviate without reopening. |
-| After VALIDATION = FAIL | Proposed | Return to SPEC for fixes |
-| After ARCHIVE | Non-authoritative | New work requires a new feature/spec |
+- During SPEC, the spec is proposed and may be refined.
+- `SPEC -> VALIDATION` submits it for validation.
+- `VALIDATION PASS -> TASKS` makes the validated spec the behavioral authority for planning and implementation.
+- `VALIDATION FAIL -> SPEC` is the declared correction regression.
 
-### Task Documents (`artifacts/tasks/*.md`)
+### Task Documents (`docs/sdd/artifacts/tasks/*.md`)
 
-| Phase | Authority | Notes |
-|-------|-----------|-------|
-| During TASKS | Proposed | Planner can iterate |
-| After IMPLEMENT starts | Authoritative for execution | Implementer follows tasks; deviations require Planner approval |
-| After VERIFY | Non-authoritative | Historical record |
+- During TASKS, the Planner may refine the plan.
+- `TASKS -> IMPLEMENT` hands the completed task document to the Implementer.
+- Task documents do not authorize redesign or spec changes.
 
-### Audit Reports (`artifacts/audit_reports/*.md`)
+### Audit Reports (`docs/sdd/artifacts/audit_reports/*.md`)
 
-| Phase | Authority | Notes |
-|-------|-----------|-------|
-| Always | Informational | Audits do not block by themselves; they generate findings and recommendations |
-| If audit is FAIL | The findings are authoritative | Must be addressed, but the audit itself does not modify the spec |
+- Reports provide evidence and findings; they do not mutate records by themselves.
+- The standard Auditor records the canonical `audit_result` and `audited_at` on the feature record.
+- `AUDIT PASS` or `AUDIT WARN` may satisfy the audit gate when all other requirements pass.
+- `AUDIT FAIL` blocks `AUDIT -> ARCHIVE` unless a valid `owner_waiver` satisfies the protocol.
+- `AUDIT FAIL` does not prevent corrective work, but v1 selects no automatic repair state.
 
 ---
 
-## Reopening Rules
+## Correction and Reopening Boundary
 
-### Valid Reopening Conditions
+Canonical v1 declares exactly these correction regressions:
 
-A validated spec may be reopened only under these conditions:
+- `VALIDATION FAIL -> SPEC`;
+- `VERIFY FAIL -> IMPLEMENT`.
 
-1. **New information**: A requirement was missed during DESIGN
-2. **Bug in spec**: The spec itself contains an error (not the implementation)
-3. **External change**: A dependency or constraint changed after validation
+It does not declare a general transition from an arbitrary later state back to SPEC or DESIGN. Therefore:
 
-### What Is NOT Reopening
+1. Use the declared regression when its source state and trigger apply.
+2. Do not write an undeclared state change or private reopening metadata.
+3. If new scope or a missed requirement is discovered outside a declared regression, capture it as a new seed/feature or stop for an explicit future protocol decision.
+4. Any future general reopening mechanism requires a protocol revision; policy prose alone cannot create it.
 
-| Situation | Correct Action |
-|-----------|---------------|
-| **Scope expansion** | The feature needs to do more → capture a new seed and create a new feature. Do not reopen the existing spec. |
-| **New requirement** | Same as scope expansion: new seed → new feature. |
-| **Implementation bug** | Fix the code, not the spec. The spec is authoritative. |
-
-### Reopening Process
-
-1. Capture the reason as a new seed or bug report
-2. Set feature state back to `SPEC` (not DESIGN, unless the "WHAT" changes)
-3. Modify the spec
-4. Re-run VALIDATION
-5. Record the reopening in the feature record (`reopened_at`, `reopened_reason`)
+| Situation | Canonical v1 action |
+|---|---|
+| Validation finds a spec defect | Record FAIL evidence and use `VALIDATION -> SPEC`. |
+| Verification finds an implementation mismatch | Record FAIL evidence and use `VERIFY -> IMPLEMENT`. |
+| Scope expansion or new requirement | Capture a new seed and feature; do not silently alter the active validated spec. |
+| AUDIT FAIL | Remain governed by the audit archive gate; no automatic repair state is selected. |
 
 ---
 
 ## Cross-Reference Integrity
 
-When a document is authoritative, all documents that reference it must be consistent:
-
-- If `spec.md` changes, `tasks.md` may need updating (re-run TASKS phase)
-- If `design.md` changes, `spec.md` must be revalidated
-- If `PROJECT_MANIFEST.md` changes, all active features must be reviewed for compliance
+When an authoritative document changes through an allowed workflow, review all dependent references for consistency. A policy review may identify needed follow-up, but it must not synthesize undeclared feature-state transitions.
 
 ---
 
 ## Anti-Patterns
 
-- **Silent spec changes**: Modifying a spec after VALIDATION without reopening
-- **Design drift**: Changing the "WHAT" during IMPLEMENT without updating the design
-- **Legacy override**: Using an old spec because "it was good enough"
-- **Audit as veto**: Treating an audit FAIL as a block instead of a finding generator
+- **Silent spec changes**: modifying a validated spec outside the declared workflow.
+- **Private reopening fields**: adding policy-specific metadata not present in the schema.
+- **Design drift**: changing the WHAT during IMPLEMENT.
+- **Legacy override**: using an old spec as current authority.
+- **Audit dismissal**: treating AUDIT FAIL as merely informational even though it blocks archival under the protocol.
 
 ---
 
 ## Related Documents
 
-- `02_policies/LEGACY_SPECS_POLICY.md` — legacy spec handling
-- `02_policies/REPORT_ENVELOPE_POLICY.md` — audit report format
-- `00_core/SDD_RUNTIME.md` — canonical pipeline and states
-- `00_core/SDD_HANDOFF_CONTRACT.md` — role boundaries and handoff rules
+- `docs/sdd/02_policies/LEGACY_SPECS_POLICY.md`
+- `docs/sdd/02_policies/REPORT_ENVELOPE_POLICY.md`
+- `docs/sdd/00_core/SDD_RUNTIME.md`
+- `docs/sdd/00_core/SDD_HANDOFF_CONTRACT.md`

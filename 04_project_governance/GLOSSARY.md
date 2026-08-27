@@ -54,7 +54,7 @@ This document is the **single source of truth for language**. If a term appears 
 
 **Not to be confused with**: `{OTHER_TERM}`
 
-**Used in**: `{artifacts/specs/, src/, docs/}`
+**Used in**: `{docs/sdd/artifacts/specs/, product source, product docs}`
 
 ### {CORE_TERM_2}
 
@@ -90,7 +90,7 @@ This document is the **single source of truth for language**. If a term appears 
 
 **Not to be confused with**: `{OTHER_TERM}`
 
-**Used in**: `{artifacts/design/, 04_project_governance/}`
+**Used in**: `{docs/sdd/artifacts/design/, docs/sdd/04_project_governance/}`
 
 ---
 
@@ -102,11 +102,11 @@ This document is the **single source of truth for language**. If a term appears 
 
 **Definition**: A unit of work that flows through the Spec-Driven Development pipeline.
 
-**In this project, it means**: A feature record in `artifacts/features_for_specs/` with a unique ID, a validated spec, and a completed audit.
+**In this project, it means**: A canonical feature record under `docs/sdd/artifacts/features_for_specs/` with an `id` and evidence accumulated through the persistent lifecycle.
 
 **Not to be confused with**: A GitHub issue, a user story, or a seed.
 
-**Used in**: `00_core/SDD_RUNTIME.md`, `01_execution/`
+**Used in**: `docs/sdd/00_core/SDD_RUNTIME.md`, `docs/sdd/01_execution/`
 
 ### Seed
 
@@ -118,7 +118,7 @@ This document is the **single source of truth for language**. If a term appears 
 
 **Not to be confused with**: A feature (a seed becomes a feature only after triage and approval).
 
-**Used in**: `03_operations/pre_sdd/`
+**Used in**: `docs/sdd/03_operations/pre_sdd/`
 
 ### Validation
 
@@ -130,7 +130,7 @@ This document is the **single source of truth for language**. If a term appears 
 
 **Not to be confused with**: Testing (verification happens after implementation; validation happens before).
 
-**Used in**: `00_core/SDD_RUNTIME.md`, `01_execution/prompts/validator.md`
+**Used in**: `docs/sdd/00_core/SDD_RUNTIME.md`, `docs/sdd/01_execution/prompts/validator.md`
 
 ---
 
@@ -145,6 +145,6 @@ This document is the **single source of truth for language**. If a term appears 
 
 ## Related Documents
 
-- `04_project_governance/PROJECT_MANIFEST.md` — project philosophy and constraints
-- `04_project_governance/PROJECT_MAP.md` — where to find specs, designs, and code
-- `02_policies/LEGACY_SPECS_POLICY.md` — how terminology evolves across versions
+- `docs/sdd/04_project_governance/PROJECT_MANIFEST.md` — project philosophy and constraints
+- `docs/sdd/04_project_governance/PROJECT_MAP.md` — where to find specs, designs, and code
+- `docs/sdd/02_policies/LEGACY_SPECS_POLICY.md` — how terminology evolves across versions

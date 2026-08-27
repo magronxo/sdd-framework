@@ -4,154 +4,106 @@
 
 ## Purpose
 
-A **visual, scannable guide** to the repository.
+Provide a visual guide to Canonical SDD Model v1 in a product repository.
 
-If you are lost, start here. If you know what you need but not where it is, check the **Quick Finder** below.
+This file lives under `docs/` in the framework **source checkout**. Framework source paths such as `00_core/` and `01_execution/` are copied by the installer below the product repository's `docs/sdd/` root. Current-use paths in this guide are product-repository-relative installed paths.
 
 ---
 
-## Repository at a Glance
+## Installed Product Repository at a Glance
 
+```text
+product-repo/
+├─ product source and tests/           Product-owned
+└─ docs/
+   └─ sdd/
+      ├─ AGENTS.md                     Agent entrypoint
+      ├─ sdd.config.json               Live configuration
+      ├─ 00_core/                      Runtime and handoff contracts
+      ├─ 01_execution/
+      │  └─ prompts/                   Role prompts
+      ├─ 02_policies/                  Governance policies
+      ├─ 03_operations/
+      │  └─ pre_sdd/                   Seed intake before feature records
+      ├─ 04_project_governance/        Project identity and navigation
+      ├─ templates/                    Reusable document templates
+      ├─ contract/v1/                  Machine-readable authority
+      ├─ tools/sdd_validate.py         Read-only validator/gate evaluator
+      └─ artifacts/                    Generated SDD deliverables
+         ├─ features_for_specs/        Feature records
+         ├─ design/                    Design documents
+         ├─ specs/                     Validated specifications
+         ├─ tasks/                     Task breakdowns
+         ├─ audit_reports/             Verification/audit evidence
+         └─ adr/                       Architecture decisions
 ```
-sdd-framework/
-│
-├─ 📁 00_core/                        ← Start here for rules
-│   ├─ SDD_RUNTIME.md                 Execution contract (agents)
-│   ├─ SDD_GUIDE.md                   Full methodology (humans)
-│   ├─ SDD_HANDOFF_CONTRACT.md        Who does what, when
-│   ├─ SDD_READING_CONTRACT.md        Minimal reading guide
-│   ├─ SDD_FEATURE_FORMAT.md          Feature record schema
-│   └─ AGENT_DECISION_TABLE.md        When agents can decide
-│
-├─ 📁 01_execution/                   ← Agent brains
-│   └─ prompts/
-│       ├─ designer.md
-│       ├─ specifier.md
-│       ├─ validator.md
-│       ├─ planner.md
-│       ├─ implementer.md
-│       ├─ verifier.md
-│       └─ migration_auditor.md
-│
-├─ 📁 02_policies/                    ← Governance rules
-│   ├─ ADR_POLICY.md                  When to write ADRs
-│   ├─ DECOMPOSITION_AND_SIZE_POLICY.md  Feature size limits
-│   ├─ INTEGRATION_SURFACE_POLICY.md  Surface definitions
-│   ├─ LEGACY_SPECS_POLICY.md         Old specs are non-authoritative
-│   ├─ REPORT_ENVELOPE_POLICY.md      Report format
-│   ├─ SKILLS_SYSTEM.md               Skills registry rules
-│   ├─ SPECS_REAUDIT_PRIORITIZATION_POLICY.md  Re-audit rules
-│   └─ TASKS_NORMALIZATION_POLICY.md  Task format rules
-│
-├─ 📁 03_operations/                  ← Operational playbooks
-│   ├─ WORKFLOW.md                    End-to-end workflow
-│   ├─ SPEC_REAUDIT_WORKFLOW.md       Re-audit procedure
-│   ├─ AUDIT_STRATEGY.md              Audit planning
-│   └─ 📁 pre_sdd/                    ← Idea intake system
-│       ├─ seeds/                     Active seeds
-│       ├─ seeds/deferred/            Postponed
-│       ├─ seeds/rejected/            Closed
-│       ├─ seeds/promoted/            Became features
-│       ├─ seeds/merged/              Consolidated
-│       ├─ templates/
-│       │   ├─ seed_dossier.md
-│       │   └─ triage_batch.md
-│       ├─ PRE_SDD_CONTRACT.md        Rules
-│       └─ PRE_SDD_RUNTIME.md         Procedure
-│
-├─ 📁 04_project_governance/          ← Project identity
-│   ├─ PROJECT_MANIFEST.md            Philosophy and constraints
-│   ├─ GLOSSARY.md                    Terminology
-│   └─ PROJECT_MAP.md                 Navigation (this is not it)
-│
-├─ 📁 templates/                      ← Reusable blanks
-│   ├─ design.md
-│   ├─ specs.md
-│   └─ adr.md
-│
-├─ 📁 docs/                           ← Human guides
-│   ├─ GETTING_STARTED.md             First feature tutorial
-│   ├─ SDD_PIPELINE_VISUAL.md         Diagrams and flowcharts
-│   └─ PROJECT_TOUR.md                This file
-│
-├─ 📁 artifacts/                      ← Generated work (DO NOT EDIT MANUALLY)
-│   ├─ features_for_specs/            Feature records (JSON)
-│   ├─ design/                        Design documents
-│   ├─ specs/                         Validated specifications
-│   ├─ tasks/                         Task breakdowns
-│   ├─ audit_reports/                 Audit outputs
-│   └─ adr/                           Architecture decisions
-│
-├─ sdd.config.json                    ← Project configuration
-├─ AGENTS.md                          ← Agent entrypoint
-├─ README.md                          ← Project overview
-└─ init-sdd.ps1 / init-sdd.sh         ← Bootstrap scripts
-```
+
+Product source remains outside `docs/sdd/`. Canonical feature-record paths are repository-relative and begin with `docs/sdd/artifacts/`.
 
 ---
 
 ## Quick Finder
 
-| I need to... | Go to |
-|-------------|-------|
-| Understand how agents work | `AGENTS.md` → `00_core/SDD_RUNTIME.md` |
-| Find the spec for a feature | `artifacts/specs/` |
-| Check if a feature is validated | `artifacts/features_for_specs/*.json` → look for `validation_result` |
-| Submit a new idea | `03_operations/pre_sdd/templates/seed_dossier.md` |
-| Know if I can start coding | Feature record must have `validation_result: "PASS"` |
-| Write a design document | `templates/design.md` |
-| Write a spec | `templates/specs.md` |
-| Record an architecture decision | `templates/adr.md` → `02_policies/ADR_POLICY.md` |
-| Understand report format | `02_policies/REPORT_ENVELOPE_POLICY.md` |
-| Check feature size limits | `02_policies/DECOMPOSITION_AND_SIZE_POLICY.md` |
-| Find audit reports | `artifacts/audit_reports/` |
-| See the pipeline as a diagram | `docs/SDD_PIPELINE_VISUAL.md` |
-| Do my first feature | `docs/GETTING_STARTED.md` |
-| Know what "seed" means | `04_project_governance/GLOSSARY.md` |
-| Change the project philosophy | `04_project_governance/PROJECT_MANIFEST.md` → requires ADR |
+| I need to... | Installed product path |
+|---|---|
+| Understand agent authority | `docs/sdd/AGENTS.md` then `docs/sdd/00_core/SDD_RUNTIME.md` |
+| Find a feature spec | `docs/sdd/artifacts/specs/` |
+| Check validation evidence | `docs/sdd/artifacts/features_for_specs/*.json` |
+| Submit a new seed | `docs/sdd/03_operations/pre_sdd/templates/seed_dossier.md` |
+| Know whether implementation may start | Read the canonical feature record and protocol gates; effective validation PASS is required |
+| Write a design | `docs/sdd/templates/design.md` |
+| Write a spec | `docs/sdd/templates/specs.md` |
+| Record an ADR | `docs/sdd/templates/adr.md` and `docs/sdd/02_policies/ADR_POLICY.md` |
+| Understand report format | `docs/sdd/02_policies/REPORT_ENVELOPE_POLICY.md` |
+| Check feature size limits | `docs/sdd/02_policies/DECOMPOSITION_AND_SIZE_POLICY.md` |
+| Find audit reports | `docs/sdd/artifacts/audit_reports/` |
+| Understand project terminology | `docs/sdd/04_project_governance/GLOSSARY.md` |
 
 ---
 
-## Color Code
+## Role Reading Paths
 
-| Icon | Meaning |
-|------|---------|
-| 📁 | Directory |
-| 📄 | Document (human-readable) |
-| ⚙️ | Configuration |
-| 🔒 | Generated / do not edit manually |
-| 🚀 | Entrypoint / start here |
+### Developer
 
----
+1. `docs/sdd/04_project_governance/GLOSSARY.md`
+2. `docs/sdd/00_core/SDD_RUNTIME.md`
+3. Validated spec and task document under `docs/sdd/artifacts/`
 
-## For Different Roles
+### Product Manager
 
-### 👩‍💻 Developer
-1. `docs/GETTING_STARTED.md`
-2. `04_project_governance/GLOSSARY.md`
-3. `artifacts/tasks/` → pick a task
-4. `00_core/SDD_RUNTIME.md` → understand the gates
+1. `docs/sdd/04_project_governance/PROJECT_MANIFEST.md`
+2. `docs/sdd/03_operations/pre_sdd/PRE_SDD_CONTRACT.md`
+3. `docs/sdd/03_operations/pre_sdd/seeds/`
 
-### 🧑‍💼 Product Manager
-1. `04_project_governance/PROJECT_MANIFEST.md`
-2. `03_operations/pre_sdd/PRE_SDD_CONTRACT.md`
-3. `03_operations/pre_sdd/seeds/` → submit seeds
+### Agent
 
-### 🤖 Agent (AI)
-1. `AGENTS.md`
-2. `00_core/SDD_RUNTIME.md`
-3. `00_core/SDD_HANDOFF_CONTRACT.md`
-4. `sdd.config.json`
+1. `docs/sdd/AGENTS.md`
+2. `docs/sdd/sdd.config.json`
+3. `docs/sdd/00_core/SDD_RUNTIME.md`
+4. `docs/sdd/00_core/SDD_HANDOFF_CONTRACT.md`
 
-### 🔍 Auditor
-1. `02_policies/REPORT_ENVELOPE_POLICY.md`
-2. `02_policies/INTEGRATION_SURFACE_POLICY.md`
-3. Feature spec + code + tests
+### Auditor
+
+1. `docs/sdd/02_policies/REPORT_ENVELOPE_POLICY.md`
+2. `docs/sdd/02_policies/INTEGRATION_SURFACE_POLICY.md`
+3. Canonical feature record, validated spec, implementation, and verification evidence
 
 ---
 
-## Related Documents
+## Source-checkout Documentation Context
 
-- `04_project_governance/PROJECT_MAP.md` — detailed navigation with "Where Truth Lives"
-- `docs/GETTING_STARTED.md` — first feature tutorial
-- `docs/SDD_PIPELINE_VISUAL.md` — pipeline diagrams
+When maintaining the framework itself, these source files are not installed paths:
+
+- `docs/GETTING_STARTED.md`
+- `docs/SDD_PIPELINE_VISUAL.md`
+- `docs/PROJECT_TOUR.md`
+
+Their lifecycle examples nevertheless use installed product paths (`docs/sdd/...`) so users do not persist root-level artifact paths.
+
+---
+
+## Related Installed Documents
+
+- `docs/sdd/04_project_governance/PROJECT_MAP.md`
+- `docs/sdd/00_core/SDD_RUNTIME.md`
+- `docs/sdd/00_core/SDD_HANDOFF_CONTRACT.md`

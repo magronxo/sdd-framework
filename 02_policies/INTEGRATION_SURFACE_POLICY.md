@@ -67,7 +67,9 @@ Examples:
 - Minimum evidence: environment note (relevant variables) or wrapper that stabilizes the case.
 - If there are broken proxies (e.g. `127.0.0.1:9`), it must be documented how to reproduce and how to avoid it.
 
-## 3) Verdict guidance
+## 3) VERIFY outcome guidance
 
-- If a surface applies and evidence is missing: `WARN` or `PARTIAL` (never `PASS`).
-- If the environment is plan-only and prevents evidence: `PARTIAL` + `next_action: rerun in build/execute`.
+- If all required surface checks execute and conform, VERIFY is eligible for `PASS`.
+- If an executed surface check demonstrates a mismatch or failure, VERIFY records `FAIL` and follows the declared regression to IMPLEMENT.
+- If required surface evidence is unavailable or cannot execute, report `NOT EXECUTED`, remain in VERIFY, leave `verification_result` and `verified_at` absent, and record `verification_details` beginning with `NOT EXECUTED:` plus the exact rerun action.
+- VERIFY does not use WARN. A later AUDIT may use its separate canonical `WARN` result for non-critical residual risk.

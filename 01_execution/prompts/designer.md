@@ -11,16 +11,16 @@ You receive a feature document with:
 
 ## Mandatory Pre-step: Check existing designs
 
-**BEFORE creating any new design**, read ALL existing documents in `artifacts/design/` that may be related to this feature.
+**BEFORE creating any new design**, read ALL existing documents in `docs/sdd/artifacts/design/` that may be related to this feature.
 
 Steps to follow:
-1. List files in `artifacts/design/`
+1. List files in `docs/sdd/artifacts/design/`
 2. Read relevant documents
 3. Identify if what you need already exists and can be reused/extended
 4. **If it already exists**, document how it is extended instead of creating from scratch
 
 ## Output
-You must create: `artifacts/design/<feature_id>.md`
+You must create: `docs/sdd/artifacts/design/<feature_id>.md`
 
 ## Mandatory document structure
 
@@ -67,11 +67,11 @@ When the document has:
 
 ## Final action
 
-Update the feature document:
+Apply this PATCH (fields to update) to the feature record:
 ```json
 {
   "state": "SPEC",
-  "design_path": "artifacts/design/<feature_id>.md",
-  "updated_at": "[ISO8601 timestamp]"
+  "design_path": "docs/sdd/artifacts/design/<feature_id>.md",
+  "updated_at": "<ISO8601>"
 }
 ```

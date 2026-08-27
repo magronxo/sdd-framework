@@ -6,7 +6,7 @@
 
 Take you from **zero** to your **first completed SDD feature** in one guided walkthrough.
 
-This document assumes you have read `04_project_governance/PROJECT_MANIFEST.md` and `04_project_governance/GLOSSARY.md`. If you have not, start there.
+This document assumes you have read `docs/sdd/04_project_governance/PROJECT_MANIFEST.md` and `docs/sdd/04_project_governance/GLOSSARY.md`. If you have not, start there.
 
 ---
 
@@ -36,9 +36,9 @@ We will implement a trivial but complete feature: **"Add a health check endpoint
 
 Before any feature exists, someone captures a seed.
 
-**Check**: Is there already a seed for this? Look in `03_operations/pre_sdd/seeds/`.
+**Check**: Is there already a seed for this? Look in `docs/sdd/03_operations/pre_sdd/seeds/`.
 
-If not, the Product Owner or Reporter creates one using `templates/seed_dossier.md`.
+If not, the Product Owner or Reporter creates one using `docs/sdd/03_operations/pre_sdd/templates/seed_dossier.md`.
 
 For this tutorial, assume the seed has been **promoted** and a feature record exists.
 
@@ -46,7 +46,9 @@ For this tutorial, assume the seed has been **promoted** and a feature record ex
 
 ## Step 1: Create the Feature Record
 
-Create `artifacts/features_for_specs/feat-001-health-check.json`:
+Create `docs/sdd/artifacts/features_for_specs/feat-001-health-check.json`.
+
+**Complete feature record:**
 
 ```json
 {
@@ -55,8 +57,7 @@ Create `artifacts/features_for_specs/feat-001-health-check.json`:
   "state": "DESIGN",
   "title": "Add health check endpoint",
   "created_at": "2026-04-23T10:00:00Z",
-  "updated_at": "2026-04-23T10:00:00Z",
-  "seed_reference": "seeds/2026-04-23_idea_health_check.md"
+  "updated_at": "2026-04-23T10:00:00Z"
 }
 ```
 
@@ -68,7 +69,7 @@ Create `artifacts/features_for_specs/feat-001-health-check.json`:
 
 **Role**: Designer
 
-Create `artifacts/design/feat-001-health-check.md` using `templates/design.md`.
+Create `docs/sdd/artifacts/design/feat-001-health-check.md` using `docs/sdd/templates/design.md`.
 
 ```markdown
 # Design: Health Check Endpoint
@@ -96,12 +97,13 @@ Provide a lightweight endpoint that returns the system's health status.
 - None
 ```
 
-Update the feature record:
+**Feature record PATCH (fields to update) — DESIGN to SPEC:**
 
 ```json
 {
   "state": "SPEC",
-  "design_path": "artifacts/design/feat-001-health-check.md"
+  "design_path": "docs/sdd/artifacts/design/feat-001-health-check.md",
+  "updated_at": "2026-04-23T10:15:00Z"
 }
 ```
 
@@ -113,7 +115,7 @@ Update the feature record:
 
 **Role**: Specifier
 
-Create `artifacts/specs/feat-001-health-check.md` using `templates/specs.md`.
+Create `docs/sdd/artifacts/specs/feat-001-health-check.md` using `docs/sdd/templates/specs.md`.
 
 ```markdown
 # Specification: Health Check Endpoint
@@ -158,12 +160,13 @@ Scenario: Health check returns ok
 - None
 ```
 
-Update the feature record:
+**Feature record PATCH (fields to update) — SPEC to VALIDATION:**
 
 ```json
 {
   "state": "VALIDATION",
-  "spec_path": "artifacts/specs/feat-001-health-check.md"
+  "spec_path": "docs/sdd/artifacts/specs/feat-001-health-check.md",
+  "updated_at": "2026-04-23T10:45:00Z"
 }
 ```
 
@@ -185,13 +188,15 @@ The Validator reads the design and spec, then produces a decision.
 
 For this feature, all checks pass.
 
-Update the feature record:
+**Feature record PATCH (fields to update) — VALIDATION to TASKS:**
 
 ```json
 {
   "state": "TASKS",
   "validation_result": "PASS",
-  "validated_at": "2026-04-23T11:00:00Z"
+  "validated_at": "2026-04-23T11:00:00Z",
+  "validation_details": "Spec is complete, deterministic, traceable, and implementable.",
+  "updated_at": "2026-04-23T11:00:00Z"
 }
 ```
 
@@ -203,7 +208,7 @@ Update the feature record:
 
 **Role**: Planner
 
-Create `artifacts/tasks/feat-001-health-check.md`.
+Create `docs/sdd/artifacts/tasks/feat-001-health-check.md`.
 
 ```markdown
 # Tasks: Health Check Endpoint
@@ -225,18 +230,19 @@ Create `artifacts/tasks/feat-001-health-check.md`.
 - Set state to `VERIFY`
 ```
 
-Update the feature record:
+**Feature record PATCH (fields to update) — TASKS to IMPLEMENT:**
 
 ```json
 {
   "state": "IMPLEMENT",
-  "task_path": "artifacts/tasks/feat-001-health-check.md",
+  "task_path": "docs/sdd/artifacts/tasks/feat-001-health-check.md",
   "task_list": [
     "Add route handler",
     "Add unit test",
     "Run tests",
     "Update feature record"
-  ]
+  ],
+  "updated_at": "2026-04-23T11:15:00Z"
 }
 ```
 
@@ -267,11 +273,12 @@ def test_health_check():
     assert response.json == {"status": "ok"}
 ```
 
-Update the feature record:
+**Feature record PATCH (fields to update) — IMPLEMENT to VERIFY:**
 
 ```json
 {
-  "state": "VERIFY"
+  "state": "VERIFY",
+  "updated_at": "2026-04-23T11:45:00Z"
 }
 ```
 
@@ -290,13 +297,15 @@ Run the test suite and verify against the spec.
 - SDT scenario passes (manually or automated)
 - No regressions in existing tests
 
-Update the feature record:
+**Feature record PATCH (fields to update) — VERIFY to AUDIT:**
 
 ```json
 {
   "state": "AUDIT",
   "verification_result": "PASS",
-  "verification_details": "All tests pass. Response time < 100ms verified."
+  "verified_at": "2026-04-23T12:00:00Z",
+  "verification_details": "All tests pass. Response time < 100ms verified.",
+  "updated_at": "2026-04-23T12:00:00Z"
 }
 ```
 
@@ -310,7 +319,7 @@ Update the feature record:
 
 The Auditor reads the spec, code, and tests, then produces a report.
 
-Create `artifacts/audit_reports/audit_feat-001.md` following `02_policies/REPORT_ENVELOPE_POLICY.md`.
+Create `docs/sdd/artifacts/audit_reports/audit_feat-001.md` following `docs/sdd/02_policies/REPORT_ENVELOPE_POLICY.md`.
 
 ```markdown
 # Audit Report: feat-001
@@ -324,8 +333,8 @@ Create `artifacts/audit_reports/audit_feat-001.md` following `02_policies/REPORT
 - audit_engine: inline
 
 ## EVIDENCE
-- Read: `artifacts/specs/feat-001-health-check.md`
-- Read: `artifacts/tasks/feat-001-health-check.md`
+- Read: `docs/sdd/artifacts/specs/feat-001-health-check.md`
+- Read: `docs/sdd/artifacts/tasks/feat-001-health-check.md`
 - Read: implementation code
 - Read: test code
 
@@ -345,17 +354,20 @@ Create `artifacts/audit_reports/audit_feat-001.md` following `02_policies/REPORT
 - env_proxy: false
 ```
 
-Update the feature record:
+**Feature record PATCH (fields to update) — record the AUDIT decision:**
 
 ```json
 {
-  "state": "ARCHIVE",
+  "state": "AUDIT",
   "audit_result": "PASS",
-  "audit_reasons": ["Spec complete", "Implementation matches", "Tests cover SDT"]
+  "audited_at": "2026-04-23T12:15:00Z",
+  "audit_reasons": ["Spec complete", "Implementation matches", "Tests cover SDT"],
+  "audit_report_path": "docs/sdd/artifacts/audit_reports/audit_feat-001.md",
+  "updated_at": "2026-04-23T12:15:00Z"
 }
 ```
 
-**Checkpoint**: Audit report exists, `audit_result` is `"PASS"`, feature record state is `"ARCHIVE"`.
+**Checkpoint**: Audit report exists, `audit_result` is `"PASS"`, and the feature record remains in `"AUDIT"` ready for the archive transition.
 
 ---
 
@@ -363,13 +375,14 @@ Update the feature record:
 
 **Role**: Archiver
 
-Final state update:
+**Feature record PATCH (fields to update) — AUDIT to ARCHIVE:**
 
 ```json
 {
   "state": "ARCHIVE",
   "archived_at": "2026-04-23T13:00:00Z",
-  "archive_notes": "Feature completed. Health check endpoint is live."
+  "archive_notes": "Feature completed. Health check endpoint is live.",
+  "updated_at": "2026-04-23T13:00:00Z"
 }
 ```
 
@@ -383,13 +396,13 @@ You have now completed a full SDD feature:
 
 | Phase | Artifact | State |
 |-------|----------|-------|
-| DESIGN | `artifacts/design/feat-001-health-check.md` | Done |
-| SPEC | `artifacts/specs/feat-001-health-check.md` | Done |
+| DESIGN | `docs/sdd/artifacts/design/feat-001-health-check.md` | Done |
+| SPEC | `docs/sdd/artifacts/specs/feat-001-health-check.md` | Done |
 | VALIDATION | Decision: PASS | Done |
-| TASKS | `artifacts/tasks/feat-001-health-check.md` | Done |
+| TASKS | `docs/sdd/artifacts/tasks/feat-001-health-check.md` | Done |
 | IMPLEMENT | Code + tests | Done |
 | VERIFY | Decision: PASS | Done |
-| AUDIT | `artifacts/audit_reports/audit_feat-001.md` | Done |
+| AUDIT | `docs/sdd/artifacts/audit_reports/audit_feat-001.md` | Done |
 | ARCHIVE | Closed feature record | Done |
 
 ---
@@ -405,7 +418,7 @@ You have now completed a full SDD feature:
 
 ### "The spec needs a small fix during IMPLEMENT"
 
-**Stop.** Reopen the spec, update it, and re-run VALIDATION. Never modify a validated spec during implementation.
+**Stop implementation.** Record and report the spec defect or ambiguity; do not silently modify the validated spec or mutate the canonical feature state through an undeclared transition. Canonical v1 provides no general `IMPLEMENT -> SPEC` or `IMPLEMENT -> VALIDATION` regression. Corrective product or process handling must use a separately authorized v1-compatible path, such as new scoped work where applicable, rather than inventing a transition in this tutorial.
 
 ### "I'll write the tests after I finish coding"
 
@@ -413,23 +426,24 @@ You have now completed a full SDD feature:
 
 ### "This feature is too small for all this ceremony"
 
-Check `02_policies/DECOMPOSITION_AND_SIZE_POLICY.md`. If it's truly trivial (< 50 lines, ≤ 2 requirements), it may be a "code adjustment" rather than a feature. But most work should flow through the pipeline.
+Check `docs/sdd/02_policies/DECOMPOSITION_AND_SIZE_POLICY.md`. If it's truly trivial (< 50 lines, ≤ 2 requirements), it may be a "code adjustment" rather than a feature. But most work should flow through the pipeline.
 
 ---
 
 ## Next Steps
 
-1. Read `docs/SDD_PIPELINE_VISUAL.md` to see the pipeline as diagrams
-2. Read `docs/PROJECT_TOUR.md` for a visual overview of the repository
-3. Pick up your second feature from `artifacts/tasks/` or `03_operations/pre_sdd/seeds/`
+1. Read `docs/sdd/00_core/SDD_GUIDE.md` for the full methodology
+2. Read `docs/sdd/00_core/SDD_READING_CONTRACT.md` for the minimal reading path
+3. Use `docs/sdd/04_project_governance/PROJECT_MAP.md` to navigate the installed distribution
+4. Pick up your second feature from `docs/sdd/artifacts/tasks/` or `docs/sdd/03_operations/pre_sdd/seeds/`
 
 ---
 
 ## Related Documents
 
-- `04_project_governance/PROJECT_MAP.md` — full navigation guide
-- `00_core/SDD_RUNTIME.md` — execution contract
-- `00_core/SDD_GUIDE.md` — full methodology
-- `AGENTS.md` — agent entrypoint
-- `02_policies/REPORT_ENVELOPE_POLICY.md` — report format
-- `02_policies/DECOMPOSITION_AND_SIZE_POLICY.md` — when to split/consolidate
+- `docs/sdd/04_project_governance/PROJECT_MAP.md` — full navigation guide
+- `docs/sdd/00_core/SDD_RUNTIME.md` — execution contract
+- `docs/sdd/00_core/SDD_GUIDE.md` — full methodology
+- `docs/sdd/AGENTS.md` — agent entrypoint
+- `docs/sdd/02_policies/REPORT_ENVELOPE_POLICY.md` — report format
+- `docs/sdd/02_policies/DECOMPOSITION_AND_SIZE_POLICY.md` — when to split/consolidate

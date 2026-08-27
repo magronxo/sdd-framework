@@ -2,13 +2,13 @@
 
 > **Status:** Active
 > **Date:** 2026-04-04
-> **Scope:** `artifacts/tasks/`
+> **Scope:** `docs/sdd/artifacts/tasks/`
 
 ---
 
 ## 1. Purpose
 
-The `artifacts/tasks/` directory can have a mix of conventions:
+The `docs/sdd/artifacts/tasks/` directory can have a mix of conventions:
 
 - short files by `id` (`feat-001.md`, `feat-006.md`)
 - files with slug (`feat-013-session-tree.md`)
@@ -73,18 +73,20 @@ Format: any other (`dashboard-backend.md`, `old-spec-v1.md`, etc.)
 
 ## 4. Migration
 
-### When to rename?
+### When to normalize?
 
-- When a file changes state (is reopened for implementation)
-- When a file is re-audited
-- When a file is referenced from another new document
+- During TASKS, before the canonical `TASKS -> IMPLEMENT` handoff.
+- During a documentary re-audit that does not mutate a historical feature record.
+- When creating a new canonical task document that references historical material.
 
-### How to rename?
+Canonical v1 has no general reopening transition. Do not rename an active historical task artifact by inventing a state change.
 
-1. Create new file with canonical name
-2. Copy relevant content
-3. Update `task_path` in the feature record
-4. Move the old one to `90_transitional/` or delete it
+### How to normalize current TASKS work
+
+1. Create the task file under `docs/sdd/artifacts/tasks/` with the canonical name.
+2. Copy only relevant planned content.
+3. Record the canonical repository-relative path in `task_path` before `TASKS -> IMPLEMENT`.
+4. Preserve historical files for traceability; do not silently rewrite an archived record.
 
 ---
 
@@ -97,7 +99,7 @@ Format: any other (`dashboard-backend.md`, `old-spec-v1.md`, etc.)
 | Tasks | `feat-XXX-name.md` | `feat-013-session-tree.md` |
 | Feature Record | `feat-XXX.json` | `feat-013.json` |
 
-**Note:** The `feature_id` in the JSON must match the `.md` prefix.
+**Note:** The canonical `id` in the JSON record must match the `.md` prefix.
 
 ---
 

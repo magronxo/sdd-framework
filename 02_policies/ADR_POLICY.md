@@ -54,17 +54,17 @@ Do **NOT** write an ADR for:
 
 ## 4. Approval Process
 
-1. **Propose**: Create a draft ADR using `templates/adr.md`
+1. **Propose**: Create a draft ADR using `docs/sdd/templates/adr.md`
 2. **Review**: At least one reviewer from a different role must approve
-3. **Record**: Save the approved ADR to `artifacts/adr/`
-4. **Link**: Reference the ADR in `PROJECT_MANIFEST.md` changelog and any affected specs
+3. **Record**: Save the approved ADR to `docs/sdd/artifacts/adr/`
+4. **Link**: Reference the ADR in `docs/sdd/04_project_governance/PROJECT_MANIFEST.md` changelog and any affected specs
 
 ---
 
 ## 5. Where ADRs Live
 
 - **Draft**: Any branch or working directory
-- **Approved**: `artifacts/adr/ADR-{NNN}-{short-name}.md`
+- **Approved**: `docs/sdd/artifacts/adr/ADR-{NNN}-{short-name}.md`
 - **Superseded**: Keep in place; mark status as `SUPERSEDED by ADR-XXX`
 
 ---
@@ -89,7 +89,7 @@ REJECTED   CHANGES_REQUESTED
 
 | Scenario | Action |
 |----------|--------|
-| ADR affects a feature spec | Update the spec's design doc; re-run VALIDATION if needed |
+| ADR affects feature behavior | Capture follow-up through the current protocol; do not synthesize an undeclared transition for an already-advanced feature |
 | ADR changes project philosophy | Update `PROJECT_MANIFEST.md`; review all active features for compliance |
 | ADR introduces a new pattern | Update `templates/` and notify all active implementers |
 | ADR is superseded | Review all features that reference the old ADR; update or validate |
@@ -106,7 +106,7 @@ Every ADR MUST contain:
 4. **Alternatives Considered** — At least one alternative with pros/cons
 5. **Implications for SDD** — Which specs or features are affected?
 
-Use `templates/adr.md` as the starting point.
+Use `docs/sdd/templates/adr.md` as the starting point.
 
 ---
 
@@ -121,7 +121,7 @@ Use `templates/adr.md` as the starting point.
 
 ## 10. Related Documents
 
-- `templates/adr.md` — ADR template
-- `04_project_governance/PROJECT_MANIFEST.md` — project philosophy and constraints
-- `02_policies/VALIDATION_BOUNDARIES_POLICY.md` — when specs must be revalidated after changes
-- `00_core/AGENT_DECISION_TABLE.md` — when a change requires an ADR vs. a code adjustment
+- `docs/sdd/templates/adr.md` — ADR template
+- `docs/sdd/04_project_governance/PROJECT_MANIFEST.md` — project philosophy and constraints
+- `docs/sdd/02_policies/VALIDATION_BOUNDARIES_POLICY.md` — canonical correction boundaries
+- `docs/sdd/00_core/AGENT_DECISION_TABLE.md` — when a change requires an ADR vs. a code adjustment

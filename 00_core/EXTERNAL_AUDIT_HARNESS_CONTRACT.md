@@ -64,12 +64,12 @@ Any external audit must receive only the minimum necessary context.
 
 ### 4.2 Context of the audited feature or spec
 
-- `artifacts/design/feat-XXX*.md`
-- `artifacts/specs/feat-XXX*.md`
+- `docs/sdd/artifacts/design/feat-XXX*.md`
+- `docs/sdd/artifacts/specs/feat-XXX*.md`
 
 ### 4.3 Optional context
 
-- `artifacts/tasks/feat-XXX*.md`
+- `docs/sdd/artifacts/tasks/feat-XXX*.md`
 - prior internal audit report
 - associated feature record
 
@@ -100,7 +100,7 @@ Each finding must include:
 
 The result must be saved to:
 
-- `artifacts/audit_reports/`
+- `docs/sdd/artifacts/audit_reports/`
 
 ### 5.3 Recommended naming
 
@@ -192,8 +192,8 @@ The final classification is always the responsibility of the project's own flow.
 
 This contract complements:
 
-- `03_operations/AUDIT_STRATEGY.md` (if it exists)
-- `03_operations/SPEC_REAUDIT_WORKFLOW.md`
+- `docs/sdd/03_operations/AUDIT_STRATEGY.md` (if it exists)
+- `docs/sdd/03_operations/SPEC_REAUDIT_WORKFLOW.md`
 
 Correct order:
 

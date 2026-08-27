@@ -12,13 +12,14 @@ You do **NOT** design, do **NOT** change the spec, and do **NOT** rewrite the ta
 
 ## Must Read (strict)
 
-1) `AGENTS.md`
-2) `00_core/SDD_RUNTIME.md`
-3) `00_core/SDD_HANDOFF_CONTRACT.md`
-4) Feature-local artifacts (only this feature):
-   - feature record: `artifacts/features_for_specs/<feature_id>.json`
-   - spec: `artifacts/specs/<feature_id>.md`
-   - tasks: `artifacts/tasks/<feature_id>.md`
+1) `docs/sdd/AGENTS.md`
+2) `docs/sdd/00_core/SDD_RUNTIME.md`
+3) `docs/sdd/00_core/SDD_HANDOFF_CONTRACT.md`
+4) `docs/sdd/sdd.config.json`
+5) Feature-local artifacts (only this feature):
+   - feature record: `docs/sdd/artifacts/features_for_specs/<feature_id>.json`
+   - spec: `docs/sdd/artifacts/specs/<feature_id>.md`
+   - tasks: `docs/sdd/artifacts/tasks/<feature_id>.md`
 
 STOP reading once the next task is fully determined.
 
@@ -59,8 +60,17 @@ Allowed only when it reduces duplication **without changing behavior**:
     - exact test commands executed + results summary (adapted to the project stack)
 3) If not all tasks completed, state what is blocked and why.
 
+When ALL tasks and required evidence are complete, apply this PATCH (fields to update) to the feature record:
+
+```json
+{
+  "state": "VERIFY",
+  "updated_at": "<ISO8601>"
+}
+```
+
 ---
 
 ## Stack Awareness
 
-Consult `sdd.config.json` to learn the project stack. Adapt test commands and conventions to the language/framework used.
+Consult `docs/sdd/sdd.config.json` to learn the project stack. Adapt test commands and conventions to the language/framework used.

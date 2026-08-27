@@ -23,6 +23,7 @@ The goal is not unrestricted agent autonomy. The goal is work that is explicit, 
 - **Feature-record schema** — fields, types, enums, paths, aliases, and record invariants.
 - **SDD protocol** — lifecycle states, transitions, gates, blockers, regressions, and conditional checkpoints.
 - **Validator** — validates records and protocol semantics in tolerant-read or canonical-write mode.
+- **Read-only operator surface** — reports record status and protocol-declared next-route gates.
 - **Manifest-driven installer** — installs a deterministic SDD layout into an existing repository.
 - **Operational documentation** — runtime, handoff, reading, execution, policy, and project-governance material.
 - **Templates and initializers** — project configuration and artifact-directory setup for Bash and PowerShell.
@@ -124,6 +125,19 @@ python docs/sdd/tools/sdd_validate.py \
   --format json
 ```
 
+## Inspect status and next routes
+
+From an installed product repository, inspect a record without changing it:
+
+```bash
+python docs/sdd/tools/sdd.py status \
+  docs/sdd/artifacts/features_for_specs/feat-001-example.json
+python docs/sdd/tools/sdd.py next \
+  docs/sdd/artifacts/features_for_specs/feat-001-example.json --json
+```
+
+`status` validates in tolerant-read mode. `next` reports only protocol-declared routes and their canonical gate results. Both commands are read-only: they do not advance lifecycle state, execute work, or modify the feature record. In a framework source checkout, use `python tools/sdd.py ...`; no packaged global `sdd` executable is provided.
+
 ## Authority model
 
 The two machine-readable authorities are:
@@ -143,6 +157,7 @@ product-repo/
     sdd/
       AGENTS.md
       contract/v1/
+      tools/sdd.py
       tools/sdd_validate.py
       00_core/
       01_execution/

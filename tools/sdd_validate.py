@@ -16,6 +16,14 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SCHEMA = ROOT / "contract/v1/feature-record.schema.json"
 DEFAULT_PROTOCOL = ROOT / "contract/v1/sdd-protocol.json"
 EXIT_OK, EXIT_INVALID, EXIT_USAGE, EXIT_HUMAN_REQUIRED = 0, 1, 2, 3
+DATETIME_CHECKER_ERROR = (
+    "Required date-time format checker unavailable or broken; install dependencies from "
+    "contract/v1/requirements-validator.txt (or the installed "
+    "docs/sdd/contract/v1/requirements-validator.txt)."
+)
+DATETIME_PROBE_SCHEMA = {"type": "string", "format": "date-time"}
+DATETIME_VALID_PROBE = "2026-08-26T00:00:00Z"
+DATETIME_INVALID_PROBE = "NOT-A-RFC3339-TIMESTAMP"
 
 
 class Finding(NamedTuple):
@@ -45,6 +53,22 @@ def _json_path(parts: Iterable[Any]) -> str:
 
 def _parse_time(value: str) -> datetime:
     return datetime.fromisoformat(value[:-1] + "+00:00" if value.endswith("Z") else value)
+
+
+def _format_checker() -> FormatChecker:
+    checker = FormatChecker()
+    try:
+        probe_validator = Draft202012Validator(
+            DATETIME_PROBE_SCHEMA,
+            format_checker=checker,
+        )
+        valid_errors = list(probe_validator.iter_errors(DATETIME_VALID_PROBE))
+        invalid_errors = list(probe_validator.iter_errors(DATETIME_INVALID_PROBE))
+    except Exception as exc:
+        raise ValueError(DATETIME_CHECKER_ERROR) from exc
+    if valid_errors or not invalid_errors:
+        raise ValueError(DATETIME_CHECKER_ERROR)
+    return checker
 
 
 def _effective_state(value: Any, protocol: dict[str, Any]) -> Any:
@@ -136,6 +160,7 @@ def load_contracts(schema_path: Path = DEFAULT_SCHEMA, protocol_path: Path = DEF
     schema, protocol = _read_json(schema_path), _read_json(protocol_path)
     Draft202012Validator.check_schema(schema)
     _validate_protocol(protocol)
+    _format_checker()
     return schema, protocol
 
 
@@ -151,7 +176,7 @@ def validate_record(record: dict[str, Any], schema: dict[str, Any], protocol: di
     def warning(code: str, message: str, path: str) -> None:
         warnings.append(Finding(code, message, path, "WARNING"))
 
-    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    validator = Draft202012Validator(schema, format_checker=_format_checker())
     for item in sorted(validator.iter_errors(record), key=lambda e: _json_path(e.absolute_path)):
         error("SCHEMA_INVALID", item.message, _json_path(item.absolute_path))
 
@@ -190,7 +215,7 @@ def validate_record(record: dict[str, Any], schema: dict[str, Any], protocol: di
         try:
             if _parse_time(updated) < _parse_time(created):
                 error("TIMESTAMP_ORDER_INVALID", "updated_at is earlier than created_at.", "$.updated_at")
-        except ValueError:
+        except (TypeError, ValueError):
             pass
     if effective_state == "ARCHIVE" and "archived_at" not in record:
         error("ARCHIVE_TIMESTAMP_MISSING", "Archived records require archived_at.", "$.archived_at")

@@ -25,7 +25,9 @@ flowchart LR
     I --> VE[VERIFY]
     VE -->|PASS| A[AUDIT]
     VE -->|FAIL| I
-    A --> AR[ARCHIVE]
+    A -->|PASS or WARN| AR[ARCHIVE]
+    A -->|FAIL + valid owner waiver| AR
+    A -->|FAIL without waiver| AB[Archive blocked; no automatic repair state]
 
     style D fill:#e1f5fe
     style S fill:#e1f5fe
@@ -77,8 +79,8 @@ sequenceDiagram
     Note over Ve,A: Gate: Tests pass?
     Ve-->>I: verification_result: FAIL
 
-    A->>Ar: Audit report
-    Note over A,Ar: Gate: Audit complete?
+    A->>Ar: audit_result: PASS/WARN, or FAIL with valid owner waiver
+    Note over A,Ar: AUDIT FAIL without a valid waiver blocks ARCHIVE; v1 selects no repair state
 
     Ar->>Ar: state: ARCHIVE
     Note over Ar: Feature closed
@@ -168,7 +170,12 @@ stateDiagram-v2
     VERIFY --> AUDIT: PASS
     VERIFY --> IMPLEMENT: FAIL
 
-    AUDIT --> ARCHIVE
+    AUDIT --> ARCHIVE: PASS or WARN
+    AUDIT --> ARCHIVE: FAIL with valid owner waiver
+    note right of AUDIT
+        FAIL without a valid waiver blocks ARCHIVE.
+        Canonical v1 selects no automatic repair state.
+    end note
     ARCHIVE --> [*]
 
     note right of VALIDATION

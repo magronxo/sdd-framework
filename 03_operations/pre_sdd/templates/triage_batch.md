@@ -71,6 +71,6 @@
 
 ## Related
 
-- `03_operations/pre_sdd/PRE_SDD_CONTRACT.md`
-- `03_operations/pre_sdd/PRE_SDD_RUNTIME.md`
-- `04_project_governance/PROJECT_MANIFEST.md`
+- `docs/sdd/03_operations/pre_sdd/PRE_SDD_CONTRACT.md`
+- `docs/sdd/03_operations/pre_sdd/PRE_SDD_RUNTIME.md`
+- `docs/sdd/04_project_governance/PROJECT_MANIFEST.md`

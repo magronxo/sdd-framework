@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Status:** Draft
-**Reference Design:** `artifacts/design/{{feature}}.md`
+**Reference Design:** `docs/sdd/artifacts/design/{{feature}}.md`
 
 ---
 

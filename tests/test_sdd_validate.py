@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = ROOT / "tools/sdd_validate.py"
@@ -37,6 +38,19 @@ class CanonicalSddV1Tests(unittest.TestCase):
             item["record"] = record
             cls.cases[item["name"]] = item
 
+    @staticmethod
+    def timestamp_record(state: str = "DESIGN", **updates) -> dict:
+        record = {
+            "id": "feat-901-datetime",
+            "type": "SYSTEM_SPEC",
+            "state": state,
+            "title": "Date-time format fixture",
+            "created_at": "2026-08-26T00:00:00Z",
+            "updated_at": "2026-08-26T00:00:00Z",
+        }
+        record.update(updates)
+        return record
+
     def validation(self, name: str, mode: str | None = None):
         case = self.cases[name]
         return sdd.validate_record(
@@ -65,6 +79,199 @@ class CanonicalSddV1Tests(unittest.TestCase):
         serialized = json.dumps(self.schema)
         self.assertNotIn('"transitions"', serialized)
         self.assertNotIn('"gate_results"', serialized)
+
+    def test_valid_rfc3339_z_and_offset_timestamps(self) -> None:
+        for timestamp in (
+            "2026-08-26T00:00:00Z",
+            "2026-08-26T02:00:00+02:00",
+        ):
+            with self.subTest(timestamp=timestamp):
+                result = sdd.validate_record(
+                    self.timestamp_record(
+                        created_at=timestamp,
+                        updated_at=timestamp,
+                    ),
+                    self.schema,
+                    self.protocol,
+                    "read",
+                )
+                self.assertTrue(result["valid"], result["errors"])
+
+    def test_invalid_created_and_updated_timestamps_are_schema_invalid(self) -> None:
+        for field in ("created_at", "updated_at"):
+            with self.subTest(field=field):
+                result = sdd.validate_record(
+                    self.timestamp_record(**{field: "NOT-A-TIME"}),
+                    self.schema,
+                    self.protocol,
+                    "read",
+                )
+                self.assertFalse(result["valid"])
+                self.assertIn(
+                    f"$.{field}",
+                    {item.path for item in result["errors"] if item.code == "SCHEMA_INVALID"},
+                )
+
+    def test_parseable_invalid_mixed_awareness_timestamps_are_structured_invalid(self) -> None:
+        pairs = (
+            ("2026-08-26", "2026-08-26T00:00:00Z"),
+            ("2026-08-26T00:00:00", "2026-08-26T00:00:00+02:00"),
+            ("20260826", "2026-08-26T00:00:00Z"),
+            ("2026-08-26T00:00:00Z", "2026-08-26T00:00:00"),
+        )
+        for created_at, updated_at in pairs:
+            with self.subTest(created_at=created_at, updated_at=updated_at):
+                result = sdd.validate_record(
+                    self.timestamp_record(
+                        created_at=created_at,
+                        updated_at=updated_at,
+                    ),
+                    self.schema,
+                    self.protocol,
+                    "read",
+                )
+                self.assertFalse(result["valid"])
+                self.assertIn("SCHEMA_INVALID", {item.code for item in result["errors"]})
+
+    def test_valid_timestamp_ordering_semantics_are_preserved(self) -> None:
+        cases = (
+            (
+                "earlier",
+                "2026-08-26T01:00:00Z",
+                "2026-08-26T00:00:00Z",
+                {"TIMESTAMP_ORDER_INVALID"},
+            ),
+            (
+                "ordered",
+                "2026-08-26T00:00:00Z",
+                "2026-08-26T01:00:00Z",
+                set(),
+            ),
+        )
+        for name, created_at, updated_at, expected in cases:
+            with self.subTest(name=name):
+                result = sdd.validate_record(
+                    self.timestamp_record(
+                        created_at=created_at,
+                        updated_at=updated_at,
+                    ),
+                    self.schema,
+                    self.protocol,
+                    "read",
+                )
+                order_errors = {
+                    item.code
+                    for item in result["errors"]
+                    if item.code == "TIMESTAMP_ORDER_INVALID"
+                }
+                self.assertEqual(order_errors, expected)
+                self.assertEqual(result["valid"], not expected)
+
+    def test_invalid_conditional_timestamps_are_schema_invalid(self) -> None:
+        invalid = "NOT-A-TIME"
+        cases = {
+            "validated_at": self.timestamp_record(
+                "VALIDATION",
+                validation_result="PASS",
+                validated_at=invalid,
+            ),
+            "verified_at": self.timestamp_record(
+                "VERIFY",
+                verification_result="PASS",
+                verified_at=invalid,
+            ),
+            "audited_at": self.timestamp_record(
+                "AUDIT",
+                audit_result="PASS",
+                audited_at=invalid,
+            ),
+            "archived_at": self.timestamp_record(
+                "ARCHIVE",
+                archived_at=invalid,
+            ),
+            "owner_waiver.waived_at": self.timestamp_record(
+                "AUDIT",
+                audit_result="FAIL",
+                audited_at="2026-08-26T00:00:00Z",
+                owner_waiver={
+                    "waived_by": "owner",
+                    "waived_at": invalid,
+                    "reason": "Archive exception",
+                },
+            ),
+        }
+        for field, record in cases.items():
+            with self.subTest(field=field):
+                result = sdd.validate_record(
+                    record, self.schema, self.protocol, "read"
+                )
+                self.assertFalse(result["valid"])
+                self.assertEqual(
+                    {item.code for item in result["errors"]},
+                    {"SCHEMA_INVALID"},
+                )
+                self.assertIn(
+                    f"$.{field}",
+                    {item.path for item in result["errors"]},
+                )
+
+    def test_date_time_checker_unavailability_fails_closed(self) -> None:
+        class BrokenFormatChecker:
+            def conforms(self, instance: object, format_name: str) -> bool:
+                return True
+
+        with mock.patch.object(sdd, "FormatChecker", BrokenFormatChecker):
+            operations = {
+                "load_contracts": lambda: sdd.load_contracts(SCHEMA, PROTOCOL),
+                "validate_record": lambda: sdd.validate_record(
+                    self.timestamp_record(), self.schema, self.protocol, "read"
+                ),
+            }
+            for name, operation in operations.items():
+                with self.subTest(operation=name):
+                    with self.assertRaisesRegex(
+                        ValueError,
+                        r"Required date-time format checker unavailable.*requirements-validator\.txt",
+                    ):
+                        operation()
+
+    def test_date_time_checker_noop_check_fails_closed(self) -> None:
+        class BrokenFormatChecker:
+            def conforms(self, instance: object, format_name: str) -> bool:
+                return instance != sdd.DATETIME_INVALID_PROBE
+
+            def check(self, instance: object, format_name: str) -> None:
+                return None
+
+        broken = BrokenFormatChecker()
+        self.assertTrue(broken.conforms(sdd.DATETIME_VALID_PROBE, "date-time"))
+        self.assertFalse(broken.conforms(sdd.DATETIME_INVALID_PROBE, "date-time"))
+        self.assertIsNone(broken.check(sdd.DATETIME_INVALID_PROBE, "date-time"))
+        direct_validator = sdd.Draft202012Validator(
+            sdd.DATETIME_PROBE_SCHEMA,
+            format_checker=broken,
+        )
+        self.assertEqual(
+            list(direct_validator.iter_errors(sdd.DATETIME_INVALID_PROBE)),
+            [],
+        )
+
+        invalid_record = self.timestamp_record(created_at="NOT-A-TIME")
+        with mock.patch.object(sdd, "FormatChecker", return_value=broken):
+            operations = {
+                "format_checker": sdd._format_checker,
+                "load_contracts": lambda: sdd.load_contracts(SCHEMA, PROTOCOL),
+                "validate_record": lambda: sdd.validate_record(
+                    invalid_record, self.schema, self.protocol, "read"
+                ),
+            }
+            for name, operation in operations.items():
+                with self.subTest(operation=name):
+                    with self.assertRaisesRegex(
+                        ValueError,
+                        r"Required date-time format checker unavailable.*requirements-validator\.txt",
+                    ):
+                        operation()
 
     def test_protocol_places_pass_with_followup_only_in_validation(self) -> None:
         interpretations = self.protocol["gate_interpretations"]

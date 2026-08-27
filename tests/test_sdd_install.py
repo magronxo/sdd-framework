@@ -14,7 +14,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 INSTALLER_PATH = ROOT / "tools/sdd_install.py"
+VALIDATOR_PATH = ROOT / "tools/sdd_validate.py"
 MANIFEST_PATH = ROOT / "contract/v1/install-manifest.json"
+REQUIREMENTS_PATH = ROOT / "contract/v1/requirements-validator.txt"
+EXPECTED_VALIDATOR_REQUIREMENT = "jsonschema[format-nongpl]==4.25.1"
 
 spec = importlib.util.spec_from_file_location("sdd_install", INSTALLER_PATH)
 assert spec and spec.loader
@@ -29,6 +32,7 @@ REQUIRED_DESTINATIONS = {
     "docs/sdd/contract/v1/README.md",
     "docs/sdd/contract/v1/requirements-validator.txt",
     "docs/sdd/tools/sdd_validate.py",
+    "docs/sdd/tools/sdd.py",
     "docs/sdd/AGENTS.md",
     "docs/sdd/00_core",
     "docs/sdd/01_execution",
@@ -86,6 +90,30 @@ class InstallManifestTests(unittest.TestCase):
             dependency["requirements_path"],
             "docs/sdd/contract/v1/requirements-validator.txt",
         )
+        operator = next(
+            entry for entry in self.manifest.entries if entry.source == "tools/sdd.py"
+        )
+        self.assertEqual(operator.destination, "docs/sdd/tools/sdd.py")
+        self.assertEqual(operator.source_kind, "file")
+        self.assertEqual(operator.element_type, "tool")
+        self.assertTrue(operator.required)
+        self.assertTrue(operator.executable)
+
+    def test_validator_dependency_declares_date_time_format_support(self) -> None:
+        self.assertEqual(
+            REQUIREMENTS_PATH.read_text(encoding="utf-8").splitlines(),
+            [EXPECTED_VALIDATOR_REQUIREMENT],
+        )
+        requirements_entry = next(
+            entry
+            for entry in self.manifest.entries
+            if entry.source == "contract/v1/requirements-validator.txt"
+        )
+        self.assertEqual(
+            requirements_entry.destination,
+            "docs/sdd/contract/v1/requirements-validator.txt",
+        )
+        self.assertTrue(requirements_entry.required)
 
     def test_manifest_sources_exist_and_match_kind(self) -> None:
         sdd_install.validate_sources(self.manifest, ROOT)
@@ -360,6 +388,15 @@ class InstallerSmokeTests(unittest.TestCase):
 
             installed = target / "docs/sdd"
             validator = installed / "tools/sdd_validate.py"
+            operator = installed / "tools/sdd.py"
+            requirements = installed / "contract/v1/requirements-validator.txt"
+            self.assertTrue(operator.stat().st_mode & stat.S_IXUSR)
+            self.assertEqual(validator.read_bytes(), VALIDATOR_PATH.read_bytes())
+            self.assertEqual(requirements.read_bytes(), REQUIREMENTS_PATH.read_bytes())
+            self.assertEqual(
+                requirements.read_text(encoding="utf-8").splitlines(),
+                [EXPECTED_VALIDATOR_REQUIREMENT],
+            )
             schema = installed / "contract/v1/feature-record.schema.json"
             protocol = installed / "contract/v1/sdd-protocol.json"
             self_check = subprocess.run(
@@ -392,6 +429,7 @@ class InstallerSmokeTests(unittest.TestCase):
                         "title": "Synthetic install smoke",
                         "created_at": "2026-07-11T09:00:00Z",
                         "updated_at": "2026-07-11T09:00:00Z",
+                        "design_path": "docs/sdd/artifacts/design/feat-900-install-smoke.md",
                         "open_questions": [],
                     }
                 ),
@@ -416,6 +454,30 @@ class InstallerSmokeTests(unittest.TestCase):
             )
             self.assertEqual(validation.returncode, 0, validation.stderr)
             self.assertTrue(json.loads(validation.stdout)["valid"])
+
+            status = subprocess.run(
+                [sys.executable, str(operator), "status", str(record), "--json"],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(status.returncode, 0, status.stderr)
+            status_payload = json.loads(status.stdout)
+            self.assertTrue(status_payload["read_only"])
+            self.assertEqual(status_payload["effective_state"], "DESIGN")
+
+            next_route = subprocess.run(
+                [sys.executable, str(operator), "next", str(record), "--json"],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(next_route.returncode, 0, next_route.stderr)
+            next_payload = json.loads(next_route.stdout)
+            self.assertEqual(next_payload["next_status"], "READY")
+            self.assertEqual(next_payload["ready_route"]["to"], "SPEC")
 
             second = run_installer(target, "--format", "json")
             self.assertEqual(second.returncode, sdd_install.EXIT_TARGET)

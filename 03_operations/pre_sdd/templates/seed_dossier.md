@@ -105,6 +105,6 @@
 
 ## Related
 
-- `PROJECT_MANIFEST.md` non-goals: `{relevant_non_goal | N/A}`
+- `docs/sdd/04_project_governance/PROJECT_MANIFEST.md` non-goals: `{relevant_non_goal | N/A}`
 - Similar seeds: `{seed_id | N/A}`
 - Existing features: `{feature_id | N/A}`

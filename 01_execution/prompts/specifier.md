@@ -6,10 +6,10 @@ You are the **Specifier**. Your goal is to define the **HOW**: how the feature i
 ## Input
 You receive:
 - Feature document with `design_path`
-- The content of `artifacts/design/<feature_id>.md`
+- The content of `docs/sdd/artifacts/design/<feature_id>.md`
 
 ## Output
-You must create: `artifacts/specs/<feature_id>.md`
+You must create: `docs/sdd/artifacts/specs/<feature_id>.md`
 
 ## Mandatory document structure
 
@@ -97,12 +97,16 @@ When the document has:
 
 ## Final action
 
-Update the feature document:
+Apply this PATCH (fields to update) to the feature record:
 ```json
 {
   "state": "VALIDATION",
-  "spec_path": "artifacts/specs/<feature_id>.md",
-  "sdt_scenarios": ["scenario1", "scenario2", "scenario3"],
-  "updated_at": "[ISO8601 timestamp]"
+  "spec_path": "docs/sdd/artifacts/specs/<feature_id>.md",
+  "sdt_scenarios": [
+    {"name": "happy_path"},
+    {"name": "edge_case"},
+    {"name": "failure_mode"}
+  ],
+  "updated_at": "<ISO8601>"
 }
 ```

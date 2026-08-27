@@ -19,7 +19,7 @@ Your goal is to transform a validated spec into a **minimal, ordered task list**
 
 Create:
 
-`artifacts/tasks/<feature_id>.md`
+`docs/sdd/artifacts/tasks/<feature_id>.md`
 
 ---
 
@@ -74,7 +74,7 @@ Each task must be:
 ## Evidence-first rule
 
 - Each plan MUST include an explicit verification task that lists the exact commands to run (or the exact manual checklist steps if tests are impossible).
-- If the expected verifier environment is plan-only (cannot execute commands), the tasks MUST state that verification will be `PARTIAL` and must be rerun in build/execute mode before claiming full compliance.
+- If the verifier cannot execute required checks, the tasks MUST preserve the exact commands or manual checklist still required. Verification then reports `NOT EXECUTED` and remains in `VERIFY`; it must not claim compliance.
 
 ## Output Quality
 
@@ -92,3 +92,16 @@ If spec is ambiguous:
 - STOP
 - list ambiguities
 - do not generate tasks
+
+## Successful handoff
+
+After the task document is complete, apply this PATCH (fields to update) to the feature record:
+
+```json
+{
+  "state": "IMPLEMENT",
+  "task_path": "docs/sdd/artifacts/tasks/<feature_id>.md",
+  "task_list": ["<task>"],
+  "updated_at": "<ISO8601>"
+}
+```

@@ -67,6 +67,14 @@
       "executable": true
     },
     {
+      "source": "tools/sdd.py",
+      "destination": "docs/sdd/tools/sdd.py",
+      "source_kind": "file",
+      "type": "tool",
+      "required": true,
+      "executable": true
+    },
+    {
       "source": "AGENTS.md",
       "destination": "docs/sdd/AGENTS.md",
       "source_kind": "file",

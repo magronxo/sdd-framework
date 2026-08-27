@@ -4,80 +4,74 @@
 
 ## Purpose
 
-Standardize the minimum format of **VERIFY** and **AUDIT** reports so they are:
-
-- evidence-first (do not invent execution)
-- reproducible (commands + cwd + output)
-- traceable (which skill / mode / constraints)
-- deterministic (verdict taxonomy and gates)
+Standardize VERIFY and AUDIT reports so they are evidence-first, reproducible, traceable, and consistent with Canonical SDD Model v1.
 
 ## Scope
 
-Applies to:
+Applies to new or updated reports under:
 
-- `artifacts/audit_reports/verify_*.md`
-- `artifacts/audit_reports/audit_*.md`
+- `docs/sdd/artifacts/audit_reports/verify_*.md`
+- `docs/sdd/artifacts/audit_reports/audit_*.md`
 
-This policy **DOES NOT** force rewriting old reports; it is a contract for new or updated reports.
+This policy does not rewrite historical reports and does not override the feature-record schema or protocol.
 
-## Effective date
+## Core rule: evidence first
 
-- 2026-04-09
+- If a command was not executed, write `NOT EXECUTED` and the reason.
+- Without direct evidence, a VERIFY report cannot claim PASS.
+- A report is supplementary evidence. The standard Verifier or Auditor owns the corresponding canonical feature-record update.
 
-## Core rule (Evidence-first)
+## Required sections
 
-- If a command was **not executed**, write `NOT EXECUTED` + reason.
-- If there is no real output (or a verify report that includes it), you **CANNOT** claim "tests pass".
-- In **plan-only** environments (without execution), a VERIFY report **cannot** give `PASS`.
+### 1. Header
 
-## Required sections (minimum)
-
-### 1) Header (minimum)
-
-At the beginning of the document (free format), the following must exist:
+Include:
 
 - `feature_id: feat-XXX`
-- `date (UTC): YYYY-MM-DDTHH:MM:SSZ` (or clear equivalent)
+- `date (UTC): YYYY-MM-DDTHH:MM:SSZ` or clear equivalent
 - `environment_mode: execute | plan-only | unknown`
-- `verification_result: PASS | PARTIAL | FAIL` (verify report) **or** `audit_result: PASS | WARN | FAIL` (audit report)
+- for an executed VERIFY decision: `verification_result: PASS | FAIL`
+- when required verification could not execute: `verification_status: NOT EXECUTED`
+- for AUDIT: `audit_result: PASS | WARN | FAIL`
 
-### 2) `## INVOCATIONS`
+`verification_status` is report-local. It is not a feature-record field or canonical verification result.
 
-Must include:
+### 2. `## INVOCATIONS`
 
-- `audit_engine` / `verify_engine` (protocol/skill name or "inline")
-- if applicable: `skill: sdd-verify | sdd-audit | ...`
-- short notes on constraints (e.g. "PLAN mode → test execution forbidden")
+Include:
 
-### 3) `## EVIDENCE`
+- `audit_engine` or `verify_engine` (protocol/skill name or `inline`);
+- applicable skill name;
+- relevant execution constraints.
 
-Must include:
+### 3. `## EVIDENCE`
 
-- Files read (paths)
-- Artifacts consulted (feature record, spec, tasks, previous reports)
-- If a compliance matrix is done: list of SDT/requirements considered
+Include:
 
-### 4) `## COMMANDS`
+- files read;
+- feature record, spec, tasks, and prior reports consulted;
+- SDT scenarios and requirements considered.
 
-For each relevant command:
+### 4. `## COMMANDS`
 
-- `cwd`
-- `command`
-- `status: EXECUTED | NOT EXECUTED`
-- if `NOT EXECUTED`: `reason`
-- if `EXECUTED`: `raw_output` (or sufficient excerpt + indication where to find the full output)
+For each relevant command include:
 
-### 5) `## VERDICT`
+- `cwd`;
+- `command`;
+- `status: EXECUTED | NOT EXECUTED`;
+- reason when not executed;
+- raw output or a sufficient referenced excerpt when executed.
 
-Must include:
+### 5. `## VERDICT`
 
-- the verdict (PASS/PARTIAL/FAIL or PASS/WARN/FAIL)
-- 1–3 reasons (short)
-- `next_action` (1–3 concrete steps; if needed, include commands)
+Include:
 
-### 6) `## SURFACES` (mandatory since 2026-04-10)
+- VERIFY: `PASS`, `FAIL`, or report-local `NOT EXECUTED`;
+- AUDIT: `PASS`, `WARN`, or `FAIL`;
+- one to three concise reasons;
+- concrete `next_action` items.
 
-Must include the declaration of applicable surfaces:
+### 6. `## SURFACES`
 
 ```md
 ## SURFACES
@@ -86,41 +80,76 @@ Must include the declaration of applicable surfaces:
 - wiring: true|false
 - network: true|false
 - env_proxy: true|false
-- notes: (optional)
+- notes: (optional report-local prose)
 ```
 
-**Default rule:** if no surface is declared, `wiring: true` applies.
+If no surface is declared, `wiring: true` applies. Every applicable surface requires direct evidence.
 
-For each surface set to `true`, evidence is required:
+## VERIFY taxonomy and feature-record projection
 
-| Surface | Evidence | State |
-|---------|----------|-------|
-| browser | (reference to preflight/network tab) | OK / MISSING |
-| wiring | (reference to test handler→core) | OK / MISSING |
+### PASS
 
-## Verdict taxonomy (gates)
+Use only when all required checks executed, conform, and have evidence.
 
-### VERIFY (`verification_result`)
+Canonical feature-record PATCH requirements:
 
-- `PASS`
-  - Critical commands EXECUTED with evidence, and pass; and
-  - No critical SDT/requirement is `UNTESTED` or `UNKNOWN` (if there is, it must be justified and normally falls to `PARTIAL`).
-- `PARTIAL`
-  - Missing runtime evidence due to constraints (plan-only, missing runner, missing environment), or partial manual verification; and
-  - No reproduced failures; and
-  - Includes `next_action` for rerun in execute-capable environment.
-- `FAIL`
-  - Any EXECUTED command fails, or there is a mismatch with spec/SDT with evidence, or the feature record/spec does not match.
+```json
+{
+  "state": "AUDIT",
+  "verification_result": "PASS",
+  "verified_at": "<ISO8601>",
+  "verification_details": "Executed: <commands and evidence>.",
+  "updated_at": "<ISO8601>"
+}
+```
 
-### AUDIT (`audit_result`)
+### FAIL
 
-- `PASS`
-  - No critical deviations; coherent evidence; at least one reliable verify report or equivalent execution.
-- `WARN`
-  - There are non-critical verification risks/gaps (e.g. missing E2E due to constraints), or minor issues with mitigation/ticket.
-- `FAIL`
-  - Serious inconsistencies, insufficient evidence to claim "ready", or deviations/material mismatch.
+Use when an executed check fails or evidence demonstrates a spec/SDT mismatch.
+
+Canonical feature-record PATCH requirements:
+
+```json
+{
+  "state": "IMPLEMENT",
+  "verification_result": "FAIL",
+  "verified_at": "<ISO8601>",
+  "verification_details": "Failed: <specific mismatch and evidence>.",
+  "updated_at": "<ISO8601>"
+}
+```
+
+### NOT EXECUTED
+
+Use when required checks cannot run because the environment, runner, or evidence capability is unavailable.
+
+Report header:
+
+```text
+verification_status: NOT EXECUTED
+```
+
+Canonical feature-record PATCH requirements:
+
+```json
+{
+  "state": "VERIFY",
+  "verification_details": "NOT EXECUTED: <constraint and commands still required>.",
+  "updated_at": "<ISO8601>"
+}
+```
+
+Leave `verification_result` and `verified_at` absent. The record remains in VERIFY and the gate is DENY with blocker `VERIFICATION_NOT_EXECUTED`.
+
+## AUDIT taxonomy
+
+- `PASS`: no critical deviations and reliable verification evidence exists.
+- `WARN`: non-critical residual risk exists with an explicit mitigation or follow-up.
+- `FAIL`: material inconsistency, insufficient evidence, or serious deviation exists.
+
+AUDIT WARN is separate from VERIFY semantics. AUDIT FAIL blocks `AUDIT -> ARCHIVE` without a valid owner waiver, and v1 selects no automatic repair state.
 
 ## Notes
 
-- This policy does not change the canonical pipeline; it only standardizes report output.
+- Report-local fields such as `notes` do not belong to the canonical feature record.
+- This policy standardizes report output; it creates no lifecycle state, transition, result, or external-operation authority.

@@ -40,17 +40,17 @@ A **seed** is any raw input that *might* become an SDD feature. It is **not** a 
 
 ### Where to Capture
 
-All seeds live in `03_operations/pre_sdd/seeds/` as individual dossiers.
+All seeds live in `docs/sdd/03_operations/pre_sdd/seeds/` as individual dossiers.
 
-File naming: `seeds/{YYYY-MM-DD}_{type}_{short_description}.md`
+File naming: `docs/sdd/03_operations/pre_sdd/seeds/{YYYY-MM-DD}_{type}_{short_description}.md`
 
 Examples:
-- `seeds/2026-04-23_idea_dark_mode.md`
-- `seeds/2026-04-23_bug_safari_login.md`
+- `docs/sdd/03_operations/pre_sdd/seeds/2026-04-23_idea_dark_mode.md`
+- `docs/sdd/03_operations/pre_sdd/seeds/2026-04-23_bug_safari_login.md`
 
 ### What to Capture
 
-Every seed dossier **must** contain (use `templates/seed_dossier.md`):
+Every seed dossier **must** contain (use `docs/sdd/03_operations/pre_sdd/templates/seed_dossier.md`):
 
 1. **Provenance** — Who reported it? Under what circumstances?
 2. **Description** — What is the observation or request?
@@ -89,7 +89,7 @@ A seed is promoted to a feature when it passes **all** of the following:
 
 1. **Well-understood** — The problem (not the solution) is clearly described
 2. **Impact-validated** — We know who is affected and why it matters
-3. **Scope-appropriate** — It fits within the project's non-goals (see `PROJECT_MANIFEST.md`)
+3. **Scope-appropriate** — It fits within the project's non-goals (see `docs/sdd/04_project_governance/PROJECT_MANIFEST.md`)
 4. **Resources-available** — We have capacity to design and implement it
 5. **Not-duplicate** — It does not duplicate an existing seed or feature
 
@@ -97,10 +97,10 @@ A seed is promoted to a feature when it passes **all** of the following:
 
 | Decision | Next State | Action |
 |----------|-----------|--------|
-| **Promote** | Becomes a feature | Create feature record in `artifacts/features_for_specs/` |
-| **Defer** | Remains a seed | Move to `seeds/deferred/` with reason and review date |
-| **Reject** | Closed | Move to `seeds/rejected/` with reason |
-| **Merge** | Consolidated | Merge into an existing seed or feature |
+| **Promote** | Becomes a feature | Create a canonical DESIGN record in `docs/sdd/artifacts/features_for_specs/` and preserve provenance in the promoted seed dossier |
+| **Defer** | Remains a seed | Move to `docs/sdd/03_operations/pre_sdd/seeds/deferred/` with reason and review date |
+| **Reject** | Closed | Move to `docs/sdd/03_operations/pre_sdd/seeds/rejected/` with reason |
+| **Merge** | Consolidated | Merge into an existing seed or feature and record the link in the dossier |
 | **Spike** | Research task | Create a time-boxed spike feature |
 
 ---
@@ -127,14 +127,15 @@ CAPTURE → CLASSIFY → TRIAGE → PRIORITIZE → REFINE → TRANSITION → ARC
 - **TRIAGE** produces the decision: PROMOTE, DEFER, REJECT, MERGE, or SPIKE
 - **PROMOTE** continues through PRIORITIZE → REFINE → TRANSITION before entering the SDD pipeline
 - All other decisions (DEFER, REJECT, MERGE, SPIKE) go directly to ARCHIVE
-- See `PRE_SDD_RUNTIME.md` for the full 7-phase operational workflow
+- See `docs/sdd/03_operations/pre_sdd/PRE_SDD_RUNTIME.md` for the full 7-phase operational workflow
+- Pre-SDD labels are domain-local and are not persistent feature-record states
 
 ---
 
 ## Related Documents
 
-- `03_operations/pre_sdd/PRE_SDD_RUNTIME.md` — operational workflow
-- `03_operations/pre_sdd/templates/seed_dossier.md` — seed template
-- `03_operations/pre_sdd/templates/triage_batch.md` — batch review template
-- `04_project_governance/PROJECT_MANIFEST.md` — non-goals and constraints
-- `02_policies/DECOMPOSITION_AND_SIZE_POLICY.md` — feature sizing guidelines
+- `docs/sdd/03_operations/pre_sdd/PRE_SDD_RUNTIME.md` — operational workflow
+- `docs/sdd/03_operations/pre_sdd/templates/seed_dossier.md` — seed template
+- `docs/sdd/03_operations/pre_sdd/templates/triage_batch.md` — batch review template
+- `docs/sdd/04_project_governance/PROJECT_MANIFEST.md` — non-goals and constraints
+- `docs/sdd/02_policies/DECOMPOSITION_AND_SIZE_POLICY.md` — feature sizing guidelines
